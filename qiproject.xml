@@ -1,0 +1,3 @@
+<project name="libqicore">
+  <depends names="gtest" buildtime="true" />
+</project>
