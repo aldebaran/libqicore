@@ -1,3 +1,4 @@
 <project name="libqicore">
   <depends names="gtest" buildtime="true" />
+  <depends names="naoqi" buildtime="true" runtime='true' />
 </project>
