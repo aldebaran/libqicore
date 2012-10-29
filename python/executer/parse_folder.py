@@ -28,28 +28,29 @@ class behaviorParser:
     self._runStr = "#" + "-" * 30 + "Run" + "-" * 30 + os.linesep
 
   def addBoxToInstanciationStr(self, box):
-    code = box + "_obj = " + box + "()" + os.linesep
+    code = box + " = " + box + "_class()" + os.linesep
     self._instanciationsStr = self._instanciationsStr + code + os.linesep
 
   def generatePython(self):
     # TODO: Change IP here to a generic value
     self._instanciationsStr = (self._instanciationsStr
-                            + "broker = newnaoqi.ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, \"127.0.0.1\", 9559)"
+                            + "broker = naoqi.ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, \"127.0.0.1\", 9559)"
                             + os.linesep
-                            + "newnaoqi.ALProxy.initProxies()"
+                            + "naoqi.ALProxy.initProxies()"
                             + os.linesep + os.linesep)
     self.parseBox("root")
-    self._runStr += ("root_obj.__onLoad__()" + os.linesep
-                      + "root_obj.onInput_onStart__(None)" + os.linesep
+    self._runStr += ("root.__onLoad__()" + os.linesep
+                      + "root.onInput_onStart__(None)" + os.linesep
                       + "if (root_obj.hasTimeline()):" + os.linesep
                       + "  root_obj.getTimeline().waitForTimelineCompletion()")
     self._outputFile.write("#!/usr/bin/env python" + os.linesep
                             + "# -*- coding: utf-8 -*-" + os.linesep
                             + os.linesep + os.linesep
-                            + "import newnaoqi" + os.linesep
-                            + "from newnaoqi import *"
+                            + "import naoqi" + os.linesep
+                            + "from naoqi import *"
                             + os.linesep
-                            + "import qicore"
+                            + "import qicore" + os.linesep
+                            + "import qicoreLegacy"
                             + os.linesep + os.linesep
                             + self._declarationsStr
                             + os.linesep
@@ -72,11 +73,11 @@ class behaviorParser:
     timelineFile.close()
 
     timelineCode = (boxName
-                    + "_obj = qicore.Timeline(broker.getBroker())"
+                    + " = qicore.Timeline(broker.getBroker())"
                     + os.linesep
-                    + boxName + "_obj.loadFromFile(\""
+                    + boxName + ".loadFromFile(\""
                     + fullPath + "\")" + os.linesep
-                    + parentName + "_obj.setTimeline(" + boxName + "_obj)"
+                    + parentName + ".setTimeline(" + boxName + ")"
                     + os.linesep + os.linesep)
     self._instanciationsStr = self._instanciationsStr + timelineCode
 
@@ -106,7 +107,7 @@ class behaviorParser:
       self.parseBox(inputObject)
       self.parseBox(outputObject)
       # FIXME: use connnectOutput sometimes
-      self._connectionsStr += (inputObject + "_obj.connectInput(\"" + inputName + "\", \""
+      self._connectionsStr += (inputObject + ".connectInput(\"" + inputName + "\", \""
                                 + outputObject + "__" + outputName + "\", True)"
                                 + os.linesep)
 
@@ -122,40 +123,40 @@ class behaviorParser:
     if (stateMachineFile == None):
       return
 
-    self._instanciationsStr += (boxName + "_obj = qicore.StateMachine()" + os.linesep)
+    self._instanciationsStr += (boxName + " = qicore.StateMachine()" + os.linesep)
 
     dom = xml.dom.minidom.parse(stateMachineFile)
 
     root = dom.getElementsByTagName('StateMachine')[0]
     for state in root.getElementsByTagName('State'):
       statename = state.attributes["Name"].value
-      self._instanciationsStr += (boxName + "_" + statename + "_obj = qicore.State()" + os.linesep )
+      self._instanciationsStr += (boxName + "_" + statename + " = qicore.State()" + os.linesep )
       objs = state.attributes["Objects"].value
       objsList = objs.split(';')
-      self._instanciationsStr += (boxName + "_" + statename + "_diagram_obj = qicore.Diagram()" + os.linesep)
+      self._instanciationsStr += (boxName + "_" + statename + "_diagram = qicore.Diagram()" + os.linesep)
       for diag in objsList:
         if (diag != ""):
           objects_names = self.parseDiagram(diag)
           for box in objects_names:
-            self._instanciationsStr += (boxName + "_" + statename + "_diagram_obj.addBox(" + box + "_obj)" + os.linesep)
-      self._instanciationsStr += (boxName + "_" + statename + "_obj.setDiagram("
-                                  + boxName + "_" + statename + "_diagram_obj" ")" + os.linesep)
-      self._instanciationsStr += (boxName + "_obj.addState("
-                                  + boxName + "_" + statename + "_obj" ")" + os.linesep)
+            self._instanciationsStr += (boxName + "_" + statename + "_diagram.addBox(" + box + ")" + os.linesep)
+      self._instanciationsStr += (boxName + "_" + statename + ".setDiagram("
+                                  + boxName + "_" + statename + "_diagram" ")" + os.linesep)
+      self._instanciationsStr += (boxName + ".addState("
+                                  + boxName + "_" + statename + "" ")" + os.linesep)
 
     for tr in root.getElementsByTagName('Transition'):
       print(tr.toxml())
 
     for fstate in root.getElementsByTagName('FinalState'):
-      self._instanciationsStr += (boxName + "_obj.setFinalState("
+      self._instanciationsStr += (boxName + ".setFinalState("
                                   + boxName +  "_" + fstate.attributes["Name"].value
-                                  + "_obj)" + os.linesep)
+                                  + ")" + os.linesep)
 
-    self._instanciationsStr += (boxName + "_obj.setInitialState("
+    self._instanciationsStr += (boxName + ".setInitialState("
                               + boxName + "_" + root.getElementsByTagName('InitialState')[0].attributes["Name"].value
-                              + "_obj)" + os.linesep + os.linesep)
+                              + ")" + os.linesep + os.linesep)
 
-    self._instanciationsStr += (parentBoxName + "_obj.setStateMachine(" + boxName + "_obj)" + os.linesep)
+    self._instanciationsStr += (parentBoxName + ".setStateMachine(" + boxName + ")" + os.linesep)
 
     stateMachineFile.close()
 

@@ -1,4 +1,4 @@
 <project name="libqicore">
   <depends names="gtest libqi" buildtime="true" />
-  <depends names="naoqi" buildtime="true" runtime='true' />
+  <depends names="libnaoqi libalmathinternal" buildtime="true" runtime='true' />
 </project>

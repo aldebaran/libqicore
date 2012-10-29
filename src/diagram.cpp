@@ -35,7 +35,7 @@ void DiagramPrivate::loadAll()
   for (std::set<Box*>::iterator it = _boxes.begin();
         it != _boxes.end(); it++)
   {
-    loadBox(*it);
+    (*it)->load();
   }
 }
 
@@ -44,7 +44,7 @@ void DiagramPrivate::unloadAll()
   for (std::set<Box*>::iterator it = _boxes.begin();
         it != _boxes.end(); it++)
   {
-    unloadBox(*it);
+    (*it)->unload();
   }
 }
 
@@ -59,7 +59,7 @@ void DiagramPrivate::loadFromDiagram(Diagram* d)
     std::set<Box*>::iterator loadIt = toLoad.find(*it);
 
     if (loadIt == toLoad.end())
-      unloadBox(*it);
+      (*it)->unload();
     else
       toLoad.erase(loadIt);
   }
@@ -67,24 +67,8 @@ void DiagramPrivate::loadFromDiagram(Diagram* d)
   for (std::set<Box*>::iterator it = toLoad.begin();
         it != toLoad.end(); it++)
   {
-    loadBox(*it);
+    (*it)->load();
   }
-}
-
-void DiagramPrivate::loadBox(Box* b)
-{
-  AL::ALValue params = AL::ALValue();
-  AL::ALValue result = AL::ALValue();
-  b->executePython("__onLoad__", params, result);
-  // Useless ?
-  //b->executePython("onInput_onLoad__", params, result);
-}
-
-void DiagramPrivate::unloadBox(Box* b)
-{
-  AL::ALValue params = AL::ALValue();
-  AL::ALValue result = AL::ALValue();
-  b->executePython("__onUnload__", params, result);
 }
 
 void DiagramPrivate::merge(Diagram* d)

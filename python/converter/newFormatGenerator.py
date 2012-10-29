@@ -207,7 +207,7 @@ class newFormatGenerator:
     fpy = open(fullName + ".py", encoding='utf-8', mode='w')
     #fpy.write('#!/usr/bin/env python')
     script = node.script.content.lstrip()
-    script = script.replace("MyClass", fullName, 1)
+    script = script.replace("MyClass", fullName + "_class", 1)
     script = script.replace("(GeneratedClass):", ":", 1)
     fpy.write(script)
     fpy.write(os.linesep)

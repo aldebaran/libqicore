@@ -8,23 +8,29 @@
 #ifndef BOX_PRIVATE_H_
 # define BOX_PRIVATE_H_
 
-/* REMOVE ME PLEASE */
-# include <qicore/newinaoqi.h>
+# include <alcommon/albroker.h>
 
 # include <qicore/state_machine.h>
 # include <qicore/timeline.h>
 
-class BoxPrivate: public AL::behavior
+class BoxPrivate
 {
   friend class Box;
 
   public:
-    BoxPrivate(boost::shared_ptr<AL::ALBroker> broker, std::string name);
+    BoxPrivate();
     ~BoxPrivate();
+
+    void load();
+    void unload();
 
   private:
     StateMachine*         _stateMachine;
     Timeline*             _timeline;
+    std::string           _name;
+
+    /* TODO: remove me */
+    boost::shared_ptr<AL::ALBroker> _broker;
 };
 
 #endif /* !BOX_PRIVATE_H_ */

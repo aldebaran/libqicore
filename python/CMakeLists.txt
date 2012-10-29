@@ -6,9 +6,7 @@ add_definitions( -DNETWORK_HEARTBEAT )
 include(qibuild/swig/python)
 
 set (_pyfiles
-  "${CMAKE_CURRENT_SOURCE_DIR}/py/newnaoqi.py"
-  "${CMAKE_CURRENT_SOURCE_DIR}/py/motion.py"
-  "${CMAKE_CURRENT_SOURCE_DIR}/py/vision_definitions.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/py/qicoreLegacy.py"
 )
 
 install( FILES
@@ -27,15 +25,3 @@ add_custom_target(copy-python-naoqi ALL
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src")
 qi_swig_wrap_python(qicore src/qicore.i DEPENDS QICORE)
-
-#REMOVE ME
-qi_swig_wrap_python(newinaoqi src/newinaoqi.i
-                              ../qicore/newinaoqi.h
-                              ../src/newinaoqi.cpp
-                              ../src/newinaoqi_private.h
-                              DEPENDS       ALCOMMON
-                                            ALPYTHONTOOLS
-                                            ALBEHAVIOR
-                                            ALRESOURCE
-                                            ALPROXIES)
-#

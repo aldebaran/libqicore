@@ -3,13 +3,16 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
+#include <alproxies/almemoryproxy.h>
+#include <alcore/alerror.h>
+#include <qi/log.hpp>
+
 #include <qicore/box.h>
 #include "box_private.h"
 
-BoxPrivate::BoxPrivate(boost::shared_ptr<AL::ALBroker> broker, std::string name)
-  : AL::behavior(broker, name),
-    _timeline (0),
-    _stateMachine (0)
+BoxPrivate::BoxPrivate()
+  : _stateMachine (0),
+    _timeline (0)
 {
 }
 
@@ -17,136 +20,50 @@ BoxPrivate::~BoxPrivate()
 {
 }
 
+void BoxPrivate::load()
+{
+  /* Rewrite this method for naoqi2 */
+  boost::shared_ptr<AL::ALMemoryProxy> mem = _broker->getMemoryProxy();
+
+  try
+  {
+    mem->raiseMicroEvent(_name + "_onLoad", AL::ALValue());
+  }
+  catch (AL::ALError& e)
+  {
+    std::stringstream ss;
+    ss << "Error During STM access : Error #=" << e.toString();
+    qiLogError("qiCore") <<  ss.str() << std::endl;
+  }
+}
+
+void BoxPrivate::unload()
+{
+  /* Rewrite this method for naoqi2 */
+  boost::shared_ptr<AL::ALMemoryProxy> mem = _broker->getMemoryProxy();
+
+  try
+  {
+    mem->raiseMicroEvent(_name + "_onUnload", AL::ALValue());
+  }
+  catch (AL::ALError& e)
+  {
+    std::stringstream ss;
+    ss << "Error During STM access : Error #=" << e.toString();
+    qiLogError("qiCore") <<  ss.str() << std::endl;
+  }
+
+}
+
 /* Public Class */
-Box::Box(boost::shared_ptr<AL::ALBroker> broker, std::string name)
-  : _p (new BoxPrivate(broker, name))
+Box::Box()
+  : _p (new BoxPrivate())
 {
 }
 
 Box::~Box()
 {
   delete _p;
-}
-
-void Box::waitResourcesCallback(const char* pCallback)
-{
-  _p->waitResourcesCallback(pCallback);
-}
-
-bool Box::isResourceFree(const std::vector<std::string>& pList)
-{
-  return _p->isResourceFree(pList);
-}
-
-void Box::waitResourceFree()
-{
-  _p->waitResourceFree();
-}
-
-void Box::waitResources()
-{
-  _p->waitResources();
-}
-
-void Box::releaseResource()
-{
-  _p->releaseResource();
-}
-
-bool Box::addInput(char* pInputName)
-{
-  return _p->addInput(pInputName);
-}
-
-bool Box::addOutput(char* pOutputName, bool pIsBang)
-{
-  return _p->addOutput(pOutputName, pIsBang);
-}
-
-void Box::addParameter(char* pParameterName, PyObject* pValue, bool pInheritFromParent)
-{
-  _p->addParameter(pParameterName, pValue, pInheritFromParent);
-}
-
-AL::ALValue Box::getParameter(char* pParameterName)
-{
-  return _p->getParameter(pParameterName);
-}
-
-AL::ALValue Box::getParametersList()
-{
-  return _p->getParametersList();
-}
-
-void Box::setParameter(char* pParameterName, PyObject* pValue)
-{
-  return _p->setParameter(pParameterName, pValue);
-}
-
-void Box::connectInput(char* pInputName, char* pALMemoryValueName, bool enabled)
-{
-  _p->connectInput(pInputName, pALMemoryValueName, enabled);
-}
-
-void Box::connectOutput(char* pInputName, char* pALMemoryValueName, bool enabled)
-{
-  _p->connectOutput(pInputName, pALMemoryValueName, enabled);
-}
-
-void Box::connectParameter(char* pInputName, char* pALMemoryValueName, bool enabled)
-{
-  _p->connectParameter(pInputName, pALMemoryValueName, enabled);
-}
-
-void Box::stimulateIO(char* pIOName, PyObject* pValue)
-{
-  _p->stimulateIO(pIOName, pValue);
-}
-
-void Box::BIND_PYTHON(char* module, char *method)
-{
-  _p->BIND_PYTHON(module, method);
-}
-
-std::string Box::getName()
-{
-  return _p->getName();
-}
-
-std::string Box::_methodMissing()
-{
-  return _p->_methodMissing();
-}
-
-void Box::functionName(char *method, char *module, char *description)
-{
-  _p->functionName(method, module, description);
-}
-
-void Box::addParam(char *pParam)
-{
-  _p->addParam(pParam);
-}
-
-void Box::_bindWithParam(char *module, char *method, int paramNumber)
-{
-  _p->_bindWithParam(module, method, paramNumber);
-}
-
-int Box::getTimelineFps(const std::string &pId)
-{
-  /* TODO: Use pId parameter here */
-  if (!_p->_timeline)
-  /* FIXME ... Should not happend in legacy framemanager */
-    return 25;
-  return _p->_timeline->getFPS();
-}
-
-void Box::setTimelineFps(const std::string &pId, const int &pFPS)
-{
-  /* TODO: Use pId parameter here */
-  if (_p->_timeline)
-    _p->_timeline->setFPS(pFPS);
 }
 
 Timeline* Box::getTimeline()
@@ -179,7 +96,25 @@ bool Box::hasStateMachine() const
   return _p->_stateMachine;
 }
 
-void Box::executePython(const std::string &pMethod, const AL::ALValue &pParams, AL::ALValue &pResult)
+void Box::setBroker(boost::shared_ptr<AL::ALBroker> broker)
 {
-  _p->executePython(pMethod, pParams, pResult);
+  if (broker)
+    _p->_broker = broker;
+  else
+    std::cout << "Why so serious ?" << std::endl;
+}
+
+void Box::setName(std::string name)
+{
+  _p->_name = name;
+}
+
+void Box::load()
+{
+  _p->load();
+}
+
+void Box::unload()
+{
+  _p->unload();
 }

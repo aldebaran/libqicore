@@ -29,20 +29,22 @@ class patcher:
         self._indentForMethod = len(s) - len(s.lstrip())
 
   def constructInitCode(self):
-    initCode = "ALBehavior.__init__(self, broker.getBroker(), \"" + self._boxName + "\", True)" + os.linesep
-    initCode += self._indentForInit * " " + "self.boxName = \"" + self._boxName + "\"" + os.linesep
     indent = self._indentForInit
+    initCode = "qicoreLegacy.BehaviorLegacy.__init__(self, \"" + self._boxName + "\", True)" + os.linesep
+    initCode += indent * " " + "self.boxName = \"" + self._boxName + "\"" + os.linesep
+    initCode += indent * " " + "self.setName(\"" + self._boxName + "\")" + os.linesep
+    initCode += indent * " " + "self.setBroker(broker.getALBroker())" + os.linesep
 
     for inp in self._xml.getElementsByTagName('Input'):
       inpName = inp.attributes["name"].value
-      initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onInput_" + inpName + "__\")" +
+      initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onInput_" + inpName + "__\", 1)" +
           os.linesep)
       initCode += (indent * " " + "self.addInput(\"" + inpName + "\")" + os.linesep)
       self.addInputMethod(inpName)
 
     for out in self._xml.getElementsByTagName('Output'):
       outName = out.attributes["name"].value
-      initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onOutput_" + outName + "__\")" +
+      initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onOutput_" + outName + "__\", 1)" +
           os.linesep)
       initCode +=  (indent * " "
                     + "self.addOutput(\""
@@ -66,7 +68,7 @@ class patcher:
     return initCode
 
   def addInheritance(self):
-    self._code = self._code.replace(":", "(ALBehavior):", 1)
+    self._code = self._code.replace(":", "(qicoreLegacy.BehaviorLegacy):", 1)
 
   def addInputMethod(self, inpName):
     indent = self._indentForMethod
@@ -90,7 +92,7 @@ class patcher:
                            + indent * " " * 2 + "self.stimulateIO(\"" + outName + "\", p)" + os.linesep * 2)
 
   def generateClass(self):
-    self._code += ("class " + self._boxName + ":" + os.linesep
+    self._code += ("class " + self._boxName + "_class" + ":" + os.linesep
                     + "  def __init__(self):" + os.linesep
                     + "    GeneratedClass.__init__(self)" + os.linesep + os.linesep)
 

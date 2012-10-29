@@ -13,8 +13,7 @@ set(PUBLIC_HEADERS
     qicore/state_machine.h
     qicore/box.h
     qicore/diagram.h
-    qicore/transition.h
-    qicore/newinaoqi.h)
+    qicore/transition.h)
 
 qi_install_header(${PUBLIC_HEADERS})
 
@@ -28,7 +27,6 @@ qi_create_lib(qicore SRC
   src/transition_private.h src/transition.cpp
   src/async_executer.h src/async_executer.cpp
   src/box_private.h src/box.cpp
-  src/newinaoqi_private.h src/newinaoqi.cpp
   src/diagram_private.h src/diagram.cpp)
 
 qi_use_lib(qicore ALCOMMON ALSERIAL ALMATHINTERNAL ALBEHAVIOR ALTOOLS
