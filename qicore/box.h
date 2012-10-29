@@ -10,6 +10,8 @@
 
 # include <albehavior/albehavior.h>
 
+# include <qicore/api.h>
+
 /* REMOVE ME PLEASE */
 # include <qicore/newinaoqi.h>
 
@@ -17,7 +19,7 @@ class BoxPrivate;
 class Timeline;
 class StateMachine;
 
-class Box
+class QICORE_API Box
 {
   public:
     Box(boost::shared_ptr<AL::ALBroker> broker, std::string name);

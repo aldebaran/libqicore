@@ -8,11 +8,12 @@
 #ifndef DIAGRAM_H_
 # define DIAGRAM_H_
 
+# include <qicore/api.h>
 # include <qicore/box.h>
 
 class DiagramPrivate;
 
-class Diagram
+class QICORE_API Diagram
 {
   friend class DiagramPrivate;
 

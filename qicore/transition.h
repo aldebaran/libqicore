@@ -8,11 +8,13 @@
 #ifndef TRANSITION_H_
 # define TRANSITION_H_
 
+# include <qicore/api.h>
+
 class TransitionPrivate;
 class StateMachine;
 class State;
 
-class Transition
+class QICORE_API Transition
 {
   public:
     friend class StatePrivate;

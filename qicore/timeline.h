@@ -14,6 +14,8 @@
 
 # include <albehavior/altimeline.h>
 
+# include <qicore/api.h>
+
 namespace AL
 {
   class ALBroker;
@@ -21,7 +23,7 @@ namespace AL
 
 class TimelinePrivate;
 
-class Timeline: public AL::ALTimeline
+class QICORE_API Timeline: public AL::ALTimeline
 {
   public:
     Timeline(boost::shared_ptr<AL::ALBroker> broker);

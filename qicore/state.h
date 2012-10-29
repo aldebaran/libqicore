@@ -10,12 +10,14 @@
 
 # include <list>
 
+# include <qicore/api.h>
+
 class StatePrivate;
 class Diagram;
 class StateMachine;
 class Transition;
 
-class State
+class QICORE_API State
 {
   public:
     State();

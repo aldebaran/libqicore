@@ -3,6 +3,7 @@
 %include "std_string.i"
 
 %{
+  #include <qicore/api.h>
   #include <qicore/timeline.h>
   #include <qicore/box.h>
   #include <qicore/diagram.h>
@@ -11,6 +12,7 @@
   #include <qicore/transition.h>
 %}
 
+%include <qicore/api.h>
 %include <qicore/timeline.h>
 %include <qicore/box.h>
 %include <qicore/diagram.h>

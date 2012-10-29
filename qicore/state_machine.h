@@ -8,11 +8,13 @@
 #ifndef STATE_MACHINE_H_
 # define STATE_MACHINE_H_
 
+# include <qicore/api.h>
+
 class StateMachinePrivate;
 class Transition;
 class State;
 
-class StateMachine
+class QICORE_API StateMachine
 {
   public:
     StateMachine();

@@ -5,19 +5,25 @@ add_definitions( -DNETWORK_HEARTBEAT )
 
 include(qibuild/swig/python)
 
-set(_pyfiles
+set (_pyfiles
   "${CMAKE_CURRENT_SOURCE_DIR}/py/newnaoqi.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/py/motion.py"
-  "${CMAKE_CURRENT_SOURCE_DIR}/py/vision_definitions.py")
+  "${CMAKE_CURRENT_SOURCE_DIR}/py/vision_definitions.py"
+)
 
-qi_install(${_pyfiles} DESTINATION ${QI_SDK_LIB})
+install( FILES
+  ${_pyfiles}
+  COMPONENT python
+  DESTINATION ${QI_SDK_LIB}
+)
 
 # FIXME: maybe use a "configure" here?
 add_custom_target(copy-python-naoqi ALL
   COMMAND ${CMAKE_COMMAND}
   -E copy_directory
   "${CMAKE_CURRENT_SOURCE_DIR}/py/"
-  "${SDK_DIR}/${QI_SDK_LIB}")
+  "${QI_SDK_DIR}/${QI_SDK_LIB}"
+  )
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src")
 qi_swig_wrap_python(qicore src/qicore.i DEPENDS QICORE)
