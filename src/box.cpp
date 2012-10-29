@@ -3,7 +3,7 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
-#include <newframemanager/box.h>
+#include <qicore/box.h>
 #include "box_private.h"
 
 BoxPrivate::BoxPrivate(boost::shared_ptr<AL::ALBroker> broker, std::string name)

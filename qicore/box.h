@@ -11,7 +11,7 @@
 # include <albehavior/albehavior.h>
 
 /* REMOVE ME PLEASE */
-# include <newframemanager/newinaoqi.h>
+# include <qicore/newinaoqi.h>
 
 class BoxPrivate;
 class Timeline;

@@ -10,7 +10,7 @@
 
 # include <set>
 
-# include <newframemanager/box.h>
+# include <qicore/box.h>
 
 class Diagram;
 

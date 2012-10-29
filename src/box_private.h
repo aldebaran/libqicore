@@ -9,10 +9,10 @@
 # define BOX_PRIVATE_H_
 
 /* REMOVE ME PLEASE */
-# include <newframemanager/newinaoqi.h>
+# include <qicore/newinaoqi.h>
 
-# include <newframemanager/state_machine.h>
-# include <newframemanager/timeline.h>
+# include <qicore/state_machine.h>
+# include <qicore/timeline.h>
 
 class BoxPrivate: public AL::behavior
 {

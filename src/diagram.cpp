@@ -3,7 +3,7 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
-#include <newframemanager/diagram.h>
+#include <qicore/diagram.h>
 #include "diagram_private.h"
 
 DiagramPrivate::DiagramPrivate()

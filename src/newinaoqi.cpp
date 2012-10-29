@@ -12,7 +12,7 @@
 #include <alproxies/almemoryproxy.h>
 #include <alpythontools/swigpyrun.h>
 #include <altools/tools.h>
-#include <newframemanager/newinaoqi.h>
+#include <qicore/newinaoqi.h>
 #include "newinaoqi_private.h"
 
 #include <iostream>

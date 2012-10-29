@@ -5,9 +5,9 @@
 
 #include <gtest/gtest.h>
 
-#include <newframemanager/state_machine.h>
-#include <newframemanager/state.h>
-#include <newframemanager/abstract_transition.h>
+#include <qicore/state_machine.h>
+#include <qicore/state.h>
+#include <qicore/abstract_transition.h>
 
 class StateTest : public State
 {

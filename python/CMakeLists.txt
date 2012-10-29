@@ -20,7 +20,7 @@ add_custom_target(copy-python-naoqi ALL
   "${SDK_DIR}/${QI_SDK_LIB}")
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src")
-qi_swig_wrap_python(qicore src/newframemanager.i DEPENDS QICORE)
+qi_swig_wrap_python(qicore src/qicore.i DEPENDS QICORE)
 
 #REMOVE ME
 qi_swig_wrap_python(newinaoqi src/newinaoqi.i

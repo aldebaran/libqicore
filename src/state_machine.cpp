@@ -6,10 +6,10 @@
 #include <limits>
 #include <algorithm>
 
-#include <newframemanager/state.h>
-#include <newframemanager/transition.h>
-#include <newframemanager/diagram.h>
-#include <newframemanager/state_machine.h>
+#include <qicore/state.h>
+#include <qicore/transition.h>
+#include <qicore/diagram.h>
+#include <qicore/state_machine.h>
 #include "state_machine_private.h"
 
 StateMachinePrivate::StateMachinePrivate(StateMachine *s)

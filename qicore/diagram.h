@@ -8,7 +8,7 @@
 #ifndef DIAGRAM_H_
 # define DIAGRAM_H_
 
-# include <newframemanager/box.h>
+# include <qicore/box.h>
 
 class DiagramPrivate;
 

@@ -7,7 +7,7 @@
 %ignore AL::ALMemoryProxy::insertData(std::string const &,std::string const &);
 
 %{
-#include <newframemanager/newinaoqi.h>
+#include <qicore/newinaoqi.h>
 #include <alproxies/almemoryproxy.h>
 #include <alpythontools/alpythontools.h>
 using namespace AL;
@@ -82,7 +82,7 @@ namespace std {
 %}
 
 /* Let's just grab the original header file here */
-%include "../newframemanager/newinaoqi.h"
+%include "../qicore/newinaoqi.h"
 %include "std_string.i"
 #define ALPROXIES_API
 %include <alproxies/almemoryproxy.h>

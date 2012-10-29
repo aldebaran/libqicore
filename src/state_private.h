@@ -10,8 +10,8 @@
 
 # include <list>
 
-# include <newframemanager/state.h>
-# include <newframemanager/transition.h>
+# include <qicore/state.h>
+# include <qicore/transition.h>
 
 class Diagram;
 

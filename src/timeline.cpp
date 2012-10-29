@@ -10,7 +10,7 @@
 #include <alserial/alserial.h>
 #include <qi/log.hpp>
 
-#include <newframemanager/timeline.h>
+#include <qicore/timeline.h>
 #include "timeline_private.h"
 #include "xml_utils.h"
 #include "actuator_curve.h"

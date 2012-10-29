@@ -49,7 +49,7 @@ class behaviorParser:
                             + "import newnaoqi" + os.linesep
                             + "from newnaoqi import *"
                             + os.linesep
-                            + "import newframemanager"
+                            + "import qicore"
                             + os.linesep + os.linesep
                             + self._declarationsStr
                             + os.linesep
@@ -72,7 +72,7 @@ class behaviorParser:
     timelineFile.close()
 
     timelineCode = (boxName
-                    + "_obj = newframemanager.Timeline(broker.getBroker())"
+                    + "_obj = qicore.Timeline(broker.getBroker())"
                     + os.linesep
                     + boxName + "_obj.loadFromFile(\""
                     + fullPath + "\")" + os.linesep
@@ -122,17 +122,17 @@ class behaviorParser:
     if (stateMachineFile == None):
       return
 
-    self._instanciationsStr += (boxName + "_obj = newframemanager.StateMachine()" + os.linesep)
+    self._instanciationsStr += (boxName + "_obj = qicore.StateMachine()" + os.linesep)
 
     dom = xml.dom.minidom.parse(stateMachineFile)
 
     root = dom.getElementsByTagName('StateMachine')[0]
     for state in root.getElementsByTagName('State'):
       statename = state.attributes["Name"].value
-      self._instanciationsStr += (boxName + "_" + statename + "_obj = newframemanager.State()" + os.linesep )
+      self._instanciationsStr += (boxName + "_" + statename + "_obj = qicore.State()" + os.linesep )
       objs = state.attributes["Objects"].value
       objsList = objs.split(';')
-      self._instanciationsStr += (boxName + "_" + statename + "_diagram_obj = newframemanager.Diagram()" + os.linesep)
+      self._instanciationsStr += (boxName + "_" + statename + "_diagram_obj = qicore.Diagram()" + os.linesep)
       for diag in objsList:
         if (diag != ""):
           objects_names = self.parseDiagram(diag)

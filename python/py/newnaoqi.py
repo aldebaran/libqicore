@@ -18,16 +18,16 @@ except ImportError:
 import newinaoqi
 
 try:
-    import _newframemanager
+    import _qicore
 except ImportError:
     # quick hack to keep newinaoqi.py happy
     if sys.platform.startswith("win"):
         print "Could not find _newinaoqi, trying with _newinaoqi_d"
-        import _newframemanager_d as _newframemanager
+        import _qicore_d as _qicore
     else:
         raise
 
-import newframemanager
+import qicore
 
 import motion
 import allog
@@ -156,7 +156,7 @@ class ALModule(newinaoqi.module, ALDocable, NaoQiModule):
     pass
 
 
-class ALBehavior(newframemanager.Box, NaoQiModule):
+class ALBehavior(qicore.Box, NaoQiModule):
   # class var in order not to build it each time
   _noNeedToBind = set(dir(newinaoqi.behavior))
   _noNeedToBind.add("getModule")
@@ -176,7 +176,7 @@ class ALBehavior(newframemanager.Box, NaoQiModule):
   _noNeedToBind.add("gotoAndStopParent")
 
   def __init__(self, broker, param, autoBind):
-    newframemanager.Box.__init__(self, broker, param)
+    qicore.Box.__init__(self, broker, param)
     NaoQiModule.__init__(self, param, logger=False)
     self.logger = logging.getLogger(param)
     self.behaviorloghandler = ALBehaviorLogHandler()

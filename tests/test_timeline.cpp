@@ -9,7 +9,7 @@
 #include <alcommon/albroker.h>
 #include <allauncher/launcher.h>
 
-#include <newframemanager/timeline.h>
+#include <qicore/timeline.h>
 
 std::string file;
 boost::shared_ptr<AL::ALBroker> broker;
