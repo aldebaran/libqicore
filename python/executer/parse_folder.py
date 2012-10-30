@@ -41,8 +41,8 @@ class behaviorParser:
     self.parseBox("root")
     self._runStr += ("root.__onLoad__()" + os.linesep
                       + "root.onInput_onStart__(None)" + os.linesep
-                      + "if (root_obj.hasTimeline()):" + os.linesep
-                      + "  root_obj.getTimeline().waitForTimelineCompletion()")
+                      + "if (root.hasTimeline()):" + os.linesep
+                      + "  root.getTimeline().waitForTimelineCompletion()")
     self._outputFile.write("#!/usr/bin/env python" + os.linesep
                             + "# -*- coding: utf-8 -*-" + os.linesep
                             + os.linesep + os.linesep
