@@ -27,7 +27,7 @@ void BoxPrivate::load()
 
   try
   {
-    mem->raiseMicroEvent(_name + "_onLoad", AL::ALValue());
+    mem->raiseMicroEvent(_name + "__onLoad", AL::ALValue());
   }
   catch (AL::ALError& e)
   {
@@ -98,10 +98,7 @@ bool Box::hasStateMachine() const
 
 void Box::setBroker(boost::shared_ptr<AL::ALBroker> broker)
 {
-  if (broker)
-    _p->_broker = broker;
-  else
-    std::cout << "Why so serious ?" << std::endl;
+  _p->_broker = broker;
 }
 
 void Box::setName(std::string name)

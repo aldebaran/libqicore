@@ -10,6 +10,11 @@ import xml.dom.minidom
 
 import code_patcher
 
+class ConnectionType:
+  INPUT=0
+  OUTPUT=1
+  PARAMETER=2
+
 def safeOpen(filename):
   try:
     f = open(filename)
@@ -22,6 +27,7 @@ class behaviorParser:
     self._outputFile = outputFile
     self._folderName = folderName
     self._declaredObjects = set()
+    self._connectionTypeForBox = {}
     self._declarationsStr = "#" + "-" * 30 + "Declarations" + "-" * 30 + os.linesep
     self._instanciationsStr = "#" + "-" * 30 + "Instanciations" + "-" * 30 + os.linesep
     self._connectionsStr = "#" + "-" * 30 + "Connections" + "-" * 30 + os.linesep
@@ -30,6 +36,9 @@ class behaviorParser:
   def addBoxToInstanciationStr(self, box):
     code = box + " = " + box + "_class()" + os.linesep
     self._instanciationsStr = self._instanciationsStr + code + os.linesep
+    self._connectionsStr += (box + ".connectInput(\"onLoad\", \""
+                                + box + "__onLoad\"" + ", True)"
+                                + os.linesep)
 
   def generatePython(self):
     # TODO: Change IP here to a generic value
@@ -73,7 +82,7 @@ class behaviorParser:
     timelineFile.close()
 
     timelineCode = (boxName
-                    + " = qicore.Timeline(broker.getBroker())"
+                    + " = qicore.Timeline(broker.getALBroker())"
                     + os.linesep
                     + boxName + ".loadFromFile(\""
                     + fullPath + "\")" + os.linesep
@@ -106,8 +115,15 @@ class behaviorParser:
       outputName = link.attributes["OutputName"].value
       self.parseBox(inputObject)
       self.parseBox(outputObject)
-      # FIXME: use connnectOutput sometimes
-      self._connectionsStr += (inputObject + ".connectInput(\"" + inputName + "\", \""
+
+      connectionTypeStr = ""
+      if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.INPUT):
+        connectionTypeStr = ".connectInput(\""
+      if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.OUTPUT):
+        connectionTypeStr = ".connectOutput(\""
+      if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.PARAMETER):
+        connectionTypeStr = ".connectParameter(\""
+      self._connectionsStr += (inputObject + connectionTypeStr + inputName + "\", \""
                                 + outputObject + "__" + outputName + "\", True)"
                                 + os.linesep)
 
@@ -172,6 +188,22 @@ class behaviorParser:
 
     dom = xml.dom.minidom.parse(xmlFile)
     root = dom.getElementsByTagName('Box')[0]
+
+    connectionMap = {}
+
+    for inp in root.getElementsByTagName('Input'):
+      inpName = inp.attributes["name"].value
+      connectionMap[inpName] = ConnectionType.INPUT
+
+    for out in root.getElementsByTagName('Output'):
+      outName = out.attributes["name"].value
+      connectionMap[outName] = ConnectionType.OUTPUT
+
+    for param in root.getElementsByTagName('Parameter'):
+      paramName = param.attributes["name"].value
+      connectionMap[paramName] = ConnectionType.PARAMETER
+
+    self._connectionTypeForBox[boxName] = connectionMap
 
     pyFile = safeOpen(self._folderName + boxName + ".py")
     if (pyFile != None):
