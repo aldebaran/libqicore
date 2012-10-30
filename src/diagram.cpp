@@ -13,11 +13,6 @@ DiagramPrivate::DiagramPrivate()
 
 DiagramPrivate::~DiagramPrivate()
 {
-  for (std::set<Box*>::iterator it = _boxes.begin();
-        it != _boxes.end(); it++)
-  {
-    delete (*it);
-  }
 }
 
 void DiagramPrivate::addBox(Box *b)

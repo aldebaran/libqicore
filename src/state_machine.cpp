@@ -23,9 +23,6 @@ StateMachinePrivate::StateMachinePrivate(StateMachine *s)
 
 StateMachinePrivate::~StateMachinePrivate()
 {
-  for (std::set<State*>::iterator it = _states.begin();
-        it != _states.end(); it++)
-    delete (*it);
 }
 
 bool StateMachinePrivate::addState(State* state)

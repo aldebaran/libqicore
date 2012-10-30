@@ -17,9 +17,6 @@ StatePrivate::StatePrivate(State* parent)
 
 StatePrivate::~StatePrivate()
 {
-  for (std::list<Transition*>::iterator it = _transitions.begin();
-        it != _transitions.end(); it++)
-    delete (*it);
 }
 
 void StatePrivate::addTransition(Transition *tr)
