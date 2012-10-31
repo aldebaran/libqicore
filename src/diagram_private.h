@@ -29,12 +29,12 @@ class DiagramPrivate
     void unloadAll();
 
     void loadFromDiagram(Diagram *d);
-    void merge(Diagram* d);
 
   private:
     void loadBox(Box* b);
     void unloadBox(Box* b);
 
+    std::string    _name;
     std::set<Box*> _boxes;
 };
 

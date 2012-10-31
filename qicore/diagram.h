@@ -20,6 +20,10 @@ class QICORE_API Diagram
   public:
     Diagram();
     ~Diagram();
+
+    void setName(std::string name);
+    std::string getName();
+
     void addBox(Box* b);
     void removeBox(Box* b);
 
@@ -27,7 +31,6 @@ class QICORE_API Diagram
     void unloadAll();
 
     void loadFromDiagram(Diagram* d);
-    void merge(Diagram* d);
 
   private:
 

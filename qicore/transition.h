@@ -8,6 +8,8 @@
 #ifndef TRANSITION_H_
 # define TRANSITION_H_
 
+# include <string>
+
 # include <qicore/api.h>
 
 class TransitionPrivate;
@@ -21,6 +23,9 @@ class QICORE_API Transition
 
     Transition(State* to);
     ~Transition();
+
+    void setName(std::string name);
+    std::string getName();
 
     void load(StateMachine* s);
     void unload();

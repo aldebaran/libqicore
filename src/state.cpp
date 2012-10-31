@@ -10,7 +10,8 @@
 #include "state_machine_private.h"
 
 StatePrivate::StatePrivate(State* parent)
-  : _parent (parent),
+  : _name ("Unnamed-State"),
+    _parent (parent),
     _diagram (0)
 {
 }
@@ -89,4 +90,14 @@ void State::setDiagram(Diagram* d)
 Diagram* State::getDiagram()
 {
   return _p->_diagram;
+}
+
+void State::setName(std::string name)
+{
+  _p->_name = name;
+}
+
+std::string State::getName()
+{
+  return _p->_name;
 }

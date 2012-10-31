@@ -8,6 +8,8 @@
 #ifndef STATE_MACHINE_H_
 # define STATE_MACHINE_H_
 
+# include <string>
+
 # include <qicore/api.h>
 
 class StateMachinePrivate;
@@ -19,6 +21,9 @@ class QICORE_API StateMachine
   public:
     StateMachine();
     ~StateMachine();
+
+    void setName(std::string name);
+    std::string getName();
 
     bool addState(State* state);
     bool removeState(State* state);

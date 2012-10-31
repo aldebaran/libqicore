@@ -28,6 +28,7 @@ class TransitionPrivate
     State* getToState();
 
   private:
+    std::string   _name;
     bool          _hasTimeOut;
     int           _timeOut;
     StateMachine* _machine;

@@ -33,6 +33,7 @@ class StatePrivate
     void setDiagram(Diagram* d);
 
   private:
+    std::string                     _name;
     State*                          _parent;
     Diagram*                        _diagram;
     std::list<Transition*>          _transitions;

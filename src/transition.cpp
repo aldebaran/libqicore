@@ -9,7 +9,8 @@
 #include "transition_private.h"
 
 TransitionPrivate::TransitionPrivate(Transition* parent, State* toState)
-  : _hasTimeOut (false),
+  : _name ("Unnamed-Transition"),
+    _hasTimeOut (false),
     _timeOut (0),
     _machine (0),
     _toState (toState),
@@ -98,4 +99,14 @@ void Transition::setTimeOut(int n)
 {
   _p->_timeOut = n;
   _p->_hasTimeOut = true;
+}
+
+void Transition::setName(std::string name)
+{
+  _p->_name = name;
+}
+
+std::string Transition::getName()
+{
+  return _p->_name;
 }

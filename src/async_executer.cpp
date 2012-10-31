@@ -76,10 +76,10 @@ void asyncExecuter::executerLoop()
         _pauseRequestCondition.wait(pauseLock);
     }
 
+    boost::this_thread::sleep(boost::posix_time::milliseconds(_interval));
+
     if (!update())
       break;
-
-    boost::this_thread::sleep(boost::posix_time::milliseconds(_interval));
   }
 
   {

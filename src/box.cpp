@@ -106,6 +106,11 @@ void Box::setName(std::string name)
   _p->_name = name;
 }
 
+std::string Box::getName()
+{
+  return _p->_name;
+}
+
 void Box::load()
 {
   _p->load();

@@ -3,11 +3,14 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
+#include <qi/log.hpp>
+
 #include <qicore/diagram.h>
 #include "diagram_private.h"
 
 DiagramPrivate::DiagramPrivate()
-  : _boxes()
+  : _name ("Unnamed-Diagram"),
+    _boxes()
 {
 }
 
@@ -30,7 +33,7 @@ void DiagramPrivate::loadAll()
   for (std::set<Box*>::iterator it = _boxes.begin();
         it != _boxes.end(); it++)
   {
-    (*it)->load();
+    loadBox(*it);
   }
 }
 
@@ -39,7 +42,7 @@ void DiagramPrivate::unloadAll()
   for (std::set<Box*>::iterator it = _boxes.begin();
         it != _boxes.end(); it++)
   {
-    (*it)->unload();
+    unloadBox(*it);
   }
 }
 
@@ -54,7 +57,7 @@ void DiagramPrivate::loadFromDiagram(Diagram* d)
     std::set<Box*>::iterator loadIt = toLoad.find(*it);
 
     if (loadIt == toLoad.end())
-      (*it)->unload();
+      unloadBox(*it);
     else
       toLoad.erase(loadIt);
   }
@@ -62,15 +65,20 @@ void DiagramPrivate::loadFromDiagram(Diagram* d)
   for (std::set<Box*>::iterator it = toLoad.begin();
         it != toLoad.end(); it++)
   {
-    (*it)->load();
+    loadBox(*it);
   }
 }
 
-void DiagramPrivate::merge(Diagram* d)
+void DiagramPrivate::loadBox(Box* b)
 {
-  std::set<Box*>& l = d->_p->_boxes;
+  qiLogDebug("qiCore.Diagram") << "Load the box named: " << b->getName() << std::endl;
+  b->load();
+}
 
-  _boxes.insert(l.begin(), l.end());
+void DiagramPrivate::unloadBox(Box *b)
+{
+  qiLogDebug("qiCore.Diagram") << "Unload the box named: " << b->getName() << std::endl;
+  b->unload();
 }
 
 /* Public */
@@ -109,7 +117,12 @@ void Diagram::loadFromDiagram(Diagram *d)
   _p->loadFromDiagram(d);
 }
 
-void Diagram::merge(Diagram *d)
+void Diagram::setName(std::string name)
 {
-  _p->merge(d);
+  _p->_name = name;
+}
+
+std::string Diagram::getName()
+{
+  return _p->_name;
 }

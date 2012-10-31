@@ -6,6 +6,8 @@
 #include <limits>
 #include <algorithm>
 
+#include <qi/log.hpp>
+
 #include <qicore/state.h>
 #include <qicore/transition.h>
 #include <qicore/diagram.h>
@@ -14,6 +16,7 @@
 
 StateMachinePrivate::StateMachinePrivate(StateMachine *s)
   : asyncExecuter(42),
+    _name ("Unnamed-StateMachine"),
     _isRunning (false),
     _isRunningMutex (),
     _isRunningCondition(),
@@ -120,8 +123,9 @@ bool StateMachinePrivate::goToState(State* state)
   { /* Locked Section */
     boost::recursive_mutex::scoped_lock currentStateLock(_currentStateMutex);
 
-    /* Stop the timeOut timer */
-    stopExecuter();
+    /* Stop the timeOut timer if needed */
+    if (_timedTransition != 0)
+      stopExecuter();
 
     if (_currentState)
     {
@@ -148,10 +152,12 @@ bool StateMachinePrivate::goToState(State* state)
 
 bool StateMachinePrivate::update()
 {
-  stopExecuter();
-  _timedTransition->trigger();
+  Transition* tr = _timedTransition;
+  _timedTransition = 0;
+  qiLogDebug("qiCore.StateMachine") << "Triggering the timed transition" << std::endl;
+  tr->trigger();
 
-  return true;
+  return false;
 }
 
 int StateMachinePrivate::loadTransitions()
@@ -168,9 +174,15 @@ int StateMachinePrivate::loadTransitions()
     if ((*it)->hasTimeOut())
     {
       if (timeOut == -1)
+      {
         timeOut = (*it)->getTimeOut();
-      else
-        timeOut = std::min(timeOut, (*it)->getTimeOut());
+        _timedTransition = *it;
+      }
+      else if ((*it)->getTimeOut() < timeOut)
+      {
+        timeOut = (*it)->getTimeOut();
+        _timedTransition = *it;
+      }
     }
   }
 
@@ -199,6 +211,7 @@ void StateMachinePrivate::loadDiagram(State* newState)
 void StateMachinePrivate::setupTimeOut(unsigned int time)
 {
   /* must be in ms */
+  qiLogDebug("qiCore.StateMachine") << "Timed transition in : " << time << std::endl;
   setInterval(time);
   playExecuter();
 }
@@ -307,4 +320,14 @@ bool StateMachine::executeTransition(Transition *tr)
 void StateMachine::waitUntilStop()
 {
   _p->waitUntilStop();
+}
+
+void StateMachine::setName(std::string name)
+{
+  _p->_name = name;
+}
+
+std::string StateMachine::getName()
+{
+  return _p->_name;
 }

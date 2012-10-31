@@ -23,6 +23,9 @@ class QICORE_API State
     State();
     ~State();
 
+    void setName(std::string name);
+    std::string getName();
+
     void onEnter();
     void onExit();
     void addTransition(Transition* tr);

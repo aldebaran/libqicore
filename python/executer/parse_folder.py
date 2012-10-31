@@ -17,7 +17,7 @@ class ConnectionType:
 
 def safeOpen(filename):
   try:
-    f = open(filename)
+    f = open(filename, encoding='utf-8', mode='r')
     return f
   except IOError as e:
     return None
@@ -109,9 +109,9 @@ class behaviorParser:
     self._instanciationsStr = self._instanciationsStr + timelineCode
 
   def parseDiagram(self, boxName):
-    boxesName = set()
+    boxesInDiagram = set()
     if (boxName in self._declaredObjects):
-      return
+      return boxesInDiagram
 
     self._declaredObjects.add(boxName)
     diagramFile = safeOpen(self._folderName + boxName + ".xml")
@@ -124,7 +124,7 @@ class behaviorParser:
 
     for obj in root.getElementsByTagName("Object"):
       objname = obj.attributes["Name"].value
-      boxesName.add(objname)
+      boxesInDiagram.add(objname)
 
     for link in root.getElementsByTagName("Link"):
       inputObject = link.attributes["InputObject"].value
@@ -146,7 +146,7 @@ class behaviorParser:
                                 + os.linesep)
 
     diagramFile.close()
-    return boxesName;
+    return boxesInDiagram
 
   def parseStateMachine(self, boxName, parentBoxName):
     if (boxName in self._declaredObjects):
@@ -175,11 +175,16 @@ class behaviorParser:
             self._instanciationsStr += (boxName + "_" + statename + "_diagram.addBox(" + box + ")" + os.linesep)
       self._instanciationsStr += (boxName + "_" + statename + ".setDiagram("
                                   + boxName + "_" + statename + "_diagram" ")" + os.linesep)
-      self._instanciationsStr += (boxName + ".addState("
-                                  + boxName + "_" + statename + "" ")" + os.linesep)
+      self._instanciationsStr += (boxName + ".addState(" + boxName + "_" + statename + ")" + os.linesep)
+      self._instanciationsStr += (boxName + "_" + statename +  ".setName(\"" + boxName + "_" + statename + "\")" + os.linesep)
 
     for tr in root.getElementsByTagName('Transition'):
-      print(tr.toxml())
+      fromState = "_" + tr.attributes["From"].value
+      toState = "_" + tr.attributes["To"].value
+      timeOut = tr.attributes["TimeOut"].value
+      self._instanciationsStr += (boxName + fromState + "__to__" + boxName + toState + " = qicore.Transition(" + boxName + toState + ")" + os.linesep
+                                  + boxName + fromState + "__to__" + boxName + toState + ".setTimeOut(" + timeOut + ")" + os.linesep
+                                  + boxName + fromState + ".addTransition(" + boxName + fromState + "__to__" + boxName + toState + ")" + os.linesep)
 
     for fstate in root.getElementsByTagName('FinalState'):
       self._instanciationsStr += (boxName + ".setFinalState("
@@ -189,7 +194,7 @@ class behaviorParser:
     self._instanciationsStr += (boxName + ".setInitialState("
                               + boxName + "_" + root.getElementsByTagName('InitialState')[0].attributes["Name"].value
                               + ")" + os.linesep + os.linesep)
-
+    self._instanciationsStr += (boxName + ".setName(\"" + boxName + "\")" + os.linesep)
     self._instanciationsStr += (parentBoxName + ".setStateMachine(" + boxName + ")" + os.linesep)
 
     stateMachineFile.close()

@@ -20,6 +20,8 @@ class Transition;
 
 class StateMachinePrivate : public asyncExecuter
 {
+  friend class StateMachine;
+
   public:
     StateMachinePrivate(StateMachine* s);
     ~StateMachinePrivate();
@@ -51,6 +53,7 @@ class StateMachinePrivate : public asyncExecuter
     void loadDiagram(State* newState);
     void setupTimeOut(unsigned int time);
 
+    std::string                     _name;
     bool                            _isRunning;
     boost::mutex                    _isRunningMutex;
     boost::condition_variable       _isRunningCondition;

@@ -24,6 +24,7 @@ class QICORE_API Box
 
     void setBroker(boost::shared_ptr<AL::ALBroker> broker);
     void setName(std::string name);
+    std::string getName();
 
     void load();
     void unload();
