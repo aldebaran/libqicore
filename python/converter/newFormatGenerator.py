@@ -127,17 +127,25 @@ def build_objects_list(state):
     result = result + obj.name + ";"
   return result
 
-def write_state_machine(f, stateList):
+def computeTimeOut(state, fps):
+  frames = state.end - state.begin
+  fpms = int(fps) / 1000
+  return int(frames / fpms)
+
+def write_state_machine(f, stateList, fps):
   f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
   f.write("<StateMachine>" + os.linesep)
 
   l = len(stateList)
+
+  timeoutTable = []
 
   for i in range(l):
     f.write("\t<State Name=\"{}\" Objects=\"{}\" />{}"
             .format("state_" + str(i),
                     build_objects_list(stateList[i]),
                     os.linesep))
+    timeoutTable.append(computeTimeOut(stateList[i], fps))
   f.write("\t<InitialState Name=\"{}\" />{}"
             .format("state_0",
                     os.linesep))
@@ -146,9 +154,10 @@ def write_state_machine(f, stateList):
                     os.linesep))
 
   for i in range(l - 1):
-    f.write("\t<Transition From=\"{}\" To=\"{}\" />{}"
+    f.write("\t<Transition From=\"{}\" To=\"{}\" TimeOut=\"{}\" />{}"
             .format("state_" + str(i),
                     "state_" + str(i + 1),
+                    timeoutTable[i],
                     os.linesep))
   f.write("</StateMachine>" + os.linesep)
 
@@ -278,7 +287,9 @@ class newFormatGenerator:
 
     name = self.constructName() + "state_machine"
     f = open(name + ".xml", encoding='utf-8', mode='w')
-    write_state_machine(f, stateList)
+    if (node.fps == None):
+      node.fps = 25
+    write_state_machine(f, stateList, node.fps)
     f.close()
 
   def convertToStateMachine(self, intervalList, endFrame):
