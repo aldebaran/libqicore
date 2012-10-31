@@ -125,11 +125,11 @@ class patcher:
                            + "if(not self._safeCallOfUserMethod(\"onInput_" + inpName + "\", p)):" + os.linesep
                            + indent * " " * 3 + "self.releaseResource()" + os.linesep
                            + indent * " " * 3 + "return" + os.linesep
-                           + indent * " " * 2 + "self.stimulateIO(\"" + inpName + "\", p)" + os.linesep
                            + indent * " " * 2 + "if (self.hasTimeline()):" + os.linesep
                            + indent * " " * 3 + " self.getTimeline().play()" + os.linesep
                            + indent * " " * 2 + "if (self.hasStateMachine()):" + os.linesep
                            + indent * " " * 3 + " self.getStateMachine().run()" + os.linesep
+                           + indent * " " * 2 + "self.stimulateIO(\"" + inpName + "\", p)" + os.linesep
                            + os.linesep * 2)
 
   def addInputMethod_onStop(self, inpName):
@@ -152,11 +152,11 @@ class patcher:
   def addOutputMethod_Stopped(self, outName):
     indent = self._indentForMethod
     self._addedMethods += (indent * " " + "def " + outName + "(self, p = None):" + os.linesep
-                           + indent * " " * 2 + "self.stimulateIO(\"" + outName + "\", p)" + os.linesep
                            + indent * " " * 2 + "if (self.hasTimeline()):" + os.linesep
                            + indent * " " * 3 + " self.getTimeline().stop()" + os.linesep
                            + indent * " " * 2 + "if (self.hasStateMachine()):" + os.linesep
-                           + indent * " " * 3 + " self.getStateMachine().stop()" + os.linesep * 2)
+                           + indent * " " * 3 + " self.getStateMachine().stop()" + os.linesep
+                           + indent * " " * 2 + "self.stimulateIO(\"" + outName + "\", p)" + os.linesep * 2)
 
   def addOutputMethod(self, outName, outType):
     if (outType in self._outputMethodMap):

@@ -40,6 +40,27 @@ class behaviorParser:
                                 + box + "__onLoad\"" + ", True)"
                                 + os.linesep)
 
+  def buildRunStr(self):
+    self._runStr += ("class waiter_class(qicoreLegacy.BehaviorLegacy):" + os.linesep
+                    + "  def __init__(self):" + os.linesep
+                    + "    qicoreLegacy.BehaviorLegacy.__init__(self, \"waiter\", True)" + os.linesep
+                    + "    self.boxName = \"waiter\"" + os.linesep
+                    + "    self.setName(\"waiter\")" + os.linesep
+                    + "    self.setBroker(broker.getALBroker())" + os.linesep
+                    + "    self.BIND_PYTHON(self.getName(), \"onInput_onDone__\", 1)" + os.linesep
+                    + "    self.addInput(\"onDone\")" + os.linesep
+                    + "    self.isComplete = False" + os.linesep
+                    + "  def onInput_onDone__(self, p):" + os.linesep
+                    + "    self.isComplete = True" + os.linesep
+                    + "  def waitForCompletion(self):" + os.linesep
+                    + "    while (self.isComplete == False):" + os.linesep
+                    + "      time.sleep(0.2)" + os.linesep * 2
+                    + "waiter = waiter_class()" + os.linesep
+                    + "waiter.connectInput(\"onDone\", \"root__onStopped\", True)" + os.linesep
+                    + "root.__onLoad__()" + os.linesep
+                    + "root.onInput_onStart__(None)" + os.linesep
+                    + "waiter.waitForCompletion()" + os.linesep)
+
   def generatePython(self):
     # TODO: Change IP here to a generic value
     self._instanciationsStr = (self._instanciationsStr
@@ -48,10 +69,7 @@ class behaviorParser:
                             + "naoqi.ALProxy.initProxies()"
                             + os.linesep + os.linesep)
     self.parseBox("root")
-    self._runStr += ("root.__onLoad__()" + os.linesep
-                      + "root.onInput_onStart__(None)" + os.linesep
-                      + "if (root.hasTimeline()):" + os.linesep
-                      + "  root.getTimeline().waitForTimelineCompletion()")
+    self.buildRunStr()
     self._outputFile.write("#!/usr/bin/env python" + os.linesep
                             + "# -*- coding: utf-8 -*-" + os.linesep
                             + os.linesep + os.linesep
