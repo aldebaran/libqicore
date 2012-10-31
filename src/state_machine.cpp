@@ -14,6 +14,9 @@
 
 StateMachinePrivate::StateMachinePrivate(StateMachine *s)
   : asyncExecuter(42),
+    _isRunning (false),
+    _isRunningMutex (),
+    _isRunningCondition(),
     _initialState (0),
     _currentState (0),
     _timedTransition (0),
@@ -202,11 +205,23 @@ void StateMachinePrivate::setupTimeOut(unsigned int time)
 
 void StateMachinePrivate::run()
 {
+  { /* Locked Section */
+    boost::mutex::scoped_lock lock(_isRunningMutex);
+
+    _isRunning = true;
+  } /* End locked Section */
+
   goToState(_initialState);
 }
 
 void StateMachinePrivate::stop()
 {
+  { /* Locked Section */
+    boost::mutex::scoped_lock lock(_isRunningMutex);
+
+    _isRunning = false;
+  } /* End locked Section */
+
   { /* Locked Section */
     boost::recursive_mutex::scoped_lock currentStateLock(_currentStateMutex);
 
@@ -215,8 +230,17 @@ void StateMachinePrivate::stop()
     _currentState->getDiagram()->unloadAll();
     _currentState = 0;
   } /* End locked Section */
+
+  _isRunningCondition.notify_all();
 }
 
+void StateMachinePrivate::waitUntilStop()
+{
+  boost::mutex::scoped_lock lock(_isRunningMutex);
+
+  if (_isRunning)
+    _isRunningCondition.wait(lock);
+}
 
 /* -- Public -- */
 
@@ -278,4 +302,9 @@ bool StateMachine::goToState(State *state)
 bool StateMachine::executeTransition(Transition *tr)
 {
   return _p->executeTransition(tr);
+}
+
+void StateMachine::waitUntilStop()
+{
+  _p->waitUntilStop();
 }

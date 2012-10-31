@@ -39,6 +39,7 @@ class StateMachinePrivate : public asyncExecuter
     bool executeTransition(Transition* tr);
     bool goToState(State* state);
 
+    void waitUntilStop();
 
   protected:
     /* CallBack function for timed transitions */
@@ -50,6 +51,9 @@ class StateMachinePrivate : public asyncExecuter
     void loadDiagram(State* newState);
     void setupTimeOut(unsigned int time);
 
+    bool                            _isRunning;
+    boost::mutex                    _isRunningMutex;
+    boost::condition_variable       _isRunningCondition;
     std::set<State*>                _states;
     std::set<State*>                _finalStates;
     State*                          _initialState;
