@@ -5,6 +5,7 @@
 ## found in the COPYING file.
 
 import os
+import cgi
 
 import node
 import box
@@ -19,7 +20,7 @@ def write_box_meta(f, node):
             .format(node.id_,
                     node.name + ".py",
                     node.robot,
-                    node.tooltip,
+                    cgi.escape(node.tooltip, quote=True),
                     node.bitmap.replace(" ", "").replace(os.linesep, ""),
                     node.bitmap_expanded,
                     node.plugin,
@@ -33,7 +34,7 @@ def write_box_meta(f, node):
                 input.type_size,
                 input.nature,
                 input.inner,
-                input.tooltip,
+                cgi.escape(input.tooltip, quote=True),
                 input.id,
                 os.linesep))
   for output in node.outputs:
@@ -43,7 +44,7 @@ def write_box_meta(f, node):
                 output.type_size,
                 output.nature,
                 output.inner,
-                output.tooltip,
+                cgi.escape(output.tooltip, quote=True),
                 output.id,
                 os.linesep))
   for parameter in node.parameters:
@@ -55,7 +56,7 @@ def write_box_meta(f, node):
                 parameter.default_value,
                 parameter.min,
                 parameter.max,
-                parameter.tooltip,
+                cgi.escape(parameter.tooltip, quote=True),
                 parameter.id,
                 parameter.custom_choice,
                 os.linesep))
