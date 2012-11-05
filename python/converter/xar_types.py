@@ -67,6 +67,8 @@ class actuatorCurve():
 class link():
   def __init__(self, inputowner, indexofinput, outputowner, indexofoutput):
     self.inputowner = inputowner
+    self.inputName = ""
     self.indexofinput = indexofinput
     self.outputowner = outputowner
+    self.outputName = ""
     self.indexofoutput = indexofoutput

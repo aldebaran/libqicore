@@ -60,8 +60,6 @@ def write_box_meta(f, node):
                 parameter.id,
                 parameter.custom_choice,
                 os.linesep))
-  #if (node.child != None):
-  #  f.write("<Child name=\"{}\" />{}".format("childName", os.linesep))
 
   for resource in node.resources:
     f.write("\t<Resource name=\"{}\" type=\"{}\" timeout=\"{}\" />{}"
@@ -71,26 +69,19 @@ def write_box_meta(f, node):
                     os.linesep))
   f.write("</Box>" + os.linesep)
 
-def find_port_name(box, portId):
-  for port in box.inputs + box.outputs + box.parameters:
-    if (port.id == portId):
-      return port.name
-  return ""
-
-def write_diagram_meta(f, node, idMap, boxes):
+def write_diagram_meta(f, node):
   f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
   f.write("<Diagram scale=\"{}\" >{}".format(node.scale, os.linesep))
 
-  for num, name in idMap.items():
-    if (num != "0"):
-      f.write("\t<Object Name=\"{}\" />{}".format(name, os.linesep))
+  for box in node.boxes:
+    f.write("\t<Object Name=\"{}\" />{}".format(box.name, os.linesep))
 
   for link in node.links:
     f.write("\t<Link InputObject=\"{}\" InputName=\"{}\" OutputObject=\"{}\" OutputName=\"{}\" />{}"
-        .format(idMap[link.inputowner],
-                find_port_name(boxes[idMap[link.inputowner]], link.indexofinput),
-                idMap[link.outputowner],
-                find_port_name(boxes[idMap[link.outputowner]], link.indexofoutput),
+        .format(link.inputowner,
+                link.inputName,
+                link.outputowner,
+                link.outputName,
                 os.linesep))
   f.write("</Diagram>" + os.linesep)
 
@@ -161,7 +152,6 @@ def write_state_machine(f, stateList, fps):
                     os.linesep))
   f.write("</StateMachine>" + os.linesep)
 
-
 class interval:
   def __init__(self, a, b, obj):
     self.begin = int(a)
@@ -176,22 +166,8 @@ class state:
     self.objects = []
 
 class newFormatGenerator:
-  def __init__(self):
-    self._namesStack = []
-    self._boxNamesStack = []
-    self._boxes = {}
-
-  def constructName(self):
-    result = ""
-    for name in self._namesStack:
-      result = result + name + "_"
-    return result
-
-  def build_idMap(self, node):
-    idMap = {}
-    for box in node.boxes:
-      idMap[box.id_] = self.constructName() + box.name
-    return idMap
+  def __init__(self, boxes):
+    self._boxes = boxes
 
   def visit(self, node):
     if (node == None):
@@ -205,44 +181,28 @@ class newFormatGenerator:
       self.convertTimelineLayers(node)
 
     if (len(node.actuatorList) != 0):
-      fname = self.constructName() + "timeline"
-      f = open(fname + ".xml", encoding='utf-8', mode='w')
+      f = open(node.name + ".xml", encoding='utf-8', mode='w')
       write_actuatorList(f, node)
       f.close()
 
   def visit_Box(self, node):
-    node.name = node.name.replace(" ", "_")
-    fullName = self.constructName() + node.name
-    self._boxes[fullName] = node
-    fpy = open(fullName + ".py", encoding='utf-8', mode='w')
-    #fpy.write('#!/usr/bin/env python')
+    fpy = open(node.name + ".py", encoding='utf-8', mode='w')
     script = node.script.content.lstrip()
-    script = script.replace("MyClass", fullName + "_class", 1)
+    script = script.replace("MyClass", node.name + "_class", 1)
     script = script.replace("(GeneratedClass):", ":", 1)
     fpy.write(script)
     fpy.write(os.linesep)
     fpy.close()
-    fxml = open(fullName + '.xml', encoding='utf-8', mode='w')
+    fxml = open(node.name + '.xml', encoding='utf-8', mode='w')
     write_box_meta(fxml, node)
     fxml.close()
-    self._boxNamesStack.append(self.constructName() + node.name)
-    self._namesStack.append(node.name)
-
     self.visit(node.child)
-    self._namesStack.pop()
-    self._boxNamesStack.pop()
 
   def visit_Diagram(self, node):
-    name = self.constructName() + "diagram"
-    # Diagram has no name in legacy format so we fill it
-    node.name = name
     for child in node.boxes:
       self.visit(child)
-    idMap = self.build_idMap(node)
-    if (len(self._boxNamesStack) > 0):
-      idMap[str(0)] = self._boxNamesStack[len(self._boxNamesStack) - 1]
-    f = open(name + ".xml", encoding='utf-8', mode='w')
-    write_diagram_meta(f, node, idMap, self._boxes)
+    f = open(node.name + ".xml", encoding='utf-8', mode='w')
+    write_diagram_meta(f, node)
     f.close()
 
   def convertTimelineLayers(self, node):
@@ -250,7 +210,6 @@ class newFormatGenerator:
     intervalList = []
     for layer in node.behaviorLayers:
       print("Layer : ", layer.name)
-      self._namesStack.append(layer.name)
 
       for i in range(len(layer.behaviorKeyFrames)):
         print("-- KeyFrame: ", layer.behaviorKeyFrames[i].name, "start at: ",
@@ -263,11 +222,8 @@ class newFormatGenerator:
           lastFrame = max(lastFrame, int(keyframe.index))
           intervalList.append(interval(keyframe.index, -1, keyframe.child))
 
-        self._namesStack.append(keyframe.name)
         self.visit(keyframe.child)
-        self._namesStack.pop()
 
-      self._namesStack.pop()
 
     intervalList = sorted(intervalList, key=lambda inter: inter.begin)
 
@@ -277,7 +233,7 @@ class newFormatGenerator:
     lastFrame = lastFrame + 1
     for inter in intervalList:
       if (inter.end == -1):
-        inter.end = lastFrame;
+        inter.end = lastFrame
 
     print("----------------- Intervals --------------------")
     for inter in intervalList:
@@ -285,8 +241,7 @@ class newFormatGenerator:
 
     stateList = self.convertToStateMachine(intervalList, lastFrame)
 
-    name = self.constructName() + "state_machine"
-    f = open(name + ".xml", encoding='utf-8', mode='w')
+    f = open(node.name + ".xml", encoding='utf-8', mode='w')
     if (node.fps == None):
       node.fps = 25
     write_state_machine(f, stateList, node.fps)
@@ -294,7 +249,7 @@ class newFormatGenerator:
 
   def convertToStateMachine(self, intervalList, endFrame):
     if (len(intervalList) == 0):
-      return [];
+      return []
 
     stateList = []
     currentInterList = []

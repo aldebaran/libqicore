@@ -11,6 +11,7 @@ class timeline(node.node):
   def __init__(self, attrs):
     node.node.__init__(self, "Timeline")
 
+    self.name = ""
     self.fps = attrs.getValue("fps")
     self.resources_acquisition = attrs.getValue("resources_acquisition")
     self.size = attrs.getValue("size")

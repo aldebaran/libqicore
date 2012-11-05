@@ -9,6 +9,7 @@ import os
 
 import sax_parser
 import newFormatGenerator
+import nameMapBuilder
 
 def parse(file):
   return sax_parser.parse(file)
@@ -18,7 +19,13 @@ def main():
     print("Incorrect number of arguments")
     return
   root = parse(sys.argv[1])
-  nfg = newFormatGenerator.newFormatGenerator()
+  nmb = nameMapBuilder.nameMapBuilder()
+  nmb.visit(root)
+
+  nameMap = nmb.getNameMap()
+  nfg = newFormatGenerator.newFormatGenerator(nameMap)
+  for key,value in nameMap.items():
+    print("Key is : ", key,  " value is: ", value)
   os.mkdir("objects")
   os.chdir("objects")
   nfg.visit(root)

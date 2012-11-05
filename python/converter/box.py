@@ -39,6 +39,8 @@ class box(node.node):
                           'Diagram' : box.attachChild,
                           'Timeline' : box.attachChild }
 
+    self.parent = None
+
   def attachChild(self, child):
     self.child = child
 
