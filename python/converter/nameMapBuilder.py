@@ -33,7 +33,7 @@ class nameMapBuilder:
     return method(node)
 
   def visit_Timeline(self, node):
-    node.name = self.constructName() + "timeline"
+    node.name = self.constructName()
     for layer in node.behaviorLayers:
       self.visit(layer)
 
