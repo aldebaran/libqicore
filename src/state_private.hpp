@@ -22,10 +22,7 @@ class StatePrivate
 
   public:
     StatePrivate(State* s);
-    virtual ~StatePrivate();
-
-    virtual void onEnter();
-    virtual void onExit();
+    ~StatePrivate();
 
     void addTransition(Transition* tr);
     void removeTransition(Transition* tr);

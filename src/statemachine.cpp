@@ -128,11 +128,7 @@ bool StateMachinePrivate::goToState(State* state)
       stopExecuter();
 
     if (_currentState)
-    {
-      _currentState->onExit();
-      /* Unload all transitions */
       unloadTransitions();
-    }
 
     /* ReLoad Diagram */
     loadDiagram(state);
@@ -142,8 +138,6 @@ bool StateMachinePrivate::goToState(State* state)
     int timeOut = loadTransitions();
     if (timeOut != -1)
       setupTimeOut(timeOut);
-
-    _currentState->onEnter();
 
   } /* End locked Section */
 
@@ -238,7 +232,6 @@ void StateMachinePrivate::stop()
   { /* Locked Section */
     boost::recursive_mutex::scoped_lock currentStateLock(_currentStateMutex);
 
-    _currentState->onExit();
     unloadTransitions();
     _currentState->getDiagram()->unloadAllBoxes();
     _currentState = 0;

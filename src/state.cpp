@@ -37,14 +37,6 @@ void StatePrivate::setDiagram(Diagram *d)
   _diagram = d;
 }
 
-void StatePrivate::onEnter()
-{
-}
-
-void StatePrivate::onExit()
-{
-}
-
 /* -- Public -- */
 
 State::State()
@@ -55,16 +47,6 @@ State::State()
 State::~State()
 {
   delete _p;
-}
-
-void State::onEnter()
-{
-  _p->onEnter();
-}
-
-void State::onExit()
-{
-  _p->onExit();
 }
 
 void State::addTransition(Transition *tr)
