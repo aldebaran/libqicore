@@ -205,7 +205,7 @@ void StateMachinePrivate::loadDiagram(State* newState)
   if (_currentState)
     newState->getDiagram()->loadFromDiagram(_currentState->getDiagram());
   else
-    newState->getDiagram()->loadAll();
+    newState->getDiagram()->loadAllBoxes();
 }
 
 void StateMachinePrivate::setupTimeOut(unsigned int time)
@@ -240,7 +240,7 @@ void StateMachinePrivate::stop()
 
     _currentState->onExit();
     unloadTransitions();
-    _currentState->getDiagram()->unloadAll();
+    _currentState->getDiagram()->unloadAllBoxes();
     _currentState = 0;
   } /* End locked Section */
 

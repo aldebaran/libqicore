@@ -27,8 +27,8 @@ class QICORE_API Diagram
     void addBox(Box* b);
     void removeBox(Box* b);
 
-    void loadAll();
-    void unloadAll();
+    void loadAllBoxes();
+    void unloadAllBoxes();
 
     void loadFromDiagram(Diagram* d);
 

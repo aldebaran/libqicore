@@ -105,12 +105,12 @@ void Diagram::removeBox(Box *b)
   _p->removeBox(b);
 }
 
-void Diagram::loadAll()
+void Diagram::loadAllBoxes()
 {
   _p->loadAll();
 }
 
-void Diagram::unloadAll()
+void Diagram::unloadAllBoxes()
 {
   _p->unloadAll();
 }
