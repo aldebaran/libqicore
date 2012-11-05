@@ -108,10 +108,7 @@ class behaviorParser:
 
   def parseDiagram(self, boxName):
     boxesInDiagram = set()
-    if (boxName in self._declaredObjects):
-      return boxesInDiagram
 
-    self._declaredObjects.add(boxName)
     diagramFile = safeOpen(self._folderName + boxName + ".xml")
     if (diagramFile == None):
       print("No " + boxName + " in folder, abort...")
@@ -123,6 +120,10 @@ class behaviorParser:
     for obj in root.getElementsByTagName("Object"):
       objname = obj.attributes["Name"].value
       boxesInDiagram.add(objname)
+
+    if (boxName in self._declaredObjects):
+      return boxesInDiagram
+    self._declaredObjects.add(boxName)
 
     for link in root.getElementsByTagName("Link"):
       inputObject = link.attributes["InputObject"].value

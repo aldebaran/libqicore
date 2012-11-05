@@ -59,7 +59,10 @@ void DiagramPrivate::loadFromDiagram(Diagram* d)
     if (loadIt == toLoad.end())
       unloadBox(*it);
     else
+    {
+      qiLogDebug("qiCore.Diagram") << "Box is already loaded: " << (*it)->getName() << std::endl;
       toLoad.erase(loadIt);
+    }
   }
 
   for (std::set<Box*>::iterator it = toLoad.begin();
