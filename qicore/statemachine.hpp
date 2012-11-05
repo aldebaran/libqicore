@@ -42,6 +42,7 @@ class QICORE_API StateMachine
 
     bool goToState(State* state);
     bool executeTransition(Transition* tr);
+    State* getCurrentState();
 
     void waitUntilStop();
 

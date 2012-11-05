@@ -200,9 +200,15 @@ void StateMachinePrivate::unloadTransitions()
 void StateMachinePrivate::loadDiagram(State* newState)
 {
   if (_currentState)
-    newState->getDiagram()->loadFromDiagram(_currentState->getDiagram());
+  {
+    if (newState->getDiagram())
+      newState->getDiagram()->loadFromDiagram(_currentState->getDiagram());
+  }
   else
-    newState->getDiagram()->loadAllBoxes();
+  {
+    if (newState->getDiagram())
+      newState->getDiagram()->loadAllBoxes();
+  }
 }
 
 void StateMachinePrivate::setupTimeOut(unsigned int time)
@@ -236,7 +242,8 @@ void StateMachinePrivate::stop()
     boost::recursive_mutex::scoped_lock currentStateLock(_currentStateMutex);
 
     unloadTransitions();
-    _currentState->getDiagram()->unloadAllBoxes();
+    if (_currentState && _currentState->getDiagram())
+      _currentState->getDiagram()->unloadAllBoxes();
     _currentState = 0;
   } /* End locked Section */
 
@@ -326,6 +333,11 @@ void StateMachine::setName(std::string name)
 std::string StateMachine::getName()
 {
   return _p->_name;
+}
+
+State* StateMachine::getCurrentState()
+{
+  return _p->_currentState;
 }
 
 };

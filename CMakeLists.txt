@@ -40,11 +40,5 @@ qi_install(tests/test_statemachine.cpp DESTINATION ".")
 
 qi_stage_lib(qicore)
 
-qi_create_gtest(test_timeline SRC tests/test_timeline.cpp
-                DEPENDS QICORE ALCOMMON ALLAUNCHER
-                ARGUMENTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/projects/timeline/behavior.xar")
-
-#qi_create_gtest(test_legacy_state_machine test/test_legacy_statemachine.cpp DEPENDS qicore)
-#qi_create_gtest(test_state_machine test/test_statemachine.cpp DEPENDS qicore)
-
 add_subdirectory("python")
+add_subdirectory("tests")

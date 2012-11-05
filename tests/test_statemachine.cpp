@@ -7,75 +7,34 @@
 
 #include <qicore/statemachine.hpp>
 #include <qicore/state.hpp>
-#include <qicore/abstract_transition.hpp>
+#include <qicore/transition.hpp>
 
-class StateTest : public State
+TEST(QiStateMachine, CreateQiStateMachine)
 {
-  public:
-    StateTest()
-      : State(),
-        enterStatePass (false),
-        exitStatePass (false)
-    {
-    }
-
-    virtual void onEnter()
-    {
-      enterStatePass = true;
-    }
-
-    virtual void onExit()
-    {
-      exitStatePass = true;
-    }
-
-    bool enterStatePass;
-    bool exitStatePass;
-};
-
-class TransitionTest : public AbstractTransition
-{
-  public:
-    TransitionTest(AbstractState* toState)
-      : AbstractTransition (toState)
-    {
-    }
-
-    virtual ~TransitionTest() {};
-
-    virtual void triggerTransition()
-    {
-      executeTransition();
-    }
-};
-
-TEST(LegacyStateMachine, CreateLegacyStateMachine)
-{
-  StateMachine sm;
+  qi::StateMachine sm;
 }
 
-TEST(LegacyStateMachine, OneState)
+TEST(QiStateMachine, OneState)
 {
-  StateMachine sm;
-  StateTest* s = new StateTest;
+  qi::StateMachine sm;
+  qi::State* s = new qi::State();
 
   sm.addState(s);
   sm.setFinalState(s);
   sm.setInitialState(s);
 
-  sm.play();
+  sm.run();
   EXPECT_TRUE(sm.isOnFinalState());
 
-  EXPECT_TRUE(s->enterStatePass);
-  EXPECT_TRUE(s->exitStatePass);
+  sm.stop();
 }
 
-TEST(LegacyStateMachine, TwoStates)
+TEST(QiStateMachine, TwoStates)
 {
-  StateMachine sm;
-  StateTest* s1 = new StateTest;
-  StateTest* s2 = new StateTest;
-  TransitionTest* toS2 = new TransitionTest(s2);
+  qi::StateMachine sm;
+  qi::State* s1 = new qi::State();
+  qi::State* s2 = new qi::State();
+  qi::Transition* toS2 = new qi::Transition(s2);
 
   s1->addTransition(toS2);
   sm.addState(s1);
@@ -84,61 +43,54 @@ TEST(LegacyStateMachine, TwoStates)
   sm.setInitialState(s1);
   sm.setFinalState(s2);
 
-  sm.play();
-  toS2->triggerTransition();
+  sm.run();
+  toS2->trigger();
 
   EXPECT_TRUE(sm.isOnFinalState());
+  EXPECT_EQ(sm.getCurrentState(), s2);
 
-  EXPECT_TRUE(s1->enterStatePass);
-  EXPECT_TRUE(s1->exitStatePass);
-
-  EXPECT_TRUE(s2->enterStatePass);
-  EXPECT_TRUE(s2->exitStatePass);
+  sm.stop();
 }
 
-TEST(LegacyStateMachine, TwentyLinearStates)
+TEST(QiStateMachine, TwentyLinearStates)
 {
-  StateMachine sm;
-  StateTest* s[20];
-  TransitionTest* toSN[19];
+  qi::StateMachine sm;
+  qi::State* s[20];
+  qi::Transition* toSN[19];
 
   for (unsigned int i = 0; i < 20; i++)
   {
-    s[i] = new StateTest;
+    s[i] = new qi::State();
     if (i != 0)
-      toSN[i - 1] = new TransitionTest(s[i]);
+      toSN[i - 1] = new qi::Transition(s[i]);
     sm.addState(s[i]);
   }
 
   for (unsigned int i = 0; i < 19; i++)
-  {
     s[i]->addTransition(toSN[i]);
-  }
 
   sm.setInitialState(s[0]);
   sm.setFinalState(s[19]);
 
-  sm.play();
+  sm.run();
 
   for (unsigned int i = 0; i < 19; i++)
-  {
-    toSN[i]->triggerTransition();
-  }
+    toSN[i]->trigger();
 
   EXPECT_TRUE(sm.isOnFinalState());
+  EXPECT_EQ(sm.getCurrentState(), s[19]);
 
-  EXPECT_TRUE(s[19]->enterStatePass);
-  EXPECT_TRUE(s[19]->exitStatePass);
+  sm.stop();
 }
 
-TEST(LegacyStateMachine, FinalInTheMiddle)
+TEST(QiStateMachine, FinalInTheMiddle)
 {
-  StateMachine sm;
-  StateTest* s1 = new StateTest;
-  StateTest* s2 = new StateTest;
-  StateTest* s3 = new StateTest;
-  TransitionTest* toS2 = new TransitionTest(s2);
-  TransitionTest* toS3 = new TransitionTest(s3);
+  qi::StateMachine sm;
+  qi::State* s1 = new qi::State();
+  qi::State* s2 = new qi::State();
+  qi::State* s3 = new qi::State();
+  qi::Transition* toS2 = new qi::Transition(s2);
+  qi::Transition* toS3 = new qi::Transition(s3);
 
   s1->addTransition(toS2);
   s2->addTransition(toS3);
@@ -150,22 +102,23 @@ TEST(LegacyStateMachine, FinalInTheMiddle)
   sm.setInitialState(s1);
   sm.setFinalState(s2);
 
-  sm.play();
-  toS2->triggerTransition();
+  sm.run();
+  toS2->trigger();
 
   EXPECT_TRUE(sm.isOnFinalState());
-  EXPECT_FALSE(s3->enterStatePass);
-  EXPECT_FALSE(s3->exitStatePass);
+  EXPECT_EQ(sm.getCurrentState(), s2);
+
+  sm.stop();
 }
 
-TEST(LegacyStateMachine, RemoveFinal)
+TEST(QiStateMachine, RemoveFinal)
 {
-  StateMachine sm;
-  StateTest* s1 = new StateTest;
-  StateTest* s2 = new StateTest;
-  StateTest* s3 = new StateTest;
-  TransitionTest* toS2 = new TransitionTest(s2);
-  TransitionTest* toS3 = new TransitionTest(s3);
+  qi::StateMachine sm;
+  qi::State* s1 = new qi::State();
+  qi::State* s2 = new qi::State();
+  qi::State* s3 = new qi::State();
+  qi::Transition* toS2 = new qi::Transition(s2);
+  qi::Transition* toS3 = new qi::Transition(s3);
 
   s1->addTransition(toS2);
   s2->addTransition(toS3);
@@ -179,23 +132,24 @@ TEST(LegacyStateMachine, RemoveFinal)
   EXPECT_TRUE(sm.setFinalState(s3));
   EXPECT_TRUE(sm.removeFinalState(s2));
 
-  sm.play();
-  toS2->triggerTransition();
-  toS3->triggerTransition();
+  sm.run();
+  toS2->trigger();
+  toS3->trigger();
 
   EXPECT_TRUE(sm.isOnFinalState());
-  EXPECT_TRUE(s3->enterStatePass);
-  EXPECT_TRUE(s3->exitStatePass);
+  EXPECT_EQ(sm.getCurrentState(), s3);
+
+  sm.stop();
 }
 
-TEST(LegacyStateMachine, ChangeInitial)
+TEST(QiStateMachine, ChangeInitial)
 {
-  StateMachine sm;
-  StateTest* s1 = new StateTest;
-  StateTest* s2 = new StateTest;
-  StateTest* s3 = new StateTest;
-  TransitionTest* toS2 = new TransitionTest(s2);
-  TransitionTest* toS3 = new TransitionTest(s3);
+  qi::StateMachine sm;
+  qi::State* s1 = new qi::State();
+  qi::State* s2 = new qi::State();
+  qi::State* s3 = new qi::State();
+  qi::Transition* toS2 = new qi::Transition(s2);
+  qi::Transition* toS3 = new qi::Transition(s3);
 
   s1->addTransition(toS2);
   s2->addTransition(toS3);
@@ -208,20 +162,22 @@ TEST(LegacyStateMachine, ChangeInitial)
   EXPECT_TRUE(sm.setInitialState(s2));
   EXPECT_TRUE(sm.setFinalState(s3));
 
-  sm.play();
+  sm.run();
 
-  EXPECT_FALSE(s1->enterStatePass);
-  EXPECT_FALSE(s1->exitStatePass);
+  EXPECT_TRUE(sm.setFinalState(s3));
+  EXPECT_EQ(sm.getCurrentState(), s2);
+
+  sm.stop();
 }
 
-TEST(LegacyStateMachine, ChangeStatesAfterStart)
+TEST(QiStateMachine, ChangeStatesAfterStart)
 {
-  StateMachine sm;
-  StateTest* s1 = new StateTest;
-  StateTest* s2 = new StateTest;
-  StateTest* s3 = new StateTest;
-  TransitionTest* toS2 = new TransitionTest(s2);
-  TransitionTest* toS3 = new TransitionTest(s3);
+  qi::StateMachine sm;
+  qi::State* s1 = new qi::State();
+  qi::State* s2 = new qi::State();
+  qi::State* s3 = new qi::State();
+  qi::Transition* toS2 = new qi::Transition(s2);
+  qi::Transition* toS3 = new qi::Transition(s3);
 
   s1->addTransition(toS2);
   s2->addTransition(toS3);
@@ -233,9 +189,11 @@ TEST(LegacyStateMachine, ChangeStatesAfterStart)
   EXPECT_TRUE(sm.setInitialState(s1));
   EXPECT_TRUE(sm.setFinalState(s3));
 
-  sm.play();
-  toS2->triggerTransition();
-  EXPECT_TRUE(sm.setFinalState(s2));
+  sm.run();
 
+  toS2->trigger();
+  EXPECT_TRUE(sm.setFinalState(s2));
   EXPECT_TRUE(sm.isOnFinalState());
+
+  sm.stop();
 }
