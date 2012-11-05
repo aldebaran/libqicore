@@ -40,11 +40,10 @@ class ParameterType:
   LAST=5
 
 class patcher:
-  def __init__(self, boxName, code, xml):
-    self._boxName = boxName
-    self._code = code
+  def __init__(self, box):
+    self._box = box
+    self._code = box.script.content.lstrip()
     self._addedMethods = ""
-    self._xml = xml
     self._indentForInit = 4
     self._indentForMethod = 4
     self._inputMethodMap = { InputType.ONLOAD : patcher.addInputMethod_onLoad,
@@ -69,47 +68,41 @@ class patcher:
 
   def constructInitCode(self):
     indent = self._indentForInit
-    initCode = "qicoreLegacy.BehaviorLegacy.__init__(self, \"" + self._boxName + "\", True)" + os.linesep
-    initCode += indent * " " + "self.boxName = \"" + self._boxName + "\"" + os.linesep
-    initCode += indent * " " + "self.setName(\"" + self._boxName + "\")" + os.linesep
+    initCode = "qicoreLegacy.BehaviorLegacy.__init__(self, \"" + self._box.name + "\", True)" + os.linesep
+    initCode += indent * " " + "self.boxName = \"" + self._box.name + "\"" + os.linesep
+    initCode += indent * " " + "self.setName(\"" + self._box.name + "\")" + os.linesep
     initCode += indent * " " + "self.setBroker(broker.getALBroker())" + os.linesep
 
-    for inp in self._xml.getElementsByTagName('Input'):
-      inpName = inp.attributes["name"].value
-      inpNature = inp.attributes["nature"].value
-      initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onInput_" + inpName + "__\", 1)" +
+    for inp in self._box.inputs:
+      initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onInput_" + inp.name + "__\", 1)" +
           os.linesep)
-      initCode += (indent * " " + "self.addInput(\"" + inpName + "\")" + os.linesep)
-      self.addInputMethod(inpName, int(inpNature))
+      initCode += (indent * " " + "self.addInput(\"" + inp.name + "\")" + os.linesep)
+      self.addInputMethod(inp.name, int(inp.nature))
 
-    for out in self._xml.getElementsByTagName('Output'):
-      outName = out.attributes["name"].value
-      outNature = out.attributes["nature"].value
-      initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onOutput_" + outName + "__\", 1)" +
+    for out in self._box.outputs:
+      initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onOutput_" + out.name + "__\", 1)" +
           os.linesep)
       initCode +=  (indent * " "
                     + "self.addOutput(\""
                     # FIXME: True or false if bang
-                    + outName + "\", True)" + os.linesep)
-      self.addOutputMethod(outName, int(outNature))
+                    + out.name + "\", True)" + os.linesep)
+      self.addOutputMethod(out.name, int(out.nature))
 
-    for param in self._xml.getElementsByTagName('Parameter'):
-      paramName = param.attributes["name"].value
-      paramValue = param.attributes["value"].value
+    for param in self._box.parameters:
       initCode += (indent * " "
-                   + "self.addParameter(\"" + paramName
+                   + "self.addParameter(\"" + param.name
                   # FIXME: True or False random ? xD
-                   + "\", " + paramValue + ", True)"
+                   + "\", " + param.value + ", True)"
                    + os.linesep)
 
     # TODO: Use resources here
-    for res in self._xml.getElementsByTagName('Resource'):
+    for res in self._box.resources:
       pass
 
     return initCode
 
   def addInheritance(self):
-    self._code = self._code.replace(":", "(qicoreLegacy.BehaviorLegacy):", 1)
+    self._code = self._code.replace("(GeneratedClass):", "(qicoreLegacy.BehaviorLegacy):", 1)
 
   def addInputMethod_onLoad(self, inpName):
     indent = self._indentForMethod
@@ -166,13 +159,14 @@ class patcher:
       sys.exit(2)
 
   def generateClass(self):
-    self._code += ("class " + self._boxName + "_class" + ":" + os.linesep
+    self._code += ("class " + self._box.name + "_class" + "(GeneratedClass):" + os.linesep
                     + "  def __init__(self):" + os.linesep
                     + "    GeneratedClass.__init__(self)" + os.linesep + os.linesep)
 
   def patch(self):
     if (self._code.lstrip() == ""):
       self.generateClass()
+    self._code = self._code.replace("MyClass", self._box.name + "_class", 1)
     # Replace tabs to normalize code
     self._code = self._code.replace("\t", "  ")
     self.findInitIndentation()

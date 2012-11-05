@@ -8,8 +8,6 @@ import sys
 import os
 import xml.dom.minidom
 
-import code_patcher
-
 class ConnectionType:
   INPUT=0
   OUTPUT=1
@@ -231,8 +229,6 @@ class behaviorParser:
     pyFile = safeOpen(self._folderName + boxName + ".py")
     if (pyFile != None):
       code = pyFile.read()
-      patcher = code_patcher.patcher(boxName, code, root)
-      code = patcher.patch()
       self._declarationsStr = self._declarationsStr + code
       self.addBoxToInstanciationStr(boxName)
       pyFile.close()

@@ -13,6 +13,7 @@ import timeline
 import diagram
 import behaviorLayer
 import behaviorKeyFrame
+import code_patcher
 
 def write_box_meta(f, node):
   f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
@@ -187,9 +188,8 @@ class newFormatGenerator:
 
   def visit_Box(self, node):
     fpy = open(node.name + ".py", encoding='utf-8', mode='w')
-    script = node.script.content.lstrip()
-    script = script.replace("MyClass", node.name + "_class", 1)
-    script = script.replace("(GeneratedClass):", ":", 1)
+    patcher = code_patcher.patcher(node)
+    script = patcher.patch()
     fpy.write(script)
     fpy.write(os.linesep)
     fpy.close()
