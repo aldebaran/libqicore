@@ -11,8 +11,8 @@
 #include <qicore/state.hpp>
 #include <qicore/transition.hpp>
 #include <qicore/diagram.hpp>
-#include <qicore/state_machine.hpp>
-#include "state_machine_private.hpp"
+#include <qicore/statemachine.hpp>
+#include "statemachine_private.hpp"
 
 StateMachinePrivate::StateMachinePrivate(StateMachine *s)
   : asyncExecuter(42),

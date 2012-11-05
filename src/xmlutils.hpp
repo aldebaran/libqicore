@@ -9,7 +9,7 @@
 // .:: System headers ::
 
 #include <string>
-#include "actuator_curve.hpp"
+#include "actuatorcurve.hpp"
 
 class XmlUtils
 {

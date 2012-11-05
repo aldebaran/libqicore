@@ -7,7 +7,7 @@
 
 #include "state_private.hpp"
 #include "transition_private.hpp"
-#include "state_machine_private.hpp"
+#include "statemachine_private.hpp"
 
 StatePrivate::StatePrivate(State* parent)
   : _name ("Unnamed-State"),

@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#include <qicore/state_machine.hpp>
+#include <qicore/statemachine.hpp>
 #include <qicore/state.hpp>
 #include <qicore/abstract_transition.hpp>
 

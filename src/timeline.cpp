@@ -12,8 +12,8 @@
 
 #include <qicore/timeline.hpp>
 #include "timeline_private.hpp"
-#include "xml_utils.hpp"
-#include "actuator_curve.hpp"
+#include "xmlutils.hpp"
+#include "actuatorcurve.hpp"
 
 TimelinePrivate::TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker)
   : asyncExecuter(1000 / 25),

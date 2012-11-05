@@ -3,7 +3,7 @@
  * Aldebaran Robotics (c) 2007-2012 All Rights Reserved
  */
 
-#include "async_executer.hpp"
+#include "asyncexecuter.hpp"
 
 asyncExecuter::asyncExecuter(unsigned int interval)
   : _pauseRequest (false),

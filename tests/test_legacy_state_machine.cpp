@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#include <qicore/legacy_state_machine.hpp>
+#include <qicore/legacy_statemachine.hpp>
 #include <qicore/legacy_state.hpp>
 
 class StateTest : public LegacyState
