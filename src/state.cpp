@@ -3,11 +3,11 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
-#include <qicore/diagram.h>
+#include <qicore/diagram.hpp>
 
-#include "state_private.h"
-#include "transition_private.h"
-#include "state_machine_private.h"
+#include "state_private.hpp"
+#include "transition_private.hpp"
+#include "state_machine_private.hpp"
 
 StatePrivate::StatePrivate(State* parent)
   : _name ("Unnamed-State"),

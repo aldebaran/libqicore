@@ -14,7 +14,7 @@
 
 # include <albehavior/altimeline.h>
 
-# include <qicore/api.h>
+# include <qicore/api.hpp>
 
 namespace AL
 {

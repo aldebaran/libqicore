@@ -10,7 +10,7 @@
 
 # include <alcommon/albroker.h>
 
-# include <qicore/api.h>
+# include <qicore/api.hpp>
 
 class BoxPrivate;
 class Timeline;

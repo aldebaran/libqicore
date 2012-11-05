@@ -10,7 +10,7 @@
 
 # include <list>
 
-# include <qicore/api.h>
+# include <qicore/api.hpp>
 
 class StatePrivate;
 class Diagram;

@@ -5,8 +5,8 @@
 
 #include <qi/log.hpp>
 
-#include <qicore/diagram.h>
-#include "diagram_private.h"
+#include <qicore/diagram.hpp>
+#include "diagram_private.hpp"
 
 DiagramPrivate::DiagramPrivate()
   : _name ("Unnamed-Diagram"),

@@ -10,8 +10,8 @@
 
 # include <alcommon/albroker.h>
 
-# include <qicore/state_machine.h>
-# include <qicore/timeline.h>
+# include <qicore/state_machine.hpp>
+# include <qicore/timeline.hpp>
 
 class BoxPrivate
 {

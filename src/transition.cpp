@@ -3,10 +3,10 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
-#include <qicore/state_machine.h>
-#include <qicore/transition.h>
+#include <qicore/state_machine.hpp>
+#include <qicore/transition.hpp>
 
-#include "transition_private.h"
+#include "transition_private.hpp"
 
 TransitionPrivate::TransitionPrivate(Transition* parent, State* toState)
   : _name ("Unnamed-Transition"),

@@ -8,26 +8,27 @@ qi_sanitize_compile_flags(HIDDEN_SYMBOLS)
 include_directories(".")
 
 set(PUBLIC_HEADERS
-    qicore/timeline.h
-    qicore/state.h
-    qicore/state_machine.h
-    qicore/box.h
-    qicore/diagram.h
-    qicore/transition.h)
+    qicore/api.hpp
+    qicore/timeline.hpp
+    qicore/state.hpp
+    qicore/state_machine.hpp
+    qicore/box.hpp
+    qicore/diagram.hpp
+    qicore/transition.hpp)
 
 qi_install_header(${PUBLIC_HEADERS})
 
 qi_create_lib(qicore SRC
   ${PUBLIC_HEADERS}
-  src/timeline_private.h src/timeline.cpp
-  src/xml_utils.h src/xml_utils.cpp
-  src/actuator_curve.h src/actuator_curve.cpp
-  src/state_machine_private.h src/state_machine.cpp
-  src/state_private.h src/state.cpp
-  src/transition_private.h src/transition.cpp
-  src/async_executer.h src/async_executer.cpp
-  src/box_private.h src/box.cpp
-  src/diagram_private.h src/diagram.cpp)
+  src/timeline_private.hpp src/timeline.cpp
+  src/xml_utils.hpp src/xml_utils.cpp
+  src/actuator_curve.hpp src/actuator_curve.cpp
+  src/state_machine_private.hpp src/state_machine.cpp
+  src/state_private.hpp src/state.cpp
+  src/transition_private.hpp src/transition.cpp
+  src/async_executer.hpp src/async_executer.cpp
+  src/box_private.hpp src/box.cpp
+  src/diagram_private.hpp src/diagram.cpp)
 
 qi_use_lib(qicore ALCOMMON ALSERIAL ALMATHINTERNAL ALBEHAVIOR ALTOOLS
 #REMOVE ME OR NOT?

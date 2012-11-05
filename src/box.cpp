@@ -7,8 +7,8 @@
 #include <alcore/alerror.h>
 #include <qi/log.hpp>
 
-#include <qicore/box.h>
-#include "box_private.h"
+#include <qicore/box.hpp>
+#include "box_private.hpp"
 
 BoxPrivate::BoxPrivate()
   : _stateMachine (0),

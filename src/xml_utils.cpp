@@ -6,7 +6,7 @@
 #include <sstream>
 
 // .:: Personal headers ::
-#include "xml_utils.h"
+#include "xml_utils.hpp"
 
 const std::string XmlUtils::fChoregrapheProjectBeacon = "ChoregrapheProject";
 const std::string XmlUtils::fChoregrapheBoxBeacon   = "ChoregrapheBox";

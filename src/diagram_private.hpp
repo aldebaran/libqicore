@@ -10,7 +10,7 @@
 
 # include <set>
 
-# include <qicore/box.h>
+# include <qicore/box.hpp>
 
 class Diagram;
 

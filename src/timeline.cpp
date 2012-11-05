@@ -10,10 +10,10 @@
 #include <alserial/alserial.h>
 #include <qi/log.hpp>
 
-#include <qicore/timeline.h>
-#include "timeline_private.h"
-#include "xml_utils.h"
-#include "actuator_curve.h"
+#include <qicore/timeline.hpp>
+#include "timeline_private.hpp"
+#include "xml_utils.hpp"
+#include "actuator_curve.hpp"
 
 TimelinePrivate::TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker)
   : asyncExecuter(1000 / 25),

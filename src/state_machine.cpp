@@ -8,11 +8,11 @@
 
 #include <qi/log.hpp>
 
-#include <qicore/state.h>
-#include <qicore/transition.h>
-#include <qicore/diagram.h>
-#include <qicore/state_machine.h>
-#include "state_machine_private.h"
+#include <qicore/state.hpp>
+#include <qicore/transition.hpp>
+#include <qicore/diagram.hpp>
+#include <qicore/state_machine.hpp>
+#include "state_machine_private.hpp"
 
 StateMachinePrivate::StateMachinePrivate(StateMachine *s)
   : asyncExecuter(42),

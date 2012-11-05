@@ -8,8 +8,8 @@
 #ifndef DIAGRAM_H_
 # define DIAGRAM_H_
 
-# include <qicore/api.h>
-# include <qicore/box.h>
+# include <qicore/api.hpp>
+# include <qicore/box.hpp>
 
 class DiagramPrivate;
 

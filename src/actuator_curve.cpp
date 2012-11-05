@@ -4,8 +4,8 @@
  *
  */
 
-#include "actuator_curve.h"
-#include "xml_utils.h"
+#include "actuator_curve.hpp"
+#include "xml_utils.hpp"
 #include <alserial/alserial.h>
 #include <alerror/alerror.h>
 #include <almath/tools/altrigonometry.h>

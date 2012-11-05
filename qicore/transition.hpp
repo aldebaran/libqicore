@@ -10,7 +10,7 @@
 
 # include <string>
 
-# include <qicore/api.h>
+# include <qicore/api.hpp>
 
 class TransitionPrivate;
 class StateMachine;

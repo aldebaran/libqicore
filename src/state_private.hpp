@@ -10,8 +10,8 @@
 
 # include <list>
 
-# include <qicore/state.h>
-# include <qicore/transition.h>
+# include <qicore/state.hpp>
+# include <qicore/transition.hpp>
 
 class Diagram;
 

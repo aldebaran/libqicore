@@ -17,8 +17,8 @@
 #include <alproxies/almemoryproxy.h>
 #include <alproxies/almotionproxy.h>
 
-#include "actuator_curve.h"
-#include "async_executer.h"
+#include "actuator_curve.hpp"
+#include "async_executer.hpp"
 
 namespace AL
 {

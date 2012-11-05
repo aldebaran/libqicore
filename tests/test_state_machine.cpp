@@ -5,9 +5,9 @@
 
 #include <gtest/gtest.h>
 
-#include <qicore/state_machine.h>
-#include <qicore/state.h>
-#include <qicore/abstract_transition.h>
+#include <qicore/state_machine.hpp>
+#include <qicore/state.hpp>
+#include <qicore/abstract_transition.hpp>
 
 class StateTest : public State
 {
