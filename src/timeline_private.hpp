@@ -25,6 +25,9 @@ namespace AL
   class XmlElement;
 }
 
+namespace qi
+{
+
 class TimelinePrivate : public asyncExecuter
 {
 public:
@@ -119,6 +122,8 @@ private:
   std::string                           _name;
   MotionResourcesHandler                _resourcesAcquisition;
   mutable boost::recursive_mutex        _methodMonitor;
+};
+
 };
 
 #endif /* !TIMELINEPRIVATE_H */

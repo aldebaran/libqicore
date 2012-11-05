@@ -17,6 +17,9 @@ namespace AL
   class XmlElement;
 }
 
+namespace qi
+{
+
 class ActuatorCurve
 {
 public:
@@ -63,6 +66,8 @@ private:
   std::string fName;
   std::map<int, Key> fKeys;
   CurveUnit fCurveUnit;
+};
+
 };
 
 

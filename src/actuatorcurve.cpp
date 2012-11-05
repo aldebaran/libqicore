@@ -14,6 +14,9 @@
 #include "math.h"
 #include <limits>
 
+namespace qi
+{
+
 ActuatorCurve::ActuatorCurve():
   fCurveUnit(UNKNOWN_UNIT)
 {
@@ -295,3 +298,5 @@ float ActuatorCurve::getMotionValue(float value) const
 
   return result;
 }
+
+};

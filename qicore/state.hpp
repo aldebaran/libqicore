@@ -12,6 +12,9 @@
 
 # include <qicore/api.hpp>
 
+namespace qi
+{
+
 class StatePrivate;
 class Diagram;
 class StateMachine;
@@ -36,6 +39,8 @@ class QICORE_API State
 
   private:
     StatePrivate* _p;
+};
+
 };
 
 #endif /* !STATE_H_ */

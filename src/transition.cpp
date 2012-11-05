@@ -8,6 +8,9 @@
 
 #include "transition_private.hpp"
 
+namespace qi
+{
+
 TransitionPrivate::TransitionPrivate(Transition* parent, State* toState)
   : _name ("Unnamed-Transition"),
     _hasTimeOut (false),
@@ -110,3 +113,5 @@ std::string Transition::getName()
 {
   return _p->_name;
 }
+
+};

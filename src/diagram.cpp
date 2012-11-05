@@ -8,6 +8,9 @@
 #include <qicore/diagram.hpp>
 #include "diagram_private.hpp"
 
+namespace qi
+{
+
 DiagramPrivate::DiagramPrivate()
   : _name ("Unnamed-Diagram"),
     _boxes()
@@ -129,3 +132,5 @@ std::string Diagram::getName()
 {
   return _p->_name;
 }
+
+};

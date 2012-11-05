@@ -14,6 +14,9 @@
 
 # include "asyncexecuter.hpp"
 
+namespace qi
+{
+
 class State;
 class StateMachine;
 class Transition;
@@ -64,6 +67,8 @@ class StateMachinePrivate : public asyncExecuter
     boost::recursive_mutex          _currentStateMutex;
     Transition*                     _timedTransition;
     StateMachine*                   _parent;
+};
+
 };
 
 #endif /* !STATE_MACHINE_PRIVATE_H_ */

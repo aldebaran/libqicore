@@ -11,6 +11,9 @@
 # include <qicore/api.hpp>
 # include <qicore/box.hpp>
 
+namespace qi
+{
+
 class DiagramPrivate;
 
 class QICORE_API Diagram
@@ -35,6 +38,8 @@ class QICORE_API Diagram
   private:
 
     DiagramPrivate* _p;
+};
+
 };
 
 #endif /* !DIAGRAM_H_ */

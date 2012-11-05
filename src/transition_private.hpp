@@ -8,6 +8,9 @@
 #ifndef TRANSITION_PRIVATE_H_
 # define TRANSITION_PRIVATE_H_
 
+namespace qi
+{
+
 class State;
 class StateMachine;
 class Transition;
@@ -35,6 +38,8 @@ class TransitionPrivate
     State*        _fromState;
     State*        _toState;
     Transition*   _parent;
+};
+
 };
 
 #endif /* !TRANSITION_PRIVATE_H_ */

@@ -14,6 +14,9 @@
 #include <qicore/statemachine.hpp>
 #include "statemachine_private.hpp"
 
+namespace qi
+{
+
 StateMachinePrivate::StateMachinePrivate(StateMachine *s)
   : asyncExecuter(42),
     _name ("Unnamed-StateMachine"),
@@ -324,3 +327,5 @@ std::string StateMachine::getName()
 {
   return _p->_name;
 }
+
+};

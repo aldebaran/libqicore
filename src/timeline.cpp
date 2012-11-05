@@ -15,6 +15,9 @@
 #include "xmlutils.hpp"
 #include "actuatorcurve.hpp"
 
+namespace qi
+{
+
 TimelinePrivate::TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker)
   : asyncExecuter(1000 / 25),
     _fps(0),
@@ -531,3 +534,5 @@ void Timeline::waitForTimelineCompletion()
 {
   _p->waitForExecuterCompletion();
 }
+
+};

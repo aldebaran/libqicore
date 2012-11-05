@@ -6,10 +6,11 @@
 #ifndef XML_UTILS_HH
 #define XML_UTILS_HH
 
-// .:: System headers ::
-
 #include <string>
 #include "actuatorcurve.hpp"
+
+namespace qi
+{
 
 class XmlUtils
 {
@@ -33,16 +34,19 @@ public:
   static const std::string fAudioFileBeacon;
 };
 
+};
+
 namespace AL
 {
   namespace Serial
   {
-    std::string save(const ActuatorCurve::Side& value);
-    bool load(const std::string& str, ActuatorCurve::Side& value);
+    std::string save(const qi::ActuatorCurve::Side& value);
+    bool load(const std::string& str, qi::ActuatorCurve::Side& value);
 
     std::string save(const AL::Math::Interpolation::InterpolationType& value);
     bool load(const std::string& str, AL::Math::Interpolation::InterpolationType& value);
   }
-}
+};
+
 
 #endif // !XML_UTILS_HH

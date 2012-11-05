@@ -13,6 +13,9 @@
 # include <qicore/statemachine.hpp>
 # include <qicore/timeline.hpp>
 
+namespace qi
+{
+
 class BoxPrivate
 {
   friend class Box;
@@ -31,6 +34,8 @@ class BoxPrivate
 
     /* TODO: remove me */
     boost::shared_ptr<AL::ALBroker> _broker;
+};
+
 };
 
 #endif /* !BOX_PRIVATE_H_ */

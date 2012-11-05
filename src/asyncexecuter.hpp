@@ -11,6 +11,9 @@
 # include <boost/thread.hpp>
 # include <boost/bind.hpp>
 
+namespace qi
+{
+
 /* Class that handle a thread used to do some work asynchronously */
 /* The thread will call update() every n milliseconds */
 class asyncExecuter
@@ -46,6 +49,8 @@ class asyncExecuter
     bool                                  _isPlaying;
 
     unsigned int                          _interval;
+};
+
 };
 
 #endif /* !ASYNC_EXECUTER_H_ */

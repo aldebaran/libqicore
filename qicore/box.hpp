@@ -12,6 +12,9 @@
 
 # include <qicore/api.hpp>
 
+namespace qi
+{
+
 class BoxPrivate;
 class Timeline;
 class StateMachine;
@@ -39,6 +42,8 @@ class QICORE_API Box
 
   private:
     BoxPrivate*           _p;
+};
+
 };
 
 #endif /* !BOX_H_ */

@@ -12,6 +12,9 @@
 
 # include <qicore/api.hpp>
 
+namespace qi
+{
+
 class TransitionPrivate;
 class StateMachine;
 class State;
@@ -41,6 +44,8 @@ class QICORE_API Transition
 
   private:
     TransitionPrivate* _p;
+};
+
 };
 
 #endif /* !TRANSITION_H_ */

@@ -5,8 +5,10 @@
 
 #include <sstream>
 
-// .:: Personal headers ::
 #include "xmlutils.hpp"
+
+namespace qi
+{
 
 const std::string XmlUtils::fChoregrapheProjectBeacon = "ChoregrapheProject";
 const std::string XmlUtils::fChoregrapheBoxBeacon   = "ChoregrapheBox";
@@ -26,16 +28,18 @@ const std::string XmlUtils::fActuatorCurveBeacon    = "ActuatorCurve";
 const std::string XmlUtils::fActuatorListBeacon     = "ActuatorList";
 const std::string XmlUtils::fAudioFileBeacon        = "Waveforms";
 
+};
+
 namespace AL
 {
-  std::string Serial::save(const ActuatorCurve::Side& value)
+  std::string Serial::save(const qi::ActuatorCurve::Side& value)
   {
     std::string str;
     switch(value)
     {
 #define ENUM_ENTRY(value, name) case value: str = name; break;
-  ENUM_ENTRY( ActuatorCurve::LEFT,  "left" )
-  ENUM_ENTRY( ActuatorCurve::RIGHT, "right" )
+  ENUM_ENTRY( qi::ActuatorCurve::LEFT,  "left" )
+  ENUM_ENTRY( qi::ActuatorCurve::RIGHT, "right" )
 #undef ENUM_ENTRY
     default:
       ;
@@ -43,12 +47,12 @@ namespace AL
     return str;
   }
 
-  bool Serial::load(const std::string& str, ActuatorCurve::Side& value)
+  bool Serial::load(const std::string& str, qi::ActuatorCurve::Side& value)
   {
     if (false);
 #define ENUM_ENTRY(val, name) else if (str==name) value = val;
-  ENUM_ENTRY( ActuatorCurve::LEFT,  "left" )
-  ENUM_ENTRY( ActuatorCurve::RIGHT, "right" )
+  ENUM_ENTRY( qi::ActuatorCurve::LEFT,  "left" )
+  ENUM_ENTRY( qi::ActuatorCurve::RIGHT, "right" )
 #undef ENUM_ENTRY
     else
       return false;

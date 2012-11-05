@@ -21,6 +21,9 @@ namespace AL
   class ALBroker;
 }
 
+namespace qi
+{
+
 class TimelinePrivate;
 
 class QICORE_API Timeline: public AL::ALTimeline
@@ -47,6 +50,8 @@ class QICORE_API Timeline: public AL::ALTimeline
 
   private:
     TimelinePrivate* _p;
+};
+
 };
 
 #endif /* !TIMELINE_H_ */

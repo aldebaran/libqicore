@@ -13,6 +13,9 @@
 # include <qicore/state.hpp>
 # include <qicore/transition.hpp>
 
+namespace qi
+{
+
 class Diagram;
 
 class StatePrivate
@@ -34,6 +37,8 @@ class StatePrivate
     State*                          _parent;
     Diagram*                        _diagram;
     std::list<Transition*>          _transitions;
+};
+
 };
 
 #endif /* !STATE_PRIVATE_H_ */

@@ -12,6 +12,9 @@
 
 # include <qicore/box.hpp>
 
+namespace qi
+{
+
 class Diagram;
 
 class DiagramPrivate
@@ -36,6 +39,8 @@ class DiagramPrivate
 
     std::string    _name;
     std::set<Box*> _boxes;
+};
+
 };
 
 #endif /* !DIAGRAM_H_ */

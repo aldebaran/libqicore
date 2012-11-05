@@ -10,6 +10,9 @@
 #include <qicore/box.hpp>
 #include "box_private.hpp"
 
+namespace qi
+{
+
 BoxPrivate::BoxPrivate()
   : _stateMachine (0),
     _timeline (0)
@@ -120,3 +123,5 @@ void Box::unload()
 {
   _p->unload();
 }
+
+};

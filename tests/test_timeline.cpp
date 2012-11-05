@@ -14,29 +14,29 @@
 std::string file;
 boost::shared_ptr<AL::ALBroker> broker;
 
-TEST(Timeline, CreateTimeline)
+TEST(QiTimeline, CreateTimeline)
 {
-  Timeline t(broker);
+  qi::Timeline t(broker);
 }
 
-TEST(Timeline, OpenFile)
+TEST(QiTimeline, OpenFile)
 {
-  Timeline t(broker);
+  qi::Timeline t(broker);
   t.loadFromFile(file);
 }
 
-TEST(Timeline, OpenFileAndPlay)
+TEST(QiTimeline, OpenFileAndPlay)
 {
-  Timeline t(broker);
+  qi::Timeline t(broker);
   t.loadFromFile(file);
   t.play();
 
   t.waitForTimelineCompletion();
 }
 
-TEST(Timeline, PlayAndPause)
+TEST(QiTimeline, PlayAndPause)
 {
-  Timeline t(broker);
+  qi::Timeline t(broker);
   t.loadFromFile(file);
   t.play();
   qi::os::sleep(1);
@@ -46,17 +46,17 @@ TEST(Timeline, PlayAndPause)
   t.waitForTimelineCompletion();
 }
 
-TEST(Timeline, PlayAndStop)
+TEST(QiTimeline, PlayAndStop)
 {
-  Timeline t(broker);
+  qi::Timeline t(broker);
   t.loadFromFile(file);
   t.play();
   t.stop();
 }
 
-TEST(Timeline, modifyFPSBeforeStart)
+TEST(QiTimeline, modifyFPSBeforeStart)
 {
-  Timeline t(broker);
+  qi::Timeline t(broker);
   t.loadFromFile(file);
 
   EXPECT_EQ(t.getFPS(), 25);
@@ -67,9 +67,9 @@ TEST(Timeline, modifyFPSBeforeStart)
   t.waitForTimelineCompletion();
 }
 
-TEST(Timeline, modifyFPSAfterStart)
+TEST(QiTimeline, modifyFPSAfterStart)
 {
-  Timeline t(broker);
+  qi::Timeline t(broker);
   t.loadFromFile(file);
 
   t.play();
@@ -79,9 +79,9 @@ TEST(Timeline, modifyFPSAfterStart)
   t.waitForTimelineCompletion();
 }
 
-TEST(Timeline, goToBeforeStart)
+TEST(QiTimeline, goToBeforeStart)
 {
-  Timeline t(broker);
+  qi::Timeline t(broker);
   t.loadFromFile(file);
 
   t.goTo(44);
@@ -90,9 +90,9 @@ TEST(Timeline, goToBeforeStart)
   t.waitForTimelineCompletion();
 }
 
-TEST(Timeline, goToAfterStart)
+TEST(QiTimeline, goToAfterStart)
 {
-  Timeline t(broker);
+  qi::Timeline t(broker);
   t.loadFromFile(file);
 
   t.play();
@@ -100,8 +100,6 @@ TEST(Timeline, goToAfterStart)
 
   t.waitForTimelineCompletion();
 }
-
-/* Write others tests ... */
 
 int main(int argc, char** argv)
 {

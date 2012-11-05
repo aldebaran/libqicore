@@ -9,6 +9,9 @@
 #include "transition_private.hpp"
 #include "statemachine_private.hpp"
 
+namespace qi
+{
+
 StatePrivate::StatePrivate(State* parent)
   : _name ("Unnamed-State"),
     _parent (parent),
@@ -83,3 +86,5 @@ std::string State::getName()
 {
   return _p->_name;
 }
+
+};

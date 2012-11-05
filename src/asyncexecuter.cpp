@@ -5,6 +5,9 @@
 
 #include "asyncexecuter.hpp"
 
+namespace qi
+{
+
 asyncExecuter::asyncExecuter(unsigned int interval)
   : _pauseRequest (false),
     _isPlaying (false),
@@ -113,3 +116,5 @@ bool asyncExecuter::isPlaying()
 {
   return _isPlaying;
 }
+
+};
