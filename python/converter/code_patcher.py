@@ -109,6 +109,7 @@ class patcher:
     self._addedMethods += (indent * " " + "def onInput_" + inpName + "__(self, p):" + os.linesep
                            + indent * " " * 2
                            + "self.__onLoad__()" + os.linesep
+                           + indent * " " * 2 + "self.stimulateIO(\"" + inpName + "\", p)"
                            + os.linesep * 2)
 
   def addInputMethod_onStart(self, inpName):

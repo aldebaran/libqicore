@@ -4,6 +4,8 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+import code_patcher
+
 class nameMapBuilder:
   def __init__(self):
     self._namesStack = []
@@ -14,6 +16,12 @@ class nameMapBuilder:
     for port in box.inputs + box.outputs + box.parameters:
       if (port.id == portId):
         return port.name
+    return ""
+
+  def find_input_nature(self, box, portId):
+    for port in box.inputs:
+      if (port.id == portId):
+        return port.nature
     return ""
 
   def constructName(self):
@@ -37,6 +45,15 @@ class nameMapBuilder:
     for layer in node.behaviorLayers:
       self.visit(layer)
 
+  def fix_onLoad(self, node, link, idMap):
+    # Change link: box will start when loaded
+    # and not when its parent is loaded
+    link.outputowner = node.name
+
+    for inp in node.inputs:
+      if (inp.nature == code_patcher.InputType.ONLOAD):
+        link.indexofoutput = inp.id
+
   def visit_Diagram(self, node):
     # Diagram has no name in legacy format so we fill it
     node.name = self.constructName() + "diagram"
@@ -48,11 +65,15 @@ class nameMapBuilder:
       idMap[str(0)] = node.boxes[0].parent.name
 
     for link in node.links:
-      # Detect a frameManager hack
-
       link.inputowner = idMap[link.inputowner]
-      link.inputName = self.find_port_name(self._boxes[link.inputowner], link.indexofinput)
       link.outputowner = idMap[link.outputowner]
+
+      # Detect a frameManager hack
+      if (link.outputowner == node.boxes[0].parent.name):
+        if (self.find_input_nature(self._boxes[link.outputowner], link.indexofoutput) == str(code_patcher.InputType.ONLOAD)):
+          self.fix_onLoad(self._boxes[link.inputowner], link, idMap)
+
+      link.inputName = self.find_port_name(self._boxes[link.inputowner], link.indexofinput)
       link.outputName = self.find_port_name(self._boxes[link.outputowner], link.indexofoutput)
 
   def visit_Box(self, node):

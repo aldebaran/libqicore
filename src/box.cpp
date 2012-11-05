@@ -27,7 +27,7 @@ void BoxPrivate::load()
 
   try
   {
-    mem->raiseMicroEvent(_name + "__onLoad", AL::ALValue());
+    mem->raiseMicroEvent(_name + "____Internal__OnLoad", AL::ALValue());
   }
   catch (AL::ALError& e)
   {
@@ -44,7 +44,7 @@ void BoxPrivate::unload()
 
   try
   {
-    mem->raiseMicroEvent(_name + "_onUnload", AL::ALValue());
+    mem->raiseMicroEvent(_name + "____Internal__OnUnload", AL::ALValue());
   }
   catch (AL::ALError& e)
   {

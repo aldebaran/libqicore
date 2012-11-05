@@ -35,7 +35,7 @@ class behaviorParser:
     code = box + " = " + box + "_class()" + os.linesep
     self._instanciationsStr = self._instanciationsStr + code + os.linesep
     self._connectionsStr += (box + ".connectInput(\"onLoad\", \""
-                                + box + "__onLoad\"" + ", True)"
+                                + box + "____Internal__OnLoad\"" + ", True)"
                                 + os.linesep)
 
   def buildRunStr(self):
