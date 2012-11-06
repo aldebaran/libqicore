@@ -153,6 +153,22 @@ def write_state_machine(f, stateList, fps):
                     os.linesep))
   f.write("</StateMachine>" + os.linesep)
 
+
+def write_main(f):
+  f.write("#!/usr/bin/env python" + os.linesep
+          + "# -*- coding: utf-8 -*-" + os.linesep + os.linesep
+          + "import naoqi" + os.linesep
+          + "from naoqi import *" + os.linesep
+          + "import objectFactory" + os.linesep + os.linesep
+          + "broker = naoqi.ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, \"127.0.0.1\", 9559)" + os.linesep
+          + "naoqi.ALProxy.initProxies()" + os.linesep
+          + "factory = objectFactory.objectFactory(\"./\", broker)" + os.linesep
+          + "root = factory.instanciateObjects(globals())" + os.linesep
+          + "waiter = factory.createWaiterOnBox(root, globals())" + os.linesep
+          + "root.__onLoad__()" + os.linesep
+          + "root.onInput_onStart__(None)" + os.linesep
+          + "waiter.waitForCompletion()")
+
 class interval:
   def __init__(self, a, b, obj):
     self.begin = int(a)
@@ -169,6 +185,11 @@ class state:
 class newFormatGenerator:
   def __init__(self, boxes):
     self._boxes = boxes
+
+  def generateMain(self):
+    f = open("main.py", encoding='utf-8', mode='w')
+    write_main(f)
+    f.close()
 
   def visit(self, node):
     if (node == None):

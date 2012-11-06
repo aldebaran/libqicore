@@ -170,6 +170,12 @@ class patcher:
     self._code = self._code.replace("MyClass", self._box.name + "_class", 1)
     # Replace tabs to normalize code
     self._code = self._code.replace("\t", "  ")
+    self._code = ("import naoqi" + os.linesep
+                  + "from naoqi import *" + os.linesep
+                  +"import qicore" + os.linesep
+                  + "import qicoreLegacy" + os.linesep * 2
+                  + self._code)
+    self._code = self._code.replace("__init__(self)", "__init__(self, broker)", 1)
     self.findInitIndentation()
     self.findMethodIndentation()
     self.addInheritance()

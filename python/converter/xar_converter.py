@@ -29,6 +29,7 @@ def main():
   os.mkdir("objects")
   os.chdir("objects")
   nfg.visit(root)
+  nfg.generateMain()
   os.chdir("./..")
 
 if __name__ == "__main__":
