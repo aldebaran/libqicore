@@ -10,5 +10,5 @@ do
   then
     exit
   fi
-  rm -Rf object
+  rm -Rf objects
 done

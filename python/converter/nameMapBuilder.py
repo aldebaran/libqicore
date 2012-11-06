@@ -61,15 +61,22 @@ class nameMapBuilder:
     for child in node.boxes:
       self.visit(child)
       idMap[child.id_] = child.name
+    parentName = ""
     if (node.boxes and node.boxes[0].parent != None):
-      idMap[str(0)] = node.boxes[0].parent.name
+      parentName = node.boxes[0].parent.name
+    elif (len(self._boxStack) != 0):
+      parentName = self._boxStack[len(self._boxStack) - 1].name
+    else:
+      print("ERROR: No parent for ", node.name, " abort...")
+      sys.exit(2)
+    idMap[str(0)] = parentName
 
     for link in node.links:
       link.inputowner = idMap[link.inputowner]
       link.outputowner = idMap[link.outputowner]
 
       # Detect a frameManager hack
-      if (link.outputowner == node.boxes[0].parent.name):
+      if (link.outputowner == parentName):
         if (self.find_input_nature(self._boxes[link.outputowner], link.indexofoutput) == str(code_patcher.InputType.ONLOAD)):
           self.fix_onLoad(self._boxes[link.inputowner], link, idMap)
 
@@ -90,6 +97,7 @@ class nameMapBuilder:
 
     self.visit(node.child)
     self._namesStack.pop()
+    self._boxStack.pop()
 
   def visit_BehaviorLayer(self, node):
     node.name = node.name.replace(" ", "_")
