@@ -49,7 +49,8 @@ class patcher:
     self._inputMethodMap = { InputType.ONLOAD : patcher.addInputMethod_onLoad,
                              InputType.UNDEF : patcher.addInputMethod_unDef,
                              InputType.ONSTART : patcher.addInputMethod_onStart,
-                             InputType.ONSTOP : patcher.addInputMethod_onStop}
+                             InputType.ONSTOP : patcher.addInputMethod_onStop,
+                             InputType.STMVALUE: patcher.addInputMethod_STMValue}
     self._outputMethodMap = { OutputType.STOPPED : patcher.addOutputMethod_Stopped,
                               OutputType.PUNCTUAL : patcher.addOutputMethod_Punctual}
 
@@ -76,19 +77,19 @@ class patcher:
     initCode += indent * " " + "self.setBroker(broker.getALBroker())" + os.linesep
 
     for inp in self._box.inputs:
-      initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onInput_" + inp.name + "__\", 1)" +
-          os.linesep)
-      initCode += (indent * " " + "self.addInput(\"" + inp.name + "\")" + os.linesep)
-      self.addInputMethod(inp.name, int(inp.nature))
+      if (self.addInputMethod(inp.name, int(inp.nature))):
+        initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onInput_" + inp.name + "__\", 1)" +
+            os.linesep)
+        initCode += (indent * " " + "self.addInput(\"" + inp.name + "\")" + os.linesep)
 
     for out in self._box.outputs:
-      initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onOutput_" + out.name + "__\", 1)" +
-          os.linesep)
-      initCode +=  (indent * " "
-                    + "self.addOutput(\""
-                    # FIXME: True or false if bang
-                    + out.name + "\", True)" + os.linesep)
-      self.addOutputMethod(out.name, int(out.nature))
+      if (self.addOutputMethod(out.name, int(out.nature))):
+        initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onOutput_" + out.name + "__\", 1)" +
+                      os.linesep)
+        initCode +=  (indent * " "
+                      + "self.addOutput(\""
+                      # FIXME: True or false if bang
+                      + out.name + "\", True)" + os.linesep)
 
     for param in self._box.parameters:
       initCode += (indent * " "
@@ -113,6 +114,10 @@ class patcher:
                            + "self.__onLoad__()" + os.linesep
                            + indent * " " * 2 + "self.stimulateIO(\"" + inpName + "\", p)"
                            + os.linesep * 2)
+    return True
+
+  def addInputMethod_STMValue(self, inpName):
+    return False
 
   def addInputMethod_onStart(self, inpName):
     indent = self._indentForMethod
@@ -127,6 +132,7 @@ class patcher:
                            + indent * " " * 3 + " self.getStateMachine().run()" + os.linesep
                            + indent * " " * 2 + "self.stimulateIO(\"" + inpName + "\", p)" + os.linesep
                            + os.linesep * 2)
+    return True
 
   def addInputMethod_onStop(self, inpName):
     indent = self._indentForMethod
@@ -137,6 +143,7 @@ class patcher:
                            + indent * " " * 3 + "return" + os.linesep
                            + indent * " " * 2 + "self.stimulateIO(\"" + inpName + "\", p)" + os.linesep
                            + os.linesep * 2)
+    return True
 
   def addInputMethod_unDef(self, inpName):
     indent = self._indentForMethod
@@ -147,10 +154,11 @@ class patcher:
                            + indent * " " * 3 + "return" + os.linesep
                            + indent * " " * 2 + "self.stimulateIO(\"" + inpName + "\", p)" + os.linesep
                            + os.linesep * 2)
+    return True
 
   def addInputMethod(self, inpName, inpType):
     if (inpType in self._inputMethodMap):
-      self._inputMethodMap[inpType](self, inpName)
+      return self._inputMethodMap[inpType](self, inpName)
     else:
       print("Input Type not supported yet: ", inpType)
       sys.exit(2)
@@ -163,15 +171,17 @@ class patcher:
                            + indent * " " * 2 + "if (self.hasStateMachine()):" + os.linesep
                            + indent * " " * 3 + " self.getStateMachine().stop()" + os.linesep
                            + indent * " " * 2 + "self.stimulateIO(\"" + outName + "\", p)" + os.linesep * 2)
+    return True
 
   def addOutputMethod_Punctual(self, outName):
     indent = self._indentForMethod
     self._addedMethods += (indent * " " + "def " + outName + "(self, p = None):" + os.linesep
                            + indent * " " * 2 + "self.stimulateIO(\"" + outName + "\", p)" + os.linesep * 2)
+    return True
 
   def addOutputMethod(self, outName, outType):
     if (outType in self._outputMethodMap):
-      self._outputMethodMap[outType](self, outName)
+      return self._outputMethodMap[outType](self, outName)
     else:
       print("Output Type not supported yet: ", outType)
       sys.exit(2)
