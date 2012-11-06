@@ -101,7 +101,7 @@ class patcher:
     for res in self._box.resources:
       pass
 
-    return initCode
+    return initCode.rstrip()
 
   def addInheritance(self):
     self._code = self._code.replace("(GeneratedClass):", "(qicoreLegacy.BehaviorLegacy):", 1)
@@ -181,6 +181,14 @@ class patcher:
                     + "  def __init__(self):" + os.linesep
                     + "    GeneratedClass.__init__(self)" + os.linesep + os.linesep)
 
+  def replace_not_support_code(self):
+    # Code that require a translation ...
+    warning = "# /!!\ This code has been removed by the qicore Converter, no more supported..."
+    self._code = self._code.replace("ALFrameManager", "self")
+    #FIXME: This value cannot be acquired at this time...
+    self._code = self._code.replace("self.getTimelineFps(self.getName())", "25")
+    self._code = self._code.replace("self.setTimelineFps(self.getName(), newfps)", "self.getTimeline().setFPS(newfps)")
+
   def patch(self):
     if (self._code.lstrip() == ""):
       self.generateClass()
@@ -201,7 +209,7 @@ class patcher:
       self._code = self._code.replace("GeneratedClass.__init__(self)", initCode)
     else:
       self._code = self._code.replace("GeneratedClass.__init__(self, False)", initCode)
-    self._code = self._code.replace("ALFrameManager", "self")
+    self.replace_not_support_code()
     self._code += self._addedMethods
     return self._code
 
