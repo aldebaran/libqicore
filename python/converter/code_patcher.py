@@ -50,7 +50,8 @@ class patcher:
                              InputType.UNDEF : patcher.addInputMethod_unDef,
                              InputType.ONSTART : patcher.addInputMethod_onStart,
                              InputType.ONSTOP : patcher.addInputMethod_onStop}
-    self._outputMethodMap = { OutputType.STOPPED : patcher.addOutputMethod_Stopped}
+    self._outputMethodMap = { OutputType.STOPPED : patcher.addOutputMethod_Stopped,
+                              OutputType.PUNCTUAL : patcher.addOutputMethod_Punctual}
 
     self._paramMethodMap = {}
 
@@ -144,6 +145,7 @@ class patcher:
                            + "if(not self._safeCallOfUserMethod(\"onInput_" + inpName + "\", p)):" + os.linesep
                            + indent * " " * 3 + "self.releaseResource()" + os.linesep
                            + indent * " " * 3 + "return" + os.linesep
+                           + indent * " " * 2 + "self.stimulateIO(\"" + inpName + "\", p)" + os.linesep
                            + os.linesep * 2)
 
   def addInputMethod(self, inpName, inpType):
@@ -160,6 +162,11 @@ class patcher:
                            + indent * " " * 3 + " self.getTimeline().stop()" + os.linesep
                            + indent * " " * 2 + "if (self.hasStateMachine()):" + os.linesep
                            + indent * " " * 3 + " self.getStateMachine().stop()" + os.linesep
+                           + indent * " " * 2 + "self.stimulateIO(\"" + outName + "\", p)" + os.linesep * 2)
+
+  def addOutputMethod_Punctual(self, outName):
+    indent = self._indentForMethod
+    self._addedMethods += (indent * " " + "def " + outName + "(self, p = None):" + os.linesep
                            + indent * " " * 2 + "self.stimulateIO(\"" + outName + "\", p)" + os.linesep * 2)
 
   def addOutputMethod(self, outName, outType):
