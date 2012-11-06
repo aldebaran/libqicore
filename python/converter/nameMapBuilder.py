@@ -61,7 +61,7 @@ class nameMapBuilder:
     for child in node.boxes:
       self.visit(child)
       idMap[child.id_] = child.name
-    if (node.boxes[0].parent != None):
+    if (node.boxes and node.boxes[0].parent != None):
       idMap[str(0)] = node.boxes[0].parent.name
 
     for link in node.links:
@@ -92,12 +92,14 @@ class nameMapBuilder:
     self._namesStack.pop()
 
   def visit_BehaviorLayer(self, node):
+    node.name = node.name.replace(" ", "_")
     self._namesStack.append(node.name)
     for keyframe in node.behaviorKeyFrames:
       self.visit(keyframe)
     self._namesStack.pop()
 
   def visit_BehaviorKeyFrame(self, node):
+    node.name = node.name.replace(" ", "_")
     self._namesStack.append(node.name)
     if (node.child != None):
       self.visit(node.child)
