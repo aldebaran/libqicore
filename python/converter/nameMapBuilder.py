@@ -104,3 +104,4 @@ class nameMapBuilder:
     if (node.child != None):
       self.visit(node.child)
     self._namesStack.pop()
+

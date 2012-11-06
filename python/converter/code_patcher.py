@@ -47,6 +47,7 @@ class patcher:
     self._indentForInit = 4
     self._indentForMethod = 4
     self._inputMethodMap = { InputType.ONLOAD : patcher.addInputMethod_onLoad,
+                             InputType.UNDEF : patcher.addInputMethod_unDef,
                              InputType.ONSTART : patcher.addInputMethod_onStart,
                              InputType.ONSTOP : patcher.addInputMethod_onStop}
     self._outputMethodMap = { OutputType.STOPPED : patcher.addOutputMethod_Stopped}
@@ -136,6 +137,15 @@ class patcher:
                            + indent * " " * 2 + "self.stimulateIO(\"" + inpName + "\", p)" + os.linesep
                            + os.linesep * 2)
 
+  def addInputMethod_unDef(self, inpName):
+    indent = self._indentForMethod
+    self._addedMethods += (indent * " " + "def onInput_" + inpName + "__(self, p):" + os.linesep
+                           + indent * " " * 2
+                           + "if(not self._safeCallOfUserMethod(\"onInput_" + inpName + "\", p)):" + os.linesep
+                           + indent * " " * 3 + "self.releaseResource()" + os.linesep
+                           + indent * " " * 3 + "return" + os.linesep
+                           + os.linesep * 2)
+
   def addInputMethod(self, inpName, inpType):
     if (inpType in self._inputMethodMap):
       self._inputMethodMap[inpType](self, inpName)
@@ -187,3 +197,4 @@ class patcher:
     self._code = self._code.replace("ALFrameManager", "self")
     self._code += self._addedMethods
     return self._code
+
