@@ -24,6 +24,9 @@ class nameMapBuilder:
         return port.nature
     return ""
 
+  def formatName(self, name):
+    return name.replace(" ", "_").replace(":", "_")
+
   def constructName(self):
     result = ""
     for name in self._namesStack:
@@ -88,7 +91,7 @@ class nameMapBuilder:
       node.parent = self._boxStack.pop()
       self._boxStack.append(node.parent)
     self._boxStack.append(node)
-    node.name = node.name.replace(" ", "_")
+    node.name = self.formatName(node.name)
     simpleName = node.name
     node.name = self.constructName() + node.name
     self._namesStack.append(simpleName)
@@ -100,14 +103,14 @@ class nameMapBuilder:
     self._boxStack.pop()
 
   def visit_BehaviorLayer(self, node):
-    node.name = node.name.replace(" ", "_")
+    node.name = self.formatName(node.name)
     self._namesStack.append(node.name)
     for keyframe in node.behaviorKeyFrames:
       self.visit(keyframe)
     self._namesStack.pop()
 
   def visit_BehaviorKeyFrame(self, node):
-    node.name = node.name.replace(" ", "_")
+    node.name = self.formatName(node.name)
     self._namesStack.append(node.name)
     if (node.child != None):
       self.visit(node.child)
