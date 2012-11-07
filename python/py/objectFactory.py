@@ -77,7 +77,7 @@ class objectFactory:
     timelineFile.close()
 
     timelineObject = qicore.Timeline(self._broker.getALBroker())
-    timelineObject.loadFromFile(boxName + "xml")
+    timelineObject.loadFromFile(boxName + ".xml")
     self._boxDict[parentName].setTimeline(timelineObject)
     self._TimelineDict[boxName] = timelineObject
 
@@ -204,6 +204,8 @@ class objectFactory:
     boxObject = boxClass(self._broker)
     self._boxDict[boxName] = boxObject
     boxObject.connectInput("onLoad", str(boxName + "____Internal__OnLoad"), True)
+
+    boxObject.setPath(self._folderName)
 
     self.parseTimeline(boxName + "_timeline", boxName)
     self.parseStateMachine(boxName + "_state_machine", boxName)

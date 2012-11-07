@@ -15,7 +15,9 @@ namespace qi
 
 BoxPrivate::BoxPrivate()
   : _stateMachine (0),
-    _timeline (0)
+    _timeline (0),
+    _name ("Unnamed-Box"),
+    _path ("./")
 {
 }
 
@@ -122,6 +124,16 @@ void Box::load()
 void Box::unload()
 {
   _p->unload();
+}
+
+void Box::setPath(std::string path)
+{
+  _p->_path = path;
+}
+
+std::string Box::getPath()
+{
+  return _p->_path;
 }
 
 };

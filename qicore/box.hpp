@@ -29,6 +29,9 @@ class QICORE_API Box
     void setName(std::string name);
     std::string getName();
 
+    void setPath(std::string path);
+    std::string getPath();
+
     void load();
     void unload();
 

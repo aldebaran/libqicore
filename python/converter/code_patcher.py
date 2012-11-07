@@ -70,9 +70,7 @@ class patcher:
         self._indentForMethod = len(s) - len(s.lstrip())
 
   def formatParameter(self, name, content_type):
-    print("Content type is ", content_type, " for ", name)
     if (content_type == ParameterType.STRING or content_type == ParameterType.RESOURCE):
-      print("Special formating yeah")
       return "\"" + name + "\""
     else:
       return name
@@ -211,6 +209,7 @@ class patcher:
       self._code = self._code.replace("self.setTimelineFps(self.getName(), newfps)", "self.getTimeline().setFPS(newfps)")
     else:
       self._code = self._code.replace("self.setTimelineFps(self.getName(), newfps)", "pass")
+    self._code = self._code.replace("self.getBehaviorPath(self.behaviorId)", "self.getPath()")
 
   def patch(self):
     if (self._code.lstrip() == ""):

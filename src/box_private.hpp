@@ -31,6 +31,7 @@ class BoxPrivate
     StateMachine*         _stateMachine;
     Timeline*             _timeline;
     std::string           _name;
+    std::string           _path;
 
     /* TODO: remove me */
     boost::shared_ptr<AL::ALBroker> _broker;
