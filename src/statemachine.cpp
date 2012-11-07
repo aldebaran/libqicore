@@ -125,6 +125,8 @@ bool StateMachinePrivate::goToState(State* state)
 
   { /* Locked Section */
     boost::recursive_mutex::scoped_lock currentStateLock(_currentStateMutex);
+    qiLogDebug("qiCore.StateMachine") << "Transition from state: " << (_currentState ? _currentState->getName() : "Null")
+                                      << " to state: " << state->getName() << std::endl;
 
     /* Stop the timeOut timer if needed */
     if (_timedTransition != 0)
@@ -151,10 +153,13 @@ bool StateMachinePrivate::update()
 {
   Transition* tr = _timedTransition;
   _timedTransition = 0;
-  qiLogDebug("qiCore.StateMachine") << "Triggering the timed transition" << std::endl;
-  tr->trigger();
+  if (tr)
+  {
+    qiLogDebug("qiCore.StateMachine") << "Triggering the timed transition" << std::endl;
+    tr->trigger();
+  }
 
-  return false;
+  return true;
 }
 
 int StateMachinePrivate::loadTransitions()

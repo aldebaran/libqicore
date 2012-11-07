@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 
+#include <qi/os.hpp>
+
 #include <qicore/statemachine.hpp>
 #include <qicore/state.hpp>
 #include <qicore/transition.hpp>
@@ -194,6 +196,97 @@ TEST(QiStateMachine, ChangeStatesAfterStart)
   toS2->trigger();
   EXPECT_TRUE(sm.setFinalState(s2));
   EXPECT_TRUE(sm.isOnFinalState());
+
+  sm.stop();
+}
+
+TEST(QiStateMachine, TwoStatesWithTimeOut)
+{
+  qi::StateMachine sm;
+  qi::State* s1 = new qi::State();
+  qi::State* s2 = new qi::State();
+  qi::Transition* toS2 = new qi::Transition(s2);
+
+  s1->addTransition(toS2);
+  toS2->setTimeOut(300);
+  sm.addState(s1);
+  sm.addState(s2);
+
+  sm.setInitialState(s1);
+  sm.setFinalState(s2);
+
+  sm.run();
+  qi::os::sleep(1);
+
+  EXPECT_TRUE(sm.isOnFinalState());
+  EXPECT_EQ(sm.getCurrentState(), s2);
+
+  sm.stop();
+}
+
+TEST(QiStateMachine, TenLinearStatesWithTimeOut)
+{
+  qi::StateMachine sm;
+  qi::State* s[10];
+  qi::Transition* toSN[9];
+
+  for (unsigned int i = 0; i < 10; i++)
+  {
+    s[i] = new qi::State();
+    if (i != 0)
+    {
+      toSN[i - 1] = new qi::Transition(s[i]);
+      toSN[i - 1]->setTimeOut(50);
+    }
+    sm.addState(s[i]);
+  }
+
+  for (unsigned int i = 0; i < 9; i++)
+    s[i]->addTransition(toSN[i]);
+
+  sm.setInitialState(s[0]);
+  sm.setFinalState(s[9]);
+
+  sm.run();
+  qi::os::sleep(2);
+
+  EXPECT_TRUE(sm.isOnFinalState());
+  EXPECT_EQ(sm.getCurrentState(), s[9]);
+
+  sm.stop();
+}
+
+TEST(QiStateMachine, FourStatesMixedTimeOut)
+{
+  qi::StateMachine sm;
+  qi::State* s1 = new qi::State();
+  qi::State* s2 = new qi::State();
+  qi::State* s3 = new qi::State();
+  qi::State* s4 = new qi::State();
+  qi::Transition* toS2 = new qi::Transition(s2);
+  qi::Transition* toS3 = new qi::Transition(s3);
+  qi::Transition* toS4 = new qi::Transition(s4);
+
+  s1->addTransition(toS2);
+  s2->addTransition(toS3);
+  s3->addTransition(toS4);
+  toS2->setTimeOut(100);
+  toS4->setTimeOut(100);
+  sm.addState(s1);
+  sm.addState(s2);
+  sm.addState(s3);
+  sm.addState(s4);
+
+  sm.setInitialState(s1);
+  sm.setFinalState(s4);
+
+  sm.run();
+  qi::os::sleep(1);
+  toS3->trigger();
+  qi::os::sleep(1);
+
+  EXPECT_TRUE(sm.isOnFinalState());
+  EXPECT_EQ(sm.getCurrentState(), s4);
 
   sm.stop();
 }
