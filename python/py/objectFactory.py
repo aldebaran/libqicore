@@ -77,7 +77,7 @@ class objectFactory:
     timelineFile.close()
 
     timelineObject = qicore.Timeline(self._broker.getALBroker())
-    timelineObject.loadFromFile(boxName + ".xml")
+    timelineObject.loadFromFile(str(boxName + ".xml"))
     self._boxDict[parentName].setTimeline(timelineObject)
     self._TimelineDict[boxName] = timelineObject
 
