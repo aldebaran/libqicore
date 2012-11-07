@@ -459,8 +459,7 @@ std::string TimelinePrivate::getName() const
 /* -- Public -- */
 
 Timeline::Timeline(boost::shared_ptr<AL::ALBroker> broker)
-  : AL::ALTimeline(),
-    _p (new TimelinePrivate(broker))
+  : _p (new TimelinePrivate(broker))
 {
 }
 
@@ -482,7 +481,7 @@ bool Timeline::loadFromFile(std::string fileName)
     return false;
   }
 
-  boost::shared_ptr<const AL::XmlElement> elt = xmlFile->root()->firstChild("Timeline");
+  boost::shared_ptr<const AL::XmlElement> elt = xmlFile->root();
   _p->loadFromXml(elt);
   _p->setName(fileName);
 
@@ -507,12 +506,6 @@ void Timeline::stop(void)
 void Timeline::goTo(const int &pFrame)
 {
   _p->goTo(pFrame);
-}
-
-// TODO: Remove this method
-void Timeline::goTo(const std::string &pFrameName)
-{
-  std::cerr << "Method is no more implemented !" << std::endl;
 }
 
 int Timeline::getSize() const

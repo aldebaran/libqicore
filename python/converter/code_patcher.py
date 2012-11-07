@@ -131,7 +131,6 @@ class patcher:
                            + indent * " " * 2
                            + "if(not self._safeCallOfUserMethod(\"onInput_" + inpName + "\", p)):" + os.linesep
                            + indent * " " * 3 + "self.releaseResource()" + os.linesep
-                           + indent * " " * 3 + "return" + os.linesep
                            + indent * " " * 2 + "if (self.hasTimeline()):" + os.linesep
                            + indent * " " * 3 + " self.getTimeline().play()" + os.linesep
                            + indent * " " * 2 + "if (self.hasStateMachine()):" + os.linesep

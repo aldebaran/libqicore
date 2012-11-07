@@ -157,12 +157,14 @@ def write_state_machine(f, stateList, fps):
 def write_main(f):
   f.write("#!/usr/bin/env python" + os.linesep
           + "# -*- coding: utf-8 -*-" + os.linesep + os.linesep
+          + "import os" + os.linesep
+          + "import sys" + os.linesep * 2
           + "import naoqi" + os.linesep
           + "from naoqi import *" + os.linesep
           + "import objectFactory" + os.linesep + os.linesep
           + "broker = naoqi.ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, \"127.0.0.1\", 9559)" + os.linesep
           + "naoqi.ALProxy.initProxies()" + os.linesep
-          + "factory = objectFactory.objectFactory(\"./\", broker)" + os.linesep
+          + "factory = objectFactory.objectFactory(os.path.dirname(sys.argv[0]), broker)" + os.linesep
           + "root = factory.instanciateObjects(globals())" + os.linesep
           + "waiter = factory.createWaiterOnBox(root, globals())" + os.linesep
           + "root.__onLoad__()" + os.linesep

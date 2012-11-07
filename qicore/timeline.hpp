@@ -12,8 +12,6 @@
 
 # include <boost/shared_ptr.hpp>
 
-# include <albehavior/altimeline.h>
-
 # include <qicore/api.hpp>
 
 namespace AL
@@ -26,7 +24,7 @@ namespace qi
 
 class TimelinePrivate;
 
-class QICORE_API Timeline: public AL::ALTimeline
+class QICORE_API Timeline
 {
   public:
     Timeline(boost::shared_ptr<AL::ALBroker> broker);
@@ -34,17 +32,15 @@ class QICORE_API Timeline: public AL::ALTimeline
 
     bool loadFromFile(std::string fileName);
 
-    virtual void play(void);
-    virtual void pause(void);
-    virtual void stop(void);
+    void play(void);
+    void pause(void);
+    void stop(void);
 
-    virtual void goTo(const int &pFrame);
-    // TODO: Remove this method
-    virtual void goTo(const std::string &pFrameName);
+    void goTo(const int &pFrame);
 
-    virtual int getSize() const;
-    virtual int getFPS() const;
-    virtual void setFPS(const int fps);
+    int getSize() const;
+    int getFPS() const;
+    void setFPS(const int fps);
 
     void waitForTimelineCompletion();
 

@@ -42,6 +42,8 @@ def safeOpen(filename):
 
 class objectFactory:
   def __init__(self, folderName, broker):
+    if (folderName != "" and not folderName.endswith("/")):
+      folderName += "/"
     self._folderName = folderName
     self._broker = broker
     self._declaredObjects = set()
@@ -71,13 +73,13 @@ class objectFactory:
       return
 
     self._declaredObjects.add(boxName)
-    timelineFile = safeOpen(boxName + ".xml")
+    timelineFile = safeOpen(self._folderName + boxName + ".xml")
     if (timelineFile == None):
       return
     timelineFile.close()
 
     timelineObject = qicore.Timeline(self._broker.getALBroker())
-    timelineObject.loadFromFile(str(boxName + ".xml"))
+    timelineObject.loadFromFile(str(self._folderName + boxName + ".xml"))
     self._boxDict[parentName].setTimeline(timelineObject)
     self._TimelineDict[boxName] = timelineObject
 
