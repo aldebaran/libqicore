@@ -155,7 +155,7 @@ class objectFactory:
       toState = "_" + tr.attributes["To"].value
       timeOut = tr.attributes["TimeOut"].value
       transitionObject = qicore.Transition(self._StateDict[boxName + toState])
-      transitionObject.setTimeOut(timeOut)
+      transitionObject.setTimeOut(int(timeOut))
       self._StateDict[boxName + fromState].addTransition(transitionObject)
       self._TransitionDict[boxName + fromState + "__to__" + boxName + toState] = transitionObject
 
