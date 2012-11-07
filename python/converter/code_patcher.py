@@ -69,6 +69,14 @@ class patcher:
       if ("def __init__(" in s):
         self._indentForMethod = len(s) - len(s.lstrip())
 
+  def formatParameter(self, name, content_type):
+    print("Content type is ", content_type, " for ", name)
+    if (content_type == ParameterType.STRING or content_type == ParameterType.RESOURCE):
+      print("Special formating yeah")
+      return "\"" + name + "\""
+    else:
+      return name
+
   def constructInitCode(self):
     indent = self._indentForInit
     initCode = "qicoreLegacy.BehaviorLegacy.__init__(self, \"" + self._box.name + "\", True)" + os.linesep
@@ -95,7 +103,7 @@ class patcher:
       initCode += (indent * " "
                    + "self.addParameter(\"" + param.name
                   # FIXME: True or False random ? xD
-                   + "\", " + param.value + ", True)"
+                   + "\", " + self.formatParameter(param.value, int(param.content_type)) + ", True)"
                    + os.linesep)
 
     # TODO: Use resources here

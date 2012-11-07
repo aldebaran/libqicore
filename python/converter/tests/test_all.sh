@@ -2,7 +2,7 @@
 
 logFile=test_result.log
 
-rm -Rf objects
+rm -Rf objects $logFile
 IFS=:
 for str in `find ../../../../../ -name 'behavior.xar' -printf "%p:"`
 do
