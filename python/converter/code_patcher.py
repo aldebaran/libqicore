@@ -205,7 +205,12 @@ class patcher:
     self._code = self._code.replace("ALFrameManager", "self")
     #FIXME: This value cannot be acquired at this time...
     self._code = self._code.replace("self.getTimelineFps(self.getName())", "25")
-    self._code = self._code.replace("self.setTimelineFps(self.getName(), newfps)", "self.getTimeline().setFPS(newfps)")
+
+    # SetFPS has only a meaning when Timeline has an actuator curve
+    if (self._box.child and len(self._box.child.actuatorList) != 0):
+      self._code = self._code.replace("self.setTimelineFps(self.getName(), newfps)", "self.getTimeline().setFPS(newfps)")
+    else:
+      self._code = self._code.replace("self.setTimelineFps(self.getName(), newfps)", "pass")
 
   def patch(self):
     if (self._code.lstrip() == ""):

@@ -203,7 +203,7 @@ class newFormatGenerator:
       self.convertTimelineLayers(node)
 
     if (len(node.actuatorList) != 0):
-      f = open(node.name + "_timeline.xml", encoding='utf-8', mode='w')
+      f = open(node.name + "timeline.xml", encoding='utf-8', mode='w')
       write_actuatorList(f, node)
       f.close()
 
