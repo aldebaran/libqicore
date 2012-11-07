@@ -14,7 +14,7 @@ do
     exit
   fi
   cd objects
-  timeout 10 python2 main.py >> $logFile
+  timeout 10 python2 main.py
   result=$?
   if [ $result -ne 0 ]
   then

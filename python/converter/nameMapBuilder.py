@@ -11,6 +11,10 @@ class nameMapBuilder:
     self._namesStack = []
     self._boxStack = []
     self._boxes = {}
+    self._replacementChar = {" " : "_",
+                             ":" : "_",
+                             "+" : "Plus",
+                             "-" : "Minus"}
 
   def find_port_name(self, box, portId):
     for port in box.inputs + box.outputs + box.parameters:
@@ -25,7 +29,9 @@ class nameMapBuilder:
     return ""
 
   def formatName(self, name):
-    return name.replace(" ", "_").replace(":", "_")
+    for i,j in self._replacementChar.items():
+      name = name.replace(i, j)
+    return name
 
   def constructName(self):
     result = ""
