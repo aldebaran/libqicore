@@ -219,19 +219,19 @@ class patcher:
                             + indent * " " * 4 + "self.onResourceLost(None)" + os.linesep
                             + indent * " " * 3 + "except:" + os.linesep
                             + indent * " " * 4 + "bExist = False" + os.linesep
-                            + indent + " " * 2 + "if (self.hasTimeline()):" + os.linesep
-                            + indent + " " * 3 + "self.getTimeline().stop()" + os.linesep
-                            + indent + " " * 2 + "if (self.StateMachine()):" + os.linesep
-                            + indent + " " * 3 + "self.getStateMachine().stop()" + os.linesep
-                            + indent + " " * 2 + "self.releaseResource()" + os.linesep
-                            + indent + " " * 2 + "if (not bExist):" + os.linesep
-                            + indent + " " * 3 + "try:" + os.linesep
-                            + indent + " " * 4 + "self.onStopped()" + os.linesep
-                            + indent + " " * 3 + "except:" + os.linesep
-                            + indent + " " * 4 + "try:" + os.linesep
-                            + indent + " " * 5 + "self.onStopped(None)" + os.linesep
-                            + indent + " " * 4 + "except:" + os.linesep
-                            + indent + " " * 5 + "pass" + os.linesep)
+                            + indent * " " * 2 + "if (self.hasTimeline()):" + os.linesep
+                            + indent * " " * 3 + "self.getTimeline().stop()" + os.linesep
+                            + indent * " " * 2 + "if (self.StateMachine()):" + os.linesep
+                            + indent * " " * 3 + "self.getStateMachine().stop()" + os.linesep
+                            + indent * " " * 2 + "self.releaseResource()" + os.linesep
+                            + indent * " " * 2 + "if (not bExist):" + os.linesep
+                            + indent * " " * 3 + "try:" + os.linesep
+                            + indent * " " * 4 + "self.onStopped()" + os.linesep
+                            + indent * " " * 3 + "except:" + os.linesep
+                            + indent * " " * 4 + "try:" + os.linesep
+                            + indent * " " * 5 + "self.onStopped(None)" + os.linesep
+                            + indent * " " * 4 + "except:" + os.linesep
+                            + indent * " " * 5 + "pass" + os.linesep)
 
   def addResourceMethod_Pause_on_demand(self):
     indent = self._indentForMethod

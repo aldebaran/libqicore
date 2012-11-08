@@ -86,12 +86,7 @@ class objectFactory:
   def parseDiagram(self, boxName):
     boxesInDiagram = set()
 
-    diagramFile = safeOpen(self._folderName + boxName + ".xml")
-    if (diagramFile == None):
-      print("No " + boxName + " in folder, abort...")
-      sys.exit(2)
-
-    dom = xml.dom.minidom.parse(diagramFile)
+    dom = xml.dom.minidom.parse(self._folderName + boxName + ".xml")
     root = dom.getElementsByTagName('Diagram')[0]
 
     for obj in root.getElementsByTagName("Object"):
@@ -117,7 +112,6 @@ class objectFactory:
       if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.PARAMETER):
         self._boxDict[inputObject].connectParameter(str(inputName), str(outputObject + "__" + outputName), True)
 
-    diagramFile.close()
     return boxesInDiagram
 
   def parseStateMachine(self, boxName, parentBoxName):
@@ -125,13 +119,13 @@ class objectFactory:
       return
 
     self._declaredObjects.add(boxName)
-    stateMachineFile = safeOpen(self._folderName + boxName + ".xml")
-    if (stateMachineFile == None):
-      return
 
     stateMachineObject = qicore.StateMachine()
 
-    dom = xml.dom.minidom.parse(stateMachineFile)
+    try:
+      dom = xml.dom.minidom.parse(self._folderName + boxName + ".xml")
+    except IOError as e:
+      return
 
     root = dom.getElementsByTagName('StateMachine')[0]
     for state in root.getElementsByTagName('State'):
@@ -169,7 +163,6 @@ class objectFactory:
     stateMachineObject.setName(str(boxName))
     self._boxDict[parentBoxName].setStateMachine(stateMachineObject)
 
-    stateMachineFile.close()
     self._StateMachineDict[boxName] = stateMachineObject
 
   def parseBox(self, boxName):
@@ -177,12 +170,8 @@ class objectFactory:
       return
 
     self._declaredObjects.add(boxName)
-    xmlFile = safeOpen(self._folderName + boxName + ".xml")
-    if (xmlFile == None):
-      print("No " + boxName + " in folder, abort...")
-      sys.exit(2)
 
-    dom = xml.dom.minidom.parse(xmlFile)
+    dom = xml.dom.minidom.parse(self._folderName + boxName + ".xml")
     root = dom.getElementsByTagName('Box')[0]
 
     connectionMap = {}
@@ -211,4 +200,4 @@ class objectFactory:
 
     self.parseTimeline(boxName + "_timeline", boxName)
     self.parseStateMachine(boxName + "_state_machine", boxName)
-    xmlFile.close()
+
