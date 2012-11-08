@@ -12,9 +12,10 @@ class nameMapBuilder:
     self._boxStack = []
     self._boxes = {}
     self._replacementChar = {" " : "_",
-                             ":" : "_",
+                             ":" : "Colon",
                              "+" : "Plus",
-                             "-" : "Minus"}
+                             "-" : "Minus",
+                             "?" : "Query"}
 
   def find_port_name(self, box, portId):
     for port in box.inputs + box.outputs + box.parameters:
