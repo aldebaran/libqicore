@@ -62,7 +62,7 @@ void State::removeTransition(Transition *tr)
   _p->removeTransition(tr);
 }
 
-std::list<Transition*>& State::getTransitions()
+std::list<Transition*>& State::getTransitions() const
 {
   return _p->_transitions;
 }
@@ -72,7 +72,7 @@ void State::setDiagram(Diagram* d)
   _p->setDiagram(d);
 }
 
-Diagram* State::getDiagram()
+Diagram* State::getDiagram() const
 {
   return _p->_diagram;
 }
@@ -82,7 +82,7 @@ void State::setName(std::string name)
   _p->_name = name;
 }
 
-std::string State::getName()
+std::string State::getName() const
 {
   return _p->_name;
 }

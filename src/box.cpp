@@ -71,7 +71,7 @@ Box::~Box()
   delete _p;
 }
 
-Timeline* Box::getTimeline()
+Timeline* Box::getTimeline() const
 {
   return _p->_timeline;
 }
@@ -86,7 +86,7 @@ bool Box::hasTimeline() const
   return _p->_timeline;
 }
 
-StateMachine* Box::getStateMachine()
+StateMachine* Box::getStateMachine() const
 {
   return _p->_stateMachine;
 }
@@ -111,19 +111,9 @@ void Box::setName(std::string name)
   _p->_name = name;
 }
 
-std::string Box::getName()
+std::string Box::getName() const
 {
   return _p->_name;
-}
-
-void Box::load()
-{
-  _p->load();
-}
-
-void Box::unload()
-{
-  _p->unload();
 }
 
 void Box::setPath(std::string path)
@@ -131,7 +121,7 @@ void Box::setPath(std::string path)
   _p->_path = path;
 }
 
-std::string Box::getPath()
+std::string Box::getPath() const
 {
   return _p->_path;
 }

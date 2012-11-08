@@ -27,15 +27,15 @@ class QICORE_API State
     ~State();
 
     void setName(std::string name);
-    std::string getName();
+    std::string getName() const;
 
     void addTransition(Transition* tr);
     void removeTransition(Transition* tr);
 
-    std::list<Transition*>& getTransitions();
+    std::list<Transition*>& getTransitions() const;
 
     void setDiagram(Diagram* d);
-    Diagram* getDiagram();
+    Diagram* getDiagram() const;
 
   private:
     StatePrivate* _p;

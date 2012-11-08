@@ -6,7 +6,9 @@
 #include <qi/log.hpp>
 
 #include <qicore/diagram.hpp>
+
 #include "diagram_private.hpp"
+#include "box_private.hpp"
 
 namespace qi
 {
@@ -31,7 +33,7 @@ void DiagramPrivate::removeBox(Box *b)
   _boxes.erase(b);
 }
 
-void DiagramPrivate::loadAll()
+void DiagramPrivate::loadAllBoxes()
 {
   for (std::set<Box*>::iterator it = _boxes.begin();
         it != _boxes.end(); it++)
@@ -40,7 +42,7 @@ void DiagramPrivate::loadAll()
   }
 }
 
-void DiagramPrivate::unloadAll()
+void DiagramPrivate::unloadAllBoxes()
 {
   for (std::set<Box*>::iterator it = _boxes.begin();
         it != _boxes.end(); it++)
@@ -78,13 +80,13 @@ void DiagramPrivate::loadFromDiagram(Diagram* d)
 void DiagramPrivate::loadBox(Box* b)
 {
   qiLogDebug("qiCore.Diagram") << "Load the box named: " << b->getName() << std::endl;
-  b->load();
+  b->_p->load();
 }
 
 void DiagramPrivate::unloadBox(Box *b)
 {
   qiLogDebug("qiCore.Diagram") << "Unload the box named: " << b->getName() << std::endl;
-  b->unload();
+  b->_p->unload();
 }
 
 /* Public */
@@ -108,27 +110,12 @@ void Diagram::removeBox(Box *b)
   _p->removeBox(b);
 }
 
-void Diagram::loadAllBoxes()
-{
-  _p->loadAll();
-}
-
-void Diagram::unloadAllBoxes()
-{
-  _p->unloadAll();
-}
-
-void Diagram::loadFromDiagram(Diagram *d)
-{
-  _p->loadFromDiagram(d);
-}
-
 void Diagram::setName(std::string name)
 {
   _p->_name = name;
 }
 
-std::string Diagram::getName()
+std::string Diagram::getName() const
 {
   return _p->_name;
 }

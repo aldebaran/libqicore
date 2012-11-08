@@ -22,27 +22,22 @@ class State;
 class QICORE_API Transition
 {
   public:
-    friend class StatePrivate;
-
     Transition(State* to);
     ~Transition();
 
     void setName(std::string name);
-    std::string getName();
+    std::string getName() const;
 
-    void load(StateMachine* s);
-    void unload();
 
     void trigger();
 
-    State* getFromState();
-    State* getToState();
+    State* getFromState() const;
+    State* getToState() const;
 
-    bool hasTimeOut();
-    int getTimeOut();
+    bool hasTimeOut() const;
+    int getTimeOut() const;
     void setTimeOut(int n);
 
-  private:
     TransitionPrivate* _p;
 };
 

@@ -27,23 +27,19 @@ class QICORE_API Box
 
     void setBroker(boost::shared_ptr<AL::ALBroker> broker);
     void setName(std::string name);
-    std::string getName();
+    std::string getName() const;
 
     void setPath(std::string path);
-    std::string getPath();
+    std::string getPath() const;
 
-    void load();
-    void unload();
-
-    Timeline* getTimeline();
+    Timeline* getTimeline() const;
     void setTimeline(Timeline*);
     bool hasTimeline() const;
 
-    StateMachine* getStateMachine();
+    StateMachine* getStateMachine() const;
     void setStateMachine(StateMachine*);
     bool hasStateMachine() const;
 
-  private:
     BoxPrivate*           _p;
 };
 

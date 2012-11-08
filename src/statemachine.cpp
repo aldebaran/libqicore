@@ -12,7 +12,10 @@
 #include <qicore/transition.hpp>
 #include <qicore/diagram.hpp>
 #include <qicore/statemachine.hpp>
+
 #include "statemachine_private.hpp"
+#include "transition_private.hpp"
+#include "diagram_private.hpp"
 
 namespace qi
 {
@@ -171,7 +174,7 @@ int StateMachinePrivate::loadTransitions()
         it != trs.end(); it++)
   {
     /* Set State machine for Event Callback */
-    (*it)->load(_parent);
+    (*it)->_p->load(_parent);
 
     if ((*it)->hasTimeOut())
     {
@@ -198,7 +201,7 @@ void StateMachinePrivate::unloadTransitions()
   for (std::list<Transition*>::iterator it = trs.begin();
         it != trs.end(); it++)
   {
-    (*it)->unload();
+    (*it)->_p->unload();
   }
 }
 
@@ -207,12 +210,12 @@ void StateMachinePrivate::loadDiagram(State* newState)
   if (_currentState)
   {
     if (newState->getDiagram())
-      newState->getDiagram()->loadFromDiagram(_currentState->getDiagram());
+      newState->getDiagram()->_p->loadFromDiagram(_currentState->getDiagram());
   }
   else
   {
     if (newState->getDiagram())
-      newState->getDiagram()->loadAllBoxes();
+      newState->getDiagram()->_p->loadAllBoxes();
   }
 }
 
@@ -248,7 +251,7 @@ void StateMachinePrivate::stop()
 
     unloadTransitions();
     if (_currentState && _currentState->getDiagram())
-      _currentState->getDiagram()->unloadAllBoxes();
+      _currentState->getDiagram()->_p->unloadAllBoxes();
     _currentState = 0;
   } /* End locked Section */
 
@@ -335,12 +338,12 @@ void StateMachine::setName(std::string name)
   _p->_name = name;
 }
 
-std::string StateMachine::getName()
+std::string StateMachine::getName() const
 {
   return _p->_name;
 }
 
-State* StateMachine::getCurrentState()
+State* StateMachine::getCurrentState() const
 {
   return _p->_currentState;
 }

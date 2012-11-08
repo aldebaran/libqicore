@@ -51,6 +51,16 @@ State* TransitionPrivate::getToState()
   return _toState;
 }
 
+void TransitionPrivate::load(StateMachine *s)
+{
+  setMachine(s);
+}
+
+void TransitionPrivate::unload()
+{
+  setMachine(0);
+}
+
 /* -- Public -- */
 
 Transition::Transition(State* s)
@@ -63,37 +73,27 @@ Transition::~Transition()
   delete _p;
 }
 
-void Transition::load(StateMachine *s)
-{
-  _p->setMachine(s);
-}
-
-void Transition::unload()
-{
-  _p->setMachine(0);
-}
-
 void Transition::trigger()
 {
   _p->triggerTransition();
 }
 
-State* Transition::getFromState()
+State* Transition::getFromState() const
 {
   return _p->getFromState();
 }
 
-State* Transition::getToState()
+State* Transition::getToState() const
 {
   return _p->getToState();
 }
 
-bool Transition::hasTimeOut()
+bool Transition::hasTimeOut() const
 {
   return _p->_hasTimeOut;
 }
 
-int Transition::getTimeOut()
+int Transition::getTimeOut() const
 {
   return _p->_timeOut;
 }
@@ -109,7 +109,7 @@ void Transition::setName(std::string name)
   _p->_name = name;
 }
 
-std::string Transition::getName()
+std::string Transition::getName() const
 {
   return _p->_name;
 }

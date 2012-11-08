@@ -24,13 +24,17 @@ class TransitionPrivate
     virtual ~TransitionPrivate();
 
     void triggerTransition();
-    void setMachine(StateMachine* s);
     void setFromState(State* s);
 
     State* getFromState();
     State* getToState();
 
+    void load(StateMachine *s);
+    void unload();
+
   private:
+    void setMachine(StateMachine* s);
+
     std::string   _name;
     bool          _hasTimeOut;
     int           _timeOut;

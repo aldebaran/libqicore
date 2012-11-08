@@ -18,24 +18,15 @@ class DiagramPrivate;
 
 class QICORE_API Diagram
 {
-  friend class DiagramPrivate;
-
   public:
     Diagram();
     ~Diagram();
 
     void setName(std::string name);
-    std::string getName();
+    std::string getName() const;
 
     void addBox(Box* b);
     void removeBox(Box* b);
-
-    void loadAllBoxes();
-    void unloadAllBoxes();
-
-    void loadFromDiagram(Diagram* d);
-
-  private:
 
     DiagramPrivate* _p;
 };

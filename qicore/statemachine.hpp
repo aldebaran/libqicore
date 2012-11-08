@@ -26,7 +26,7 @@ class QICORE_API StateMachine
     ~StateMachine();
 
     void setName(std::string name);
-    std::string getName();
+    std::string getName() const;
 
     bool addState(State* state);
     bool removeState(State* state);
@@ -42,7 +42,7 @@ class QICORE_API StateMachine
 
     bool goToState(State* state);
     bool executeTransition(Transition* tr);
-    State* getCurrentState();
+    State* getCurrentState() const;
 
     void waitUntilStop();
 
