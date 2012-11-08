@@ -4,6 +4,8 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+import re
+
 import code_patcher
 
 class nameMapBuilder:
@@ -11,11 +13,6 @@ class nameMapBuilder:
     self._namesStack = []
     self._boxStack = []
     self._boxes = {}
-    self._replacementChar = {" " : "_",
-                             ":" : "Colon",
-                             "+" : "Plus",
-                             "-" : "Minus",
-                             "?" : "Query"}
 
   def find_port_name(self, box, portId):
     for port in box.inputs + box.outputs + box.parameters:
@@ -30,9 +27,8 @@ class nameMapBuilder:
     return ""
 
   def formatName(self, name):
-    for i,j in self._replacementChar.items():
-      name = name.replace(i, j)
-    return name
+    pattern = re.compile('[\W_]+')
+    return pattern.sub('_', name)
 
   def constructName(self):
     result = ""
@@ -52,6 +48,7 @@ class nameMapBuilder:
 
   def visit_Timeline(self, node):
     node.name = self.constructName()
+    node.name = self.formatName(node.name)
     for layer in node.behaviorLayers:
       self.visit(layer)
 
@@ -67,6 +64,7 @@ class nameMapBuilder:
   def visit_Diagram(self, node):
     # Diagram has no name in legacy format so we fill it
     node.name = self.constructName() + "diagram"
+    node.name = self.formatName(node.name)
     idMap = {}
     for child in node.boxes:
       self.visit(child)
