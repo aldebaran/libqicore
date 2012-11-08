@@ -38,6 +38,7 @@ class QICORE_API StateMachine
     bool isOnFinalState() const;
 
     void run();
+    void pause();
     void stop();
 
     bool goToState(State* state);

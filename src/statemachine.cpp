@@ -320,6 +320,10 @@ void StateMachine::stop()
   _p->stop();
 }
 
+void StateMachine::pause()
+{
+}
+
 bool StateMachine::goToState(State *state)
 {
   return _p->goToState(state);
