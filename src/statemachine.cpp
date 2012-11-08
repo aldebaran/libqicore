@@ -154,6 +154,8 @@ bool StateMachinePrivate::goToState(State* state)
 
 bool StateMachinePrivate::update()
 {
+  pauseExecuter();
+
   Transition* tr = _timedTransition;
   _timedTransition = 0;
   if (tr)
