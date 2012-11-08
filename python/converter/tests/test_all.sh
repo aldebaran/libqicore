@@ -4,8 +4,7 @@ logFile=test_result.log
 
 rm -Rf objects $logFile
 IFS=:
-#for str in `find ../../../../../ -name 'behavior.xar' -printf "%p:"`
-for str in `find ../../../../../naoqi/behavior/framemanager -name 'behavior.xar' -printf "%p:"`
+for str in `find ../../../../../ -name 'behavior.xar' -printf "%p:"`
 do
   echo "$str"
   ../xar_converter.py "$str" >> $logFile

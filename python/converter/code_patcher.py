@@ -99,14 +99,12 @@ class patcher:
                       os.linesep)
         initCode +=  (indent * " "
                       + "self.addOutput(\""
-                      # FIXME: True or false if bang
-                      + out.name + "\", True)" + os.linesep)
+                      + out.name + "\"," + str(int(out.type) == IOType.BANG) + ")" + os.linesep)
 
     for param in self._box.parameters:
       initCode += (indent * " "
                    + "self.addParameter(\"" + param.name
-                  # FIXME: True or False random ? xD
-                   + "\", " + self.formatParameter(param.value, int(param.content_type)) + ", True)"
+                   + "\", " + self.formatParameter(param.value, int(param.content_type)) + "," + str(int(param.inherits_from_parent) == 1) + ")"
                    + os.linesep)
 
     if (len(self._box.resources) != 0):
