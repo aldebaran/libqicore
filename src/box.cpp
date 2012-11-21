@@ -4,7 +4,7 @@
 */
 
 #include <alproxies/almemoryproxy.h>
-#include <alcore/alerror.h>
+#include <alerror/alerror.h>
 #include <qi/log.hpp>
 
 #include <qicore/box.hpp>
