@@ -10,6 +10,7 @@
   #include <qicore/statemachine.hpp>
   #include <qicore/state.hpp>
   #include <qicore/transition.hpp>
+
 %}
 
 %include <qicore/api.hpp>

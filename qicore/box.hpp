@@ -8,6 +8,8 @@
 #ifndef BOX_H_
 # define BOX_H_
 
+# include <Python.h>
+
 # include <alcommon/albroker.h>
 
 # include <qicore/api.hpp>
@@ -25,7 +27,6 @@ class QICORE_API Box
     Box();
     ~Box();
 
-    void setBroker(boost::shared_ptr<AL::ALBroker> broker);
     void setName(std::string name);
     std::string getName() const;
 
@@ -39,6 +40,9 @@ class QICORE_API Box
     StateMachine* getStateMachine() const;
     void setStateMachine(StateMachine*);
     bool hasStateMachine() const;
+
+    void registerOnLoadCallback(PyObject* callable);
+    void registerOnUnloadCallback(PyObject* callable);
 
     BoxPrivate*           _p;
 };

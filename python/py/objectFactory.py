@@ -15,15 +15,15 @@ import qicoreLegacy
 
 class behaviorWaiter_class(qicoreLegacy.BehaviorLegacy):
   def __init__(self, broker):
-    qicoreLegacy.BehaviorLegacy.__init__(self, "behaviorWaiter", True)
+    qicoreLegacy.BehaviorLegacy.__init__(self, "behaviorWaiter")
     self.boxName = "behaviorWaiter"
     self.setName("behaviorWaiter")
-    self.setBroker(broker.getALBroker())
-    self.BIND_PYTHON(self.getName(), "onInput_onDone__", 1)
     self.addInput("onDone")
     self.isComplete = False
+
   def onInput_onDone__(self, p):
     self.isComplete = True
+
   def waitForCompletion(self):
     while (self.isComplete == False):
       time.sleep(0.2)
@@ -63,7 +63,7 @@ class objectFactory:
 
   def createWaiterOnBox(self, box, topdict):
     waiter = behaviorWaiter_class(self._broker)
-    waiter.connectInput("onDone", box.getName() + "__onStopped", True)
+    waiter.connectInput("onDone", box, "onStopped")
     self._boxDict[waiter.getName()] = waiter
     topdict[waiter.getName()] = waiter
     return waiter
@@ -106,11 +106,11 @@ class objectFactory:
       self.parseBox(outputObject)
 
       if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.INPUT):
-        self._boxDict[inputObject].connectInput(str(inputName), str(outputObject + "__" + outputName), True)
+        self._boxDict[inputObject].connectInput(str(inputName), self._boxDict[outputObject], outputName)
       if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.OUTPUT):
-        self._boxDict[inputObject].connectOutput(str(inputName), str(outputObject + "__" + outputName), True)
+        self._boxDict[inputObject].connectOutput(str(inputName), self._boxDict[outputObject], outputName)
       if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.PARAMETER):
-        self._boxDict[inputObject].connectParameter(str(inputName), str(outputObject + "__" + outputName), True)
+        self._boxDict[inputObject].connectParameter(str(inputName), self._boxDict[OutputObject], outputName)
 
     return boxesInDiagram
 
@@ -194,9 +194,10 @@ class objectFactory:
     boxClass = getattr(module, boxName + "_class")
     boxObject = boxClass(self._broker)
     self._boxDict[boxName] = boxObject
-    boxObject.connectInput("onLoad", str(boxName + "____Internal__OnLoad"), True)
 
     boxObject.setPath(self._folderName)
+    boxObject.registerOnLoadCallback(boxObject.__onLoad__)
+    boxObject.registerOnUnloadCallback(boxObject.__onUnload__)
 
     self.parseTimeline(boxName + "_timeline", boxName)
     self.parseStateMachine(boxName + "_state_machine", boxName)

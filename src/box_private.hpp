@@ -8,8 +8,7 @@
 #ifndef BOX_PRIVATE_H_
 # define BOX_PRIVATE_H_
 
-# include <alcommon/albroker.h>
-
+# include <qicore/box.hpp>
 # include <qicore/statemachine.hpp>
 # include <qicore/timeline.hpp>
 
@@ -27,14 +26,18 @@ class BoxPrivate
     void load();
     void unload();
 
+    void registerOnLoadCallback(PyObject* callable);
+    void registerOnUnloadCallback(PyObject* callable);
+
   private:
+    void invokeCallback(PyObject* callback);
+
     StateMachine*         _stateMachine;
     Timeline*             _timeline;
     std::string           _name;
     std::string           _path;
-
-    /* TODO: remove me */
-    boost::shared_ptr<AL::ALBroker> _broker;
+    PyObject*             _onLoadCallback;
+    PyObject*             _onUnloadCallback;
 };
 
 };

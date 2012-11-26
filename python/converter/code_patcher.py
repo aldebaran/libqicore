@@ -82,21 +82,14 @@ class patcher:
 
   def constructInitCode(self):
     indent = self._indentForInit
-    initCode = "qicoreLegacy.BehaviorLegacy.__init__(self, \"" + self._box.name + "\", True)" + os.linesep
-    initCode += indent * " " + "self.boxName = \"" + self._box.name + "\"" + os.linesep
-    initCode += indent * " " + "self.setName(\"" + self._box.name + "\")" + os.linesep
-    initCode += indent * " " + "self.setBroker(broker.getALBroker())" + os.linesep
+    initCode = "qicoreLegacy.BehaviorLegacy.__init__(self, \"" + self._box.name + "\")" + os.linesep
 
     for inp in self._box.inputs:
       if (self.addInputMethod(inp.name, int(inp.nature))):
-        initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onInput_" + inp.name + "__\", 1)" +
-            os.linesep)
         initCode += (indent * " " + "self.addInput(\"" + inp.name + "\")" + os.linesep)
 
     for out in self._box.outputs:
       if (self.addOutputMethod(out.name, int(out.nature))):
-        initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"" + out.name + "\", 1)" +
-                      os.linesep)
         initCode +=  (indent * " "
                       + "self.addOutput(\""
                       + out.name + "\"," + str(int(out.type) == IOType.BANG) + ")" + os.linesep)
@@ -117,13 +110,7 @@ class patcher:
     self._code = self._code.replace("(GeneratedClass):", "(qicoreLegacy.BehaviorLegacy):", 1)
 
   def addInputMethod_onLoad(self, inpName):
-    indent = self._indentForMethod
-    self._addedMethods += (indent * " " + "def onInput_" + inpName + "__(self, p):" + os.linesep
-                           + indent * " " * 2
-                           + "self.__onLoad__()" + os.linesep
-                           + indent * " " * 2 + "self.stimulateIO(\"" + inpName + "\", p)"
-                           + os.linesep * 2)
-    return True
+    return False
 
   def addInputMethod_STMValue(self, inpName):
     return False
@@ -278,7 +265,6 @@ class patcher:
     self._code = self._code.replace("\t", "  ")
     self._code = ( "#!/usr/bin/env python" + os.linesep
                   + "# -*- coding: utf-8 -*-" + os.linesep * 2
-                  + "import naoqi" + os.linesep
                   + "import time" + os.linesep
                   + "from naoqi import *" + os.linesep
                   + "import qicore" + os.linesep

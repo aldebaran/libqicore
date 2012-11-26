@@ -159,17 +159,19 @@ def write_main(f):
           + "# -*- coding: utf-8 -*-" + os.linesep + os.linesep
           + "import os" + os.linesep
           + "import sys" + os.linesep * 2
-          + "import naoqi" + os.linesep
+          + "from qimessaging.application import Application" + os.linesep
           + "from naoqi import *" + os.linesep
+          + "import qicore" + os.linesep
           + "import objectFactory" + os.linesep + os.linesep
-          + "broker = naoqi.ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, \"127.0.0.1\", 9559)" + os.linesep
-          + "naoqi.ALProxy.initProxies()" + os.linesep
+          + "app = Application()" + os.linesep
+          + "broker = ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, \"127.0.0.1\", 9559)" + os.linesep
           + "factory = objectFactory.objectFactory(os.path.dirname(sys.argv[0]), broker)" + os.linesep
           + "root = factory.instanciateObjects(globals())" + os.linesep
           + "waiter = factory.createWaiterOnBox(root, globals())" + os.linesep
           + "root.__onLoad__()" + os.linesep
           + "root.onInput_onStart__(None)" + os.linesep
-          + "waiter.waitForCompletion()")
+          + "waiter.waitForCompletion()" + os.linesep
+          + "app.stop()" + os.linesep)
 
 class interval:
   def __init__(self, a, b, obj):
@@ -323,3 +325,4 @@ class newFormatGenerator:
     for st in stateList:
       print("State : ", st.begin, " -> ", st.end, "with : ", st.obj_nb)
     return stateList
+

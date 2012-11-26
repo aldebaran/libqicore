@@ -30,7 +30,7 @@ qi_create_lib(qicore SRC
   src/box_private.hpp src/box.cpp
   src/diagram_private.hpp src/diagram.cpp)
 
-qi_use_lib(qicore ALSERIAL ALMATHINTERNAL ALBEHAVIOR ALERROR)
+qi_use_lib(qicore ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
 
 qi_install(tests/test_statemachine.cpp DESTINATION ".")
 

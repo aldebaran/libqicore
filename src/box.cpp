@@ -3,8 +3,6 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
-#include <alproxies/almemoryproxy.h>
-#include <alerror/alerror.h>
 #include <qi/log.hpp>
 
 #include <qicore/box.hpp>
@@ -17,7 +15,9 @@ BoxPrivate::BoxPrivate()
   : _stateMachine (0),
     _timeline (0),
     _name ("Unnamed-Box"),
-    _path ("./")
+    _path ("./"),
+    _onLoadCallback(0),
+    _onUnloadCallback(0)
 {
 }
 
@@ -27,37 +27,48 @@ BoxPrivate::~BoxPrivate()
 
 void BoxPrivate::load()
 {
-  /* Rewrite this method for naoqi2 */
-  boost::shared_ptr<AL::ALMemoryProxy> mem = _broker->getMemoryProxy();
-
-  try
-  {
-    mem->raiseMicroEvent(_name + "____Internal__OnLoad", AL::ALValue());
-  }
-  catch (AL::ALError& e)
-  {
-    std::stringstream ss;
-    ss << "Error During STM access : Error #=" << e.toString();
-    qiLogError("qiCore") <<  ss.str() << std::endl;
-  }
+  invokeCallback(_onLoadCallback);
 }
 
 void BoxPrivate::unload()
 {
-  /* Rewrite this method for naoqi2 */
-  boost::shared_ptr<AL::ALMemoryProxy> mem = _broker->getMemoryProxy();
+  invokeCallback(_onUnloadCallback);
+}
 
-  try
+void BoxPrivate::registerOnLoadCallback(PyObject* callable)
+{
+  Py_XDECREF(_onLoadCallback);
+  _onLoadCallback = callable;
+  Py_XINCREF(_onLoadCallback);
+}
+
+void BoxPrivate::registerOnUnloadCallback(PyObject* callable)
+{
+  Py_XDECREF(_onUnloadCallback);
+  _onUnloadCallback = callable;
+  Py_XINCREF(_onUnloadCallback);
+}
+
+void BoxPrivate::invokeCallback(PyObject* callback)
+{
+  if (!callback)
+    return;
+
+  PyObject* ret;
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  ret = PyObject_CallFunctionObjArgs(callback, NULL);
+  if (!ret)
   {
-    mem->raiseMicroEvent(_name + "____Internal__OnUnload", AL::ALValue());
-  }
-  catch (AL::ALError& e)
-  {
-    std::stringstream ss;
-    ss << "Error During STM access : Error #=" << e.toString();
-    qiLogError("qiCore") <<  ss.str() << std::endl;
+    qiLogError("qiCore.box") << "Unable to call python callback";
+    PyErr_Print();
+    PyErr_Clear();
   }
 
+  Py_XDECREF(ret);
+
+  PyGILState_Release(gstate);
 }
 
 /* Public Class */
@@ -101,11 +112,6 @@ bool Box::hasStateMachine() const
   return _p->_stateMachine;
 }
 
-void Box::setBroker(boost::shared_ptr<AL::ALBroker> broker)
-{
-  _p->_broker = broker;
-}
-
 void Box::setName(std::string name)
 {
   _p->_name = name;
@@ -124,6 +130,16 @@ void Box::setPath(std::string path)
 std::string Box::getPath() const
 {
   return _p->_path;
+}
+
+void Box::registerOnLoadCallback(PyObject* callable)
+{
+  _p->registerOnLoadCallback(callable);
+}
+
+void Box::registerOnUnloadCallback(PyObject* callable)
+{
+  _p->registerOnUnloadCallback(callable);
 }
 
 };
