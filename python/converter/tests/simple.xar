@@ -15,7 +15,7 @@
             <BehaviorLayer name="behavior_layer1">
                 <BehaviorKeyframe name="keyframe1" index="1">
                     <Diagram>
-                        <Box name="Say" id="1" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="337" y="82">
+                        <Box name="Say" id="1" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="129" y="130">
                             <bitmap>media/images/box/interaction/say.png</bitmap>
                             <script language="4">
                                 <content>
@@ -51,7 +51,7 @@
                                 <BehaviorLayer name="behavior_layer1">
                                     <BehaviorKeyframe name="keyframe1" index="1">
                                         <Diagram>
-                                            <Box name="Say Text" id="2" localization="8" tooltip="Say the text received on its input." x="494" y="90">
+                                            <Box name="Say Text" id="2" localization="8" tooltip="Say the text received on its input." x="422" y="65">
                                                 <bitmap>media/images/box/interaction/say.png</bitmap>
                                                 <script language="4">
                                                     <content>
@@ -122,11 +122,25 @@ class MyClass(GeneratedClass):
 
 		self.tts = ALProxy("ALTextToSpeech")
 		self.sentences = {
+			"Chinese" : " 你好 ",
 			"English" : " Hello ",
 			"French" : " Bonjour ",
 			"German" : " Hallo ",
 			"Italian" : " Ciao ",
-			"Spanish" : " Hola "
+			"Japanese" : " こんにちは ",
+			"Korean" : " 안녕하세요 ",
+			"Portuguese" : " Olá ",
+			"Brazilian" : " Olá ",
+			"Spanish" : " Hola ",
+			"Arabic" : " مرحبا ",
+			"Polish" : " Cześć ",
+			"Czech" : " Ahoj ",
+			"Dutch" : " Hallo ",
+			"Danish" : " Hej ",
+			"Finnish" : " Hei ",
+			"Swedish" : " Hallå ",
+			"Russian" : " Привет ",
+			"Turkish" : " Merhaba "
 		}
 
 	def onInput_onStart(self):
@@ -135,11 +149,25 @@ class MyClass(GeneratedClass):
 </content>
                                                 </script>
                                                 <pluginContent>
+                                                    <chinese>你好</chinese>
                                                     <english>Hello</english>
                                                     <french>Bonjour</french>
                                                     <german>Hallo</german>
                                                     <italian>Ciao</italian>
+                                                    <japanese>こんにちは</japanese>
+                                                    <korean>안녕하세요</korean>
+                                                    <portuguese>Olá</portuguese>
+                                                    <brazilian>Olá</brazilian>
                                                     <spanish>Hola</spanish>
+                                                    <arabic>مرحبا</arabic>
+                                                    <polish>Cześć</polish>
+                                                    <czech>Ahoj</czech>
+                                                    <dutch>Hallo</dutch>
+                                                    <danish>Hej</danish>
+                                                    <finnish>Hei</finnish>
+                                                    <swedish>Hallå</swedish>
+                                                    <russian>Привет</russian>
+                                                    <turkish>Merhaba</turkish>
                                                     <language>1</language>
                                                 </pluginContent>
                                                 <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
