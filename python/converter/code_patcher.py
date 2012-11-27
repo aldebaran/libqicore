@@ -95,7 +95,7 @@ class patcher:
 
     for out in self._box.outputs:
       if (self.addOutputMethod(out.name, int(out.nature))):
-        initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"onOutput_" + out.name + "__\", 1)" +
+        initCode += (indent * " " + "self.BIND_PYTHON(self.getName(), \"" + out.name + "\", 1)" +
                       os.linesep)
         initCode +=  (indent * " "
                       + "self.addOutput(\""
