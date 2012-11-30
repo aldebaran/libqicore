@@ -15,19 +15,22 @@ def parse(file):
   return sax_parser.parse(file)
 
 def main():
-  if len(sys.argv) != 2:
+  if len(sys.argv) not in range(2,4):
     print("Incorrect number of arguments")
     return
+  if (len(sys.argv) == 3):
+    folder = sys.argv[2]
+  else:
+    folder = "objects"
+
   root = parse(sys.argv[1])
   nmb = nameMapBuilder.nameMapBuilder()
   nmb.visit(root)
 
   nameMap = nmb.getNameMap()
   nfg = newFormatGenerator.newFormatGenerator(nameMap)
-  for key,value in nameMap.items():
-    print("Key is : ", key,  " value is: ", value)
-  os.mkdir("objects")
-  os.chdir("objects")
+  os.mkdir(folder)
+  os.chdir(folder)
   nfg.visit(root)
   nfg.generateMain()
   os.chdir("./..")
