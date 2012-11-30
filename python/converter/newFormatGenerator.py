@@ -159,14 +159,12 @@ def write_main(f):
           + "# -*- coding: utf-8 -*-" + os.linesep + os.linesep
           + "import os" + os.linesep
           + "import sys" + os.linesep * 2
-          + "from qimessaging.application import Application" + os.linesep
           + "from naoqi import *" + os.linesep
           + "import qicore" + os.linesep
           + "import objectFactory" + os.linesep + os.linesep
           + "if (len(sys.argv) != 3):" + os.linesep
           + "  print(\"Usage: python2 main.py IP_Address Port\")" + os.linesep
           + "  sys.exit(2)" + os.linesep
-          + "app = Application()" + os.linesep
           + "broker = ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, sys.argv[1], int(sys.argv[2]))" + os.linesep
           + "factory = objectFactory.objectFactory(os.path.dirname(sys.argv[0]), broker)" + os.linesep
           + "root = factory.instanciateObjects(globals())" + os.linesep
@@ -174,7 +172,7 @@ def write_main(f):
           + "root.__onLoad__()" + os.linesep
           + "root.onInput_onStart__(None)" + os.linesep
           + "waiter.waitForCompletion()" + os.linesep
-          + "app.stop()" + os.linesep)
+          )
 
 class interval:
   def __init__(self, a, b, obj):
