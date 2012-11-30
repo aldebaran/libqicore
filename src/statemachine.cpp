@@ -231,6 +231,8 @@ void StateMachinePrivate::setupTimeOut(unsigned int time)
 
 void StateMachinePrivate::run()
 {
+  qiLogDebug("qiCore.StateMachine") << "Starting StateMachine : " << _name;
+
   { /* Locked Section */
     boost::mutex::scoped_lock lock(_isRunningMutex);
 
@@ -238,10 +240,14 @@ void StateMachinePrivate::run()
   } /* End locked Section */
 
   goToState(_initialState);
+
+  qiLogDebug("qiCore.StateMachine") << "StateMachine Started : " << _name;
 }
 
 void StateMachinePrivate::stop()
 {
+  qiLogDebug("qiCore.StateMachine") << "StateMachine Stopping : " << _name;
+
   { /* Locked Section */
     boost::mutex::scoped_lock lock(_isRunningMutex);
 
@@ -261,6 +267,8 @@ void StateMachinePrivate::stop()
   } /* End locked Section */
 
   _isRunningCondition.notify_all();
+
+  qiLogDebug("qiCore.StateMachine") << "StateMachine Stopped : " << _name;
 }
 
 void StateMachinePrivate::waitUntilStop()
