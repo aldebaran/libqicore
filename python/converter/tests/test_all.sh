@@ -14,7 +14,7 @@ do
     exit
   fi
   cd objects
-  timeout 10 python2 main.py
+  timeout 10 python2 main.py 127.0.0.1 9559
   result=$?
   if [ $result -ne 0 ]
   then
