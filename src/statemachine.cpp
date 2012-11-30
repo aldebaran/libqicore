@@ -251,9 +251,12 @@ void StateMachinePrivate::stop()
   { /* Locked Section */
     boost::recursive_mutex::scoped_lock currentStateLock(_currentStateMutex);
 
-    unloadTransitions();
-    if (_currentState && _currentState->getDiagram())
-      _currentState->getDiagram()->_p->unloadAllBoxes();
+    if (_currentState)
+    {
+      unloadTransitions();
+      if (_currentState->getDiagram())
+        _currentState->getDiagram()->_p->unloadAllBoxes();
+    }
     _currentState = 0;
   } /* End locked Section */
 
