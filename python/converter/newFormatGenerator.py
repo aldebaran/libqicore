@@ -163,8 +163,11 @@ def write_main(f):
           + "from naoqi import *" + os.linesep
           + "import qicore" + os.linesep
           + "import objectFactory" + os.linesep + os.linesep
+          + "if (len(sys.argv) != 3):" + os.linesep
+          + "  print(\"Usage: python2 main.py IP_Address Port\")" + os.linesep
+          + "  sys.exit(2)" + os.linesep
           + "app = Application()" + os.linesep
-          + "broker = ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, \"127.0.0.1\", 9559)" + os.linesep
+          + "broker = ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, sys.argv[1], int(sys.argv[2]))" + os.linesep
           + "factory = objectFactory.objectFactory(os.path.dirname(sys.argv[0]), broker)" + os.linesep
           + "root = factory.instanciateObjects(globals())" + os.linesep
           + "waiter = factory.createWaiterOnBox(root, globals())" + os.linesep
