@@ -296,9 +296,6 @@ class objectFactory:
       if (f != None):
         setattr(boxObject, "onInput_" + inpName + "__", types.MethodType(f, boxObject))
 
-    # All boxes must have this input
-    boxObject.addInput("onLoad")
-
     for out in root.getElementsByTagName('Output'):
       outName = out.attributes["name"].value
       outType = out.attributes["type"].value
