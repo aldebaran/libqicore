@@ -27,6 +27,9 @@ class behavior:
   def printError(self, mystr):
     print("[ERROR] " + self.getName() + " : " + mystr)
 
+  def printFatal(self, mystr):
+    print("[FATAL] " + self.getName() + " : " + mystr)
+
   def waitResourcesCallback(self, callbackName):
     self.printDebug("waitResourcesCallback " + callbackName)
     self.printError("Not implemented yet")
@@ -158,12 +161,13 @@ class behavior:
           func()
       return True
     except BaseException, err:
-      self.printError(str(err))
+      self.printFatal("Call to : " + functionName + " failed with : " + str(err))
       try:
         if("onError" in dir(self)):
           self.onError(self.getName() + ':' +str(err))
       except BaseException, err2:
         self.printError(str(err2))
+    sys.exit(2)
     return False
 
 
