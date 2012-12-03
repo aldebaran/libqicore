@@ -89,8 +89,6 @@
 
     def onInput_onStart(self, p):
         print "param1 = " + p[0] + ", " + "param2 = " + p[1]
-        ALMemory.insertData("test_success", True)
-        self.log("test_success = True")
         self.onStopped()
 
     def onInput_onStop(self):
