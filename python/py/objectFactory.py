@@ -259,11 +259,17 @@ class objectFactory:
 
     self._StateMachineDict[boxName] = stateMachineObject
 
-  def formatParameter(self, name, content_type):
+  def convertParameter(self, value, content_type):
     if (content_type == ParameterType.STRING or content_type == ParameterType.RESOURCE):
-      return "\"" + name + "\""
+      return value
+    elif (content_type == ParameterType.BOOL):
+      return value == "True"
+    elif (content_type == ParameterType.INT):
+      return int(value)
+    elif (content_type == ParameterType.DOUBLE):
+      return float(value)
     else:
-      return name
+      return value
 
   def parseBox(self, boxName):
     if (boxName in self._declaredObjects):
@@ -273,8 +279,6 @@ class objectFactory:
 
     dom = xml.dom.minidom.parse(self._folderName + boxName + ".xml")
     root = dom.getElementsByTagName('Box')[0]
-
-
 
     module = __import__(boxName)
     boxClass = getattr(module, boxName + "_class")
@@ -313,7 +317,7 @@ class objectFactory:
       paramContentType = param.attributes["content_type"].value
       paramInherits = param.attributes["inherits_from_parent"].value
       connectionMap[paramName] = ConnectionType.PARAMETER
-      boxObject.addParameter(paramName, self.formatParameter(paramValue, paramContentType), int(paramInherits == 1))
+      boxObject.addParameter(paramName, self.convertParameter(paramValue, int(paramContentType)), paramInherits == 1)
 
     for res in root.getElementsByTagName("Resource"):
       resourceType = res.attributes["type"].value
