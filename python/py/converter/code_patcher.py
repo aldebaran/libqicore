@@ -28,10 +28,6 @@ class patcher:
     indent = self._indentForInit
     initCode = "qicoreLegacy.BehaviorLegacy.__init__(self, \"" + self._box.name + "\")" + os.linesep
 
-    if (len(self._box.resources) != 0):
-      for res in self._box.resources:
-        self.addResourceMethod(res.type)
-
     return initCode.rstrip()
 
   def addInheritance(self):
