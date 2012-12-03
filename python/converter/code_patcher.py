@@ -7,39 +7,7 @@
 import os
 import sys
 
-class IOType:
-  DYNAMIC=0
-  BANG=1
-  NUMBER=2
-  STRING=3
-  BITMAP=4
-  SOUND=5
-
-class InputType:
-  ONLOAD=0
-  UNDEF=1
-  ONSTART=2
-  ONSTOP=3
-  STMVALUE=4
-
-class OutputType:
-  UNDEF=0
-  STOPPED=1
-  PUNCTUAL=2
-  RECURRENT=3
-
-class ParameterType:
-  BOOL=0
-  INT=1
-  DOUBLE=2
-  STRING=3
-  RESOURCE=4
-
-class ResourceMode:
-  LOCK="Lock"
-  STOP_ON_DEMAND="Stop on demand"
-  PAUSE_ON_DEMAND="Pause on demand"
-  CALLBACK_ON_DEMAND="Callback on demand"
+from xar_types import *
 
 class patcher:
   def __init__(self, box):
