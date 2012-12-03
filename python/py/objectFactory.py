@@ -12,6 +12,7 @@ import xml.dom.minidom
 
 import qicore
 import qicoreLegacy
+from converter.xar_types import *
 
 class behaviorWaiter_class(qicoreLegacy.BehaviorLegacy):
   def __init__(self, broker):
@@ -165,6 +166,12 @@ class objectFactory:
 
     self._StateMachineDict[boxName] = stateMachineObject
 
+  def formatParameter(self, name, content_type):
+    if (content_type == ParameterType.STRING or content_type == ParameterType.RESOURCE):
+      return "\"" + name + "\""
+    else:
+      return name
+
   def parseBox(self, boxName):
     if (boxName in self._declaredObjects):
       return
@@ -174,21 +181,7 @@ class objectFactory:
     dom = xml.dom.minidom.parse(self._folderName + boxName + ".xml")
     root = dom.getElementsByTagName('Box')[0]
 
-    connectionMap = {}
 
-    for inp in root.getElementsByTagName('Input'):
-      inpName = inp.attributes["name"].value
-      connectionMap[inpName] = ConnectionType.INPUT
-
-    for out in root.getElementsByTagName('Output'):
-      outName = out.attributes["name"].value
-      connectionMap[outName] = ConnectionType.OUTPUT
-
-    for param in root.getElementsByTagName('Parameter'):
-      paramName = param.attributes["name"].value
-      connectionMap[paramName] = ConnectionType.PARAMETER
-
-    self._connectionTypeForBox[boxName] = connectionMap
 
     module = __import__(boxName)
     boxClass = getattr(module, boxName + "_class")
@@ -198,6 +191,30 @@ class objectFactory:
     boxObject.setPath(self._folderName)
     boxObject.registerOnLoadCallback(boxObject.__onLoad__)
     boxObject.registerOnUnloadCallback(boxObject.__onUnload__)
+
+    connectionMap = {}
+
+    for inp in root.getElementsByTagName('Input'):
+      inpName = inp.attributes["name"].value
+      connectionMap[inpName] = ConnectionType.INPUT
+      boxObject.addInput(inpName)
+
+    for out in root.getElementsByTagName('Output'):
+      outName = out.attributes["name"].value
+      outType = out.attributes["type"].value
+      connectionMap[outName] = ConnectionType.OUTPUT
+      boxObject.addOutput(outName, int(outType == IOType.BANG))
+
+
+    for param in root.getElementsByTagName('Parameter'):
+      paramName = param.attributes["name"].value
+      paramValue = param.attributes["value"].value
+      paramContentType = param.attributes["content_type"].value
+      paramInherits = param.attributes["inherits_from_parent"].value
+      connectionMap[paramName] = ConnectionType.PARAMETER
+      boxObject.addParameter(paramName, self.formatParameter(paramValue, paramContentType), int(paramInherits == 1))
+
+    self._connectionTypeForBox[boxName] = connectionMap
 
     self.parseTimeline(boxName + "_timeline", boxName)
     self.parseStateMachine(boxName + "_state_machine", boxName)

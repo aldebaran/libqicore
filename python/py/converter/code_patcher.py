@@ -42,31 +42,20 @@ class patcher:
       if ("def __init__(" in s):
         self._indentForMethod = len(s) - len(s.lstrip())
 
-  def formatParameter(self, name, content_type):
-    if (content_type == ParameterType.STRING or content_type == ParameterType.RESOURCE):
-      return "\"" + name + "\""
-    else:
-      return name
-
   def constructInitCode(self):
     indent = self._indentForInit
     initCode = "qicoreLegacy.BehaviorLegacy.__init__(self, \"" + self._box.name + "\")" + os.linesep
 
     for inp in self._box.inputs:
       if (self.addInputMethod(inp.name, int(inp.nature))):
-        initCode += (indent * " " + "self.addInput(\"" + inp.name + "\")" + os.linesep)
+        pass
 
     for out in self._box.outputs:
       if (self.addOutputMethod(out.name, int(out.nature))):
-        initCode +=  (indent * " "
-                      + "self.addOutput(\""
-                      + out.name + "\"," + str(int(out.type) == IOType.BANG) + ")" + os.linesep)
+        pass
 
     for param in self._box.parameters:
-      initCode += (indent * " "
-                   + "self.addParameter(\"" + param.name
-                   + "\", " + self.formatParameter(param.value, int(param.content_type)) + "," + str(int(param.inherits_from_parent) == 1) + ")"
-                   + os.linesep)
+      pass
 
     if (len(self._box.resources) != 0):
       for res in self._box.resources:

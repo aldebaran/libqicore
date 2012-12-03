@@ -8,6 +8,7 @@ include(qibuild/swig/python)
 set (_pyfiles
   "${CMAKE_CURRENT_SOURCE_DIR}/py/qicoreLegacy.py"
   "${CMAKE_CURRENT_SOURCE_DIR}/py/objectFactory.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/py/converter/xar_converter.py"
 )
 
 install( FILES
