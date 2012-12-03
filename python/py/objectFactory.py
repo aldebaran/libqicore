@@ -317,7 +317,7 @@ class objectFactory:
 
     for res in root.getElementsByTagName("Resource"):
       resourceType = res.attributes["type"].value
-      f = generateResourceMethod(int(resourceType))
+      f = generateResourceMethod(resourceType)
       if (f != None):
         setattr(boxObject, "__onResource__", types.MethodType(f, boxObject))
 
