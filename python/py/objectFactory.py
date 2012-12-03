@@ -8,11 +8,104 @@ import sys
 import os
 import io
 import time
+import types
 import xml.dom.minidom
 
 import qicore
 import qicoreLegacy
 from converter.xar_types import *
+
+# Function generator for Input, Outputs, ...
+
+def generateInputMethod(methodType, name):
+  def onStart(self, p):
+    if(not self._safeCallOfUserMethod("onInput_" + name, p)):
+      self.releaseResource()
+    if (self.hasTimeline()):
+      self.getTimeline().play()
+    if (self.hasStateMachine()):
+      self.getStateMachine().run()
+      self.stimulateIO(name, p)
+
+  def onStop(self, p):
+    if(not self._safeCallOfUserMethod("onInput_" + name, p)):
+      self.releaseResource()
+      return
+    self.stimulateIO(name, p)
+
+  inputMethodMap = { InputType.ONLOAD : None,
+                     InputType.UNDEF : onStop,
+                     InputType.ONSTART : onStart,
+                     InputType.ONSTOP : onStop,
+                     InputType.STMVALUE: None}
+
+  return inputMethodMap[methodType]
+
+def generateOutputMethod(methodType, name):
+  def stopped(self, p = None):
+    if (self.hasTimeline()):
+      self.getTimeline().stop()
+    if (self.hasStateMachine()):
+      self.getStateMachine().stop()
+    self.stimulateIO(name, p)
+
+  def punctual(self, p = None):
+    self.stimulateIO(name, p)
+
+  outputMethodMap = { OutputType.STOPPED : stopped,
+                      OutputType.PUNCTUAL : punctual}
+
+  return outputMethodMap[methodType]
+
+def generateResourceMethod(resourceType):
+  def lock(self, resourceName):
+    pass
+
+  def stop_on_demand(self, resourceName):
+    bExist = True
+    try:
+      self.onResourceLost()
+    except:
+      try:
+        self.onResourceLost(None)
+      except:
+        bExist = False
+    if (self.hasTimeline()):
+      self.getTimeline().stop()
+    if (self.StateMachine()):
+      self.getStateMachine().stop()
+    self.releaseResource()
+    if (not bExist):
+      try:
+        self.onStopped()
+      except:
+        try:
+          self.onStopped(None)
+        except:
+          pass
+
+  def pause_on_demand(self, resourceName):
+    if (self.hasTimeline()):
+      self.getTimeline().pause()
+    if (self.hasStateMachine()):
+      self.getStateMachine().pause()
+    self.releaseResource()
+    self.waitResourceFree()
+    self.waitResources()
+    if (self.hasTimeline()):
+      self.getTimeline().play()
+    if (self.hasStateMachine()):
+      self.getStateMachine().play()
+
+  def callback_on_demand(self, resourceName):
+    self._safeCallOfUserMethod("onResource", resourceName)
+
+  resourceMethodMap = {ResourceMode.LOCK : lock,
+                       ResourceMode.STOP_ON_DEMAND: stop_on_demand,
+                       ResourceMode.PAUSE_ON_DEMAND: pause_on_demand,
+                       ResourceMode.CALLBACK_ON_DEMAND: callback_on_demand}
+
+  return resourceMethodMap[resourceType]
 
 class behaviorWaiter_class(qicoreLegacy.BehaviorLegacy):
   def __init__(self, broker):
@@ -196,8 +289,12 @@ class objectFactory:
 
     for inp in root.getElementsByTagName('Input'):
       inpName = inp.attributes["name"].value
+      inpNature = inp.attributes["nature"].value
       connectionMap[inpName] = ConnectionType.INPUT
       boxObject.addInput(inpName)
+      f = generateInputMethod(int(inpNature), inpName)
+      if (f != None):
+        setattr(boxObject, "onInput_" + inpName + "__", types.MethodType(f, boxObject))
 
     # All boxes must have this input
     boxObject.addInput("onLoad")
@@ -205,8 +302,12 @@ class objectFactory:
     for out in root.getElementsByTagName('Output'):
       outName = out.attributes["name"].value
       outType = out.attributes["type"].value
+      outNature = out.attributes["nature"].value
       connectionMap[outName] = ConnectionType.OUTPUT
       boxObject.addOutput(outName, int(outType == IOType.BANG))
+      f = generateOutputMethod(int(outNature), outName)
+      if (f != None):
+        setattr(boxObject, outName, types.MethodType(f, boxObject))
 
 
     for param in root.getElementsByTagName('Parameter'):
@@ -216,6 +317,12 @@ class objectFactory:
       paramInherits = param.attributes["inherits_from_parent"].value
       connectionMap[paramName] = ConnectionType.PARAMETER
       boxObject.addParameter(paramName, self.formatParameter(paramValue, paramContentType), int(paramInherits == 1))
+
+    for res in root.getElementsByTagName("Resource"):
+      resourceType = res.attributes["type"].value
+      f = generateResourceMethod(int(resourceType))
+      if (f != None):
+        setattr(boxObject, "__onResource__", types.MethodType(f, boxObject))
 
     self._connectionTypeForBox[boxName] = connectionMap
 

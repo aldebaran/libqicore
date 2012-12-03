@@ -107,3 +107,8 @@ class ResourceMode:
   PAUSE_ON_DEMAND="Pause on demand"
   CALLBACK_ON_DEMAND="Callback on demand"
 
+class ConnectionType:
+  INPUT=0
+  OUTPUT=1
+  PARAMETER=2
+

@@ -322,7 +322,7 @@ class newFormatGenerator:
           currentInterList.append(intervalList.pop(0))
 
 
-    print("----------------- States --------------------")
+    print("------------------ States ----------------------")
     for st in stateList:
       print("State : ", st.begin, " -> ", st.end, "with : ", st.obj_nb)
     return stateList
