@@ -18,9 +18,6 @@ class behavior:
     self._outputSignalsMap = {}
     self._parameterMaps = {}
 
-    # All boxes has an onLoad input
-    self.addInput("onLoad")
-
   def printDebug(self, mystr):
     print("[DEBUG] " + self.getName() + " : " + mystr)
 

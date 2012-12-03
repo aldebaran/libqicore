@@ -199,6 +199,9 @@ class objectFactory:
       connectionMap[inpName] = ConnectionType.INPUT
       boxObject.addInput(inpName)
 
+    # All boxes must have this input
+    boxObject.addInput("onLoad")
+
     for out in root.getElementsByTagName('Output'):
       outName = out.attributes["name"].value
       outType = out.attributes["type"].value
