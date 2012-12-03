@@ -278,7 +278,7 @@ class objectFactory:
 
     module = __import__(boxName)
     boxClass = getattr(module, boxName + "_class")
-    boxObject = boxClass(self._broker)
+    boxObject = boxClass()
     self._boxDict[boxName] = boxObject
 
     boxObject.setPath(self._folderName)

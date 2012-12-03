@@ -69,7 +69,6 @@ class patcher:
                   + "import qicore" + os.linesep
                   + "import qicoreLegacy" + os.linesep * 2
                   + self._code)
-    self._code = self._code.replace("__init__(self)", "__init__(self, broker)", 1)
     self.findInitIndentation()
     self.addInheritance()
     initCode = self.constructInitCode()
