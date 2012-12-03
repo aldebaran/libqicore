@@ -6,6 +6,7 @@
 
 import os
 import sys
+import re
 
 from xar_types import *
 
@@ -232,7 +233,11 @@ class patcher:
     self.findMethodIndentation()
     self.addInheritance()
     initCode = self.constructInitCode()
-    if ("GeneratedClass.__init__(self)" in self._code):
+    compiledRE = re.compile("try: # disable autoBind\s*GeneratedClass\.__init__\(self, False\)\s*except TypeError: # if NAOqi < 1\.14\s*GeneratedClass\.__init__\( self \)")
+
+    if (compiledRE.search(self._code)):
+      self._code = compiledRE.sub(initCode, self._code, 1)
+    elif ("GeneratedClass.__init__(self)" in self._code):
       self._code = self._code.replace("GeneratedClass.__init__(self)", initCode)
     else:
       self._code = self._code.replace("GeneratedClass.__init__(self, False)", initCode)
