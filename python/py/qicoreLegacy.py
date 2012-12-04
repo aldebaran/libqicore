@@ -28,7 +28,7 @@ class behavior:
     print("[ERROR] " + self.getName() + " : " + mystr)
 
   def printFatal(self, mystr):
-    print("[FATAL] " + self.getName() + " : " + mystr)
+    sys.stderr.write("[FATAL] " + self.getName() + " : " + mystr)
 
   def waitResourcesCallback(self, callbackName):
     self.printDebug("waitResourcesCallback " + callbackName)
