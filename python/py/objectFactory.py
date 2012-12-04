@@ -204,7 +204,7 @@ class objectFactory:
       if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.OUTPUT):
         self._boxDict[inputObject].connectOutput(str(inputName), self._boxDict[outputObject], outputName)
       if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.PARAMETER):
-        self._boxDict[inputObject].connectParameter(str(inputName), self._boxDict[OutputObject], outputName)
+        self._boxDict[inputObject].connectParameter(str(inputName), self._boxDict[outputObject], outputName)
 
     return boxesInDiagram
 
