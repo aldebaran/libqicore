@@ -1,31 +1,92 @@
 #!/bin/sh
 
+echo " -----------------------------------------------------"
+echo "|            LibQicore - Behavior Tester              |"
+echo " -----------------------------------------------------"
+echo "Starting..."
+
+forceContinue=$1
+
 logFile=test_result.log
+errorFile=test_result.err
 
 rm -Rf objects $logFile
+fileList=`find ../../../../../../ -name 'behavior.xar' -printf "%p:"`
+fileNumber="${fileList//[^:]/}"
+fileNumber=${#fileNumber}
+
+echo "$fileNumber file(s) found."
+echo "Begin testing..."
+echo ""
+
+function printError
+{
+  echo -e "=====> [\e[0;31mFAIL\e[0m] : $1"
+}
+
+function printWarn
+{
+  echo -e "=====> [\e[0;33mWARN\e[0m] : $1"
+}
+
+function printPass
+{
+  echo -e "=====> [\e[4;32mPASS\e[0m]"
+}
+
+count=1
+errorConversionCount=0
+errorRunTimeCount=0
+timeoutCount=0
+passCount=0
 IFS=:
-for str in `find ../../../../../ -name 'behavior.xar' -printf "%p:"`
+for str in $fileList
 do
-  echo "$str"
-  ../xar_converter.py "$str" >> $logFile
+  echo "[$count/$fileNumber] : $str"
+  ../xar_converter.py "$str" >> $logFile 2> $errorFile
   if [ $? -ne 0 ]
   then
-    echo "Error while converting $str"
-    exit
+    errorConversionCount=$((errorConversionCount + 1))
+    printError "Conversion fail"
+    echo `cat $errorFile`
+    echo ""
+    if [ "$forceContinue" != "--continue" ]
+    then
+      exit
+    fi
   fi
-  cd objects
-  timeout 10 python2 main.py 127.0.0.1 9559
+  timeout 10 python2 objects/main.py 127.0.0.1 9559 >> $logFile 2> $errorFile
   result=$?
   if [ $result -ne 0 ]
   then
     if [ $result -eq 124 ]
     then
-      echo "Warning: behavior $str has timed out"
+      timeoutCount=$((timeoutCount + 1))
+      printWarn "TimeOut"
+      echo ""
     else
-      echo "Error while executing $str"
-      exit
+      errorRunTimeCount=$((errorRunTimeCount + 1))
+      printError "RunTime Error"
+      echo `cat $errorFile`
+      echo ""
+      if [ "$forceContinue" != "--continue" ]
+      then
+        exit
+      fi
     fi
+  else
+    passCount=$((passCount + 1))
+    printPass
   fi
-  cd ..
   rm -Rf objects
+  count=$((count + 1))
 done
+
+echo ""
+echo "-----------------------------------------------------"
+echo "Results :"
+echo "-> Pass : $passCount"
+echo "-> TimeOut: $timeoutCount"
+echo "-> Conversion Error: $errorConversionCount"
+echo "-> RunTime Error: $errorRunTimeCount"
+echo "Total file(s) tested: $count"
