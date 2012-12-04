@@ -4,6 +4,7 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+import string
 import re
 
 import code_patcher
@@ -27,6 +28,12 @@ class nameMapBuilder:
     return ""
 
   def formatName(self, name):
+    result = ""
+    for char in name:
+      if char in string.printable:
+        result += char
+
+    name = result
     pattern = re.compile('[\W_]+')
     return pattern.sub('_', name)
 
