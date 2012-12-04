@@ -10,9 +10,9 @@ import code_patcher
 
 class nameMapBuilder:
   def __init__(self):
-    self._namesStack = []
     self._boxStack = []
     self._boxes = {}
+    self._nameSet = set()
 
   def find_port_name(self, box, portId):
     for port in box.inputs + box.outputs + box.parameters:
@@ -31,10 +31,29 @@ class nameMapBuilder:
     return pattern.sub('_', name)
 
   def constructName(self):
-    result = ""
-    for name in self._namesStack:
-      result = result + name + "_"
-    return result
+    box = self._boxStack.pop()
+    name = box.name
+    self._boxStack.append(box)
+    name = "l" + str(len(self._boxStack) - 1) + "_" + name
+
+    return self.findAvailableName(name)
+
+  def findAvailableName(self, name):
+    boxId = 1
+    if (name in self._nameSet):
+      currentname = name + "_" + str(boxId)
+    else:
+      self._nameSet.add(name)
+      return name
+
+    # Name collision is ugly...
+    while currentname in self._nameSet:
+      currentname = name + "_" + str(boxId)
+      boxId = boxId + 1
+
+    self._nameSet.add(currentname)
+    return currentname
+
 
   def getNameMap(self):
     return self._boxes
@@ -47,8 +66,9 @@ class nameMapBuilder:
     return method(node)
 
   def visit_Timeline(self, node):
-    node.name = self.constructName()
-    node.name = self.formatName(node.name)
+    box = self._boxStack.pop()
+    self._boxStack.append(box)
+    node.name = box.name
     for layer in node.behaviorLayers:
       self.visit(layer)
 
@@ -62,9 +82,6 @@ class nameMapBuilder:
         link.indexofoutput = inp.id
 
   def visit_Diagram(self, node):
-    # Diagram has no name in legacy format so we fill it
-    node.name = self.constructName() + "diagram"
-    node.name = self.formatName(node.name)
     idMap = {}
     for child in node.boxes:
       self.visit(child)
@@ -78,6 +95,9 @@ class nameMapBuilder:
       print("ERROR: No parent for ", node.name, " abort...")
       sys.exit(2)
     idMap[str(0)] = parentName
+
+    # Diagram has no name in legacy format so we fill it
+    node.name = self.findAvailableName(parentName + "_diagram")
 
     for link in node.links:
       link.inputowner = idMap[link.inputowner]
@@ -98,26 +118,20 @@ class nameMapBuilder:
     self._boxStack.append(node)
     node.name = self.formatName(node.name)
     simpleName = node.name
-    node.name = self.constructName() + node.name
-    self._namesStack.append(simpleName)
+    node.name = self.constructName()
 
     self._boxes[node.name] = node
 
     self.visit(node.child)
-    self._namesStack.pop()
     self._boxStack.pop()
 
   def visit_BehaviorLayer(self, node):
     node.name = self.formatName(node.name)
-    self._namesStack.append(node.name)
     for keyframe in node.behaviorKeyFrames:
       self.visit(keyframe)
-    self._namesStack.pop()
 
   def visit_BehaviorKeyFrame(self, node):
     node.name = self.formatName(node.name)
-    self._namesStack.append(node.name)
     if (node.child != None):
       self.visit(node.child)
-    self._namesStack.pop()
 

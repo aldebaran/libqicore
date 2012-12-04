@@ -208,7 +208,7 @@ class newFormatGenerator:
       self.convertTimelineLayers(node)
 
     if (len(node.actuatorList) != 0):
-      f = open(node.name + "timeline.xml", encoding='utf-8', mode='w')
+      f = open(node.name + "_timeline.xml", encoding='utf-8', mode='w')
       write_actuatorList(f, node)
       f.close()
 
@@ -267,7 +267,7 @@ class newFormatGenerator:
 
     stateList = self.convertToStateMachine(intervalList, lastFrame)
 
-    f = open(node.name + "state_machine.xml", encoding='utf-8', mode='w')
+    f = open(node.name + "_state_machine.xml", encoding='utf-8', mode='w')
     if (node.fps == None):
       node.fps = 25
     write_state_machine(f, stateList, node.fps)

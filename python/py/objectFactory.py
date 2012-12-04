@@ -149,7 +149,7 @@ class objectFactory:
     self._TimelineDict = {}
     self._connectionTypeForBox = {}
 
-  def instanciateObjects(self, topdict, root = "root"):
+  def instanciateObjects(self, topdict, root = "l0_root"):
     self.parseBox(root)
     for name,obj in self._boxDict.items():
       topdict[name] = obj
