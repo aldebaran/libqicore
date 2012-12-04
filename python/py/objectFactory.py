@@ -243,9 +243,10 @@ class objectFactory:
     for tr in root.getElementsByTagName('Transition'):
       fromState = "_" + tr.attributes["From"].value
       toState = "_" + tr.attributes["To"].value
-      timeOut = tr.attributes["TimeOut"].value
+      timeOut = int(tr.attributes["TimeOut"].value)
       transitionObject = qicore.Transition(self._StateDict[boxName + toState])
-      transitionObject.setTimeOut(int(timeOut))
+      if (timeOut != -1):
+        transitionObject.setTimeOut(timeOut)
       self._StateDict[boxName + fromState].addTransition(transitionObject)
       self._TransitionDict[boxName + fromState + "__to__" + boxName + toState] = transitionObject
 

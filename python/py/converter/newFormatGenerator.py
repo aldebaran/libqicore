@@ -120,6 +120,8 @@ def build_objects_list(state):
   return result
 
 def computeTimeOut(state, fps):
+  if (int(fps) == 0):
+    return -1
   frames = state.end - state.begin
   fpms = int(fps) / 1000
   return int(frames / fpms)
