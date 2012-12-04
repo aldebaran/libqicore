@@ -54,6 +54,7 @@ do
     then
       exit
     fi
+    continue
   fi
   timeout 10 python2 objects/main.py 127.0.0.1 9559 >> $logFile 2> $errorFile
   result=$?
@@ -82,6 +83,7 @@ do
   count=$((count + 1))
 done
 
+count=$((count - 1))
 echo ""
 echo "-----------------------------------------------------"
 echo "Results :"
