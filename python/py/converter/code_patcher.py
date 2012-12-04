@@ -57,7 +57,7 @@ class patcher:
       self.generateClass()
     self._code = self._code.replace("MyClass", self._box.name + "_class", 1)
     # Replace tabs to normalize code
-    self._code = self._code.replace("\t", "  ")
+    self._code = self._code.replace("\t", " " * 4)
     self._code = ( "#!/usr/bin/env python" + os.linesep
                   + "# -*- coding: utf-8 -*-" + os.linesep * 2
                   + "import time" + os.linesep
