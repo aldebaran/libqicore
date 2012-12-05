@@ -13,7 +13,6 @@ set(PUBLIC_HEADERS
     qicore/state.hpp
     qicore/statemachine.hpp
     qicore/box.hpp
-    qicore/diagram.hpp
     qicore/transition.hpp)
 
 qi_install_header(${PUBLIC_HEADERS})
@@ -27,8 +26,7 @@ qi_create_lib(qicore SRC
   src/state_private.hpp src/state.cpp
   src/transition_private.hpp src/transition.cpp
   src/asyncexecuter.hpp src/asyncexecuter.cpp
-  src/box_private.hpp src/box.cpp
-  src/diagram_private.hpp src/diagram.cpp)
+  src/box_private.hpp src/box.cpp)
 
 qi_use_lib(qicore ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
 

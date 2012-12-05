@@ -142,7 +142,6 @@ class objectFactory:
     self._broker = broker
     self._declaredObjects = set()
     self._boxDict = {}
-    self._diagramDict= {}
     self._StateMachineDict = {}
     self._TransitionDict = {}
     self._StateDict = {}
@@ -228,16 +227,13 @@ class objectFactory:
       objs = state.attributes["Objects"].value
       stateObject = qicore.State()
       objsList = objs.split(';')
-      diagramObject = qicore.Diagram()
       for diag in objsList:
         if (diag != ""):
           objects_names = self.parseDiagram(diag)
           for box in objects_names:
-            diagramObject.addBox(self._boxDict[box])
-      stateObject.setDiagram(diagramObject)
+            stateObject.addBox(self._boxDict[box])
       stateObject.setName(str(statename))
       stateMachineObject.addState(stateObject)
-      self._diagramDict[statename + "_diagram"] = diagramObject
       self._StateDict[statename] = stateObject
 
     for tr in root.getElementsByTagName('Transition'):

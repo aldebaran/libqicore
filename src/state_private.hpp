@@ -9,6 +9,7 @@
 # define STATE_PRIVATE_H_
 
 # include <list>
+# include <set>
 
 # include <qicore/state.hpp>
 # include <qicore/transition.hpp>
@@ -16,7 +17,7 @@
 namespace qi
 {
 
-class Diagram;
+class Box;
 
 class StatePrivate
 {
@@ -30,13 +31,22 @@ class StatePrivate
     void addTransition(Transition* tr);
     void removeTransition(Transition* tr);
 
-    void setDiagram(Diagram* d);
+    void addBox(Box* b);
+    void removeBox(Box* b);
+
+    void loadAllBoxes();
+    void unloadAllBoxes();
+
+    void loadFromState(State* st);
 
   private:
+    void loadBox(Box* b);
+    void unloadBox(Box* b);
+
     std::string                     _name;
     State*                          _parent;
-    Diagram*                        _diagram;
     std::list<Transition*>          _transitions;
+    std::set<Box*> _boxes;
 };
 
 };

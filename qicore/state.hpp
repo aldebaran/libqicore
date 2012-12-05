@@ -8,6 +8,7 @@
 #ifndef STATE_H_
 # define STATE_H_
 
+# include <string>
 # include <list>
 
 # include <qicore/api.hpp>
@@ -16,7 +17,7 @@ namespace qi
 {
 
 class StatePrivate;
-class Diagram;
+class Box;
 class StateMachine;
 class Transition;
 
@@ -34,10 +35,9 @@ class QICORE_API State
 
     std::list<Transition*>& getTransitions() const;
 
-    void setDiagram(Diagram* d);
-    Diagram* getDiagram() const;
+    void addBox(Box* b);
+    void removeBox(Box* b);
 
-  private:
     StatePrivate* _p;
 };
 

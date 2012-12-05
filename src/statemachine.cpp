@@ -10,12 +10,11 @@
 
 #include <qicore/state.hpp>
 #include <qicore/transition.hpp>
-#include <qicore/diagram.hpp>
 #include <qicore/statemachine.hpp>
 
 #include "statemachine_private.hpp"
 #include "transition_private.hpp"
-#include "diagram_private.hpp"
+#include "state_private.hpp"
 
 namespace qi
 {
@@ -139,7 +138,7 @@ bool StateMachinePrivate::goToState(State* state)
       unloadTransitions();
 
     /* ReLoad Diagram */
-    loadDiagram(state);
+    loadState(state);
 
     _currentState = state;
     /* Load Transitions */
@@ -207,17 +206,17 @@ void StateMachinePrivate::unloadTransitions()
   }
 }
 
-void StateMachinePrivate::loadDiagram(State* newState)
+void StateMachinePrivate::loadState(State* newState)
 {
   if (_currentState)
   {
-    if (newState->getDiagram())
-      newState->getDiagram()->_p->loadFromDiagram(_currentState->getDiagram());
+    if (newState)
+      newState->_p->loadFromState(_currentState);
   }
   else
   {
-    if (newState->getDiagram())
-      newState->getDiagram()->_p->loadAllBoxes();
+    if (newState)
+      newState->_p->loadAllBoxes();
   }
 }
 
@@ -260,8 +259,7 @@ void StateMachinePrivate::stop()
     if (_currentState)
     {
       unloadTransitions();
-      if (_currentState->getDiagram())
-        _currentState->getDiagram()->_p->unloadAllBoxes();
+      _currentState->_p->unloadAllBoxes();
     }
     _currentState = 0;
   } /* End locked Section */

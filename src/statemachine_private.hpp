@@ -53,7 +53,7 @@ class StateMachinePrivate : public asyncExecuter
   private:
     int loadTransitions();
     void unloadTransitions();
-    void loadDiagram(State* newState);
+    void loadState(State* newState);
     void setupTimeOut(unsigned int time);
 
     std::string                     _name;
