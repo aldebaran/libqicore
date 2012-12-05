@@ -13,6 +13,7 @@ class behavior:
   def __init__(self, name):
     self._name = name
     self.resource = False
+    self._isLoaded = False
 
     self._inputSignalsMap = {}
     self._outputSignalsMap = {}
@@ -143,10 +144,18 @@ class behavior:
     sys.exit(2)
 
   def __onLoad__(self):
+    if (self._isLoaded):
+      self.printWarn("No need to load box, already loaded.")
+      return
+    self._isLoaded = True
     self._safeCallOfUserMethod("onLoad", None)
     self.stimulateIO("onLoad", None)
 
   def __onUnload__(self):
+    if (not self._isLoaded):
+      self.printWarn("No need to unload box, already unloaded.")
+      return
+    self._isLoaded = False
     if (self.resource):
       self.releaseResource()
     self._safeCallOfUserMethod("onUnload", None)

@@ -63,32 +63,6 @@ void StatePrivate::unloadAllBoxes()
   }
 }
 
-void StatePrivate::loadFromState(State* d)
-{
-  std::set<Box*>& l = d->_p->_boxes;
-  std::set<Box*> toLoad = _boxes;
-
-  for (std::set<Box*>::iterator it = l.begin();
-        it != l.end(); it++)
-  {
-    std::set<Box*>::iterator loadIt = toLoad.find(*it);
-
-    if (loadIt == toLoad.end())
-      unloadBox(*it);
-    else
-    {
-      qiLogDebug("qiCore.Diagram") << "Box is already loaded: " << (*it)->getName() << std::endl;
-      toLoad.erase(loadIt);
-    }
-  }
-
-  for (std::set<Box*>::iterator it = toLoad.begin();
-        it != toLoad.end(); it++)
-  {
-    loadBox(*it);
-  }
-}
-
 void StatePrivate::loadBox(Box* b)
 {
   qiLogDebug("qiCore.Diagram") << "Load the box named: " << b->getName() << std::endl;

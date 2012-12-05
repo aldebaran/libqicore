@@ -208,16 +208,8 @@ void StateMachinePrivate::unloadTransitions()
 
 void StateMachinePrivate::loadState(State* newState)
 {
-  if (_currentState)
-  {
-    if (newState)
-      newState->_p->loadFromState(_currentState);
-  }
-  else
-  {
-    if (newState)
-      newState->_p->loadAllBoxes();
-  }
+  if (newState)
+    newState->_p->loadAllBoxes();
 }
 
 void StateMachinePrivate::setupTimeOut(unsigned int time)

@@ -37,8 +37,6 @@ class StatePrivate
     void loadAllBoxes();
     void unloadAllBoxes();
 
-    void loadFromState(State* st);
-
   private:
     void loadBox(Box* b);
     void unloadBox(Box* b);
