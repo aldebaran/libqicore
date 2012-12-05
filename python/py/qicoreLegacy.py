@@ -34,6 +34,9 @@ class BehaviorLegacy(qicore.Box):
   def printError(self, mystr):
     print("[ERROR] " + self.getName() + " : " + mystr)
 
+  def printInfo(self, mystr):
+    print("[INFO] " + self.getName() + " : " + mystr)
+
   def printFatal(self, mystr):
     sys.stderr.write("[FATAL] " + self.getName() + " : " + mystr)
 
@@ -191,4 +194,7 @@ class BehaviorLegacy(qicore.Box):
         self.printError(str(err2))
     sys.exit(2)
     return False
+
+  def log(self, string):
+    self.printInfo(string)
 
