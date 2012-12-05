@@ -13,11 +13,12 @@ class behavior:
   def __init__(self, name):
     self._name = name
     self.resource = False
-    self._isLoaded = False
+    self._loadCount = 0
 
     self._inputSignalsMap = {}
     self._outputSignalsMap = {}
     self._parameterMaps = {}
+
 
   def printDebug(self, mystr):
     print("[DEBUG] " + self.getName() + " : " + mystr)
@@ -144,21 +145,21 @@ class behavior:
     sys.exit(2)
 
   def __onLoad__(self):
-    if (self._isLoaded):
-      self.printWarn("No need to load box, already loaded.")
-      return
-    self._isLoaded = True
-    self._safeCallOfUserMethod("onLoad", None)
-    self.stimulateIO("onLoad", None)
+    # Load the box only once
+    if (self._loadCount == 0):
+      self._safeCallOfUserMethod("onLoad", None)
+      self.stimulateIO("onLoad", None)
+
+    self._loadCount = self._loadCount + 1;
 
   def __onUnload__(self):
-    if (not self._isLoaded):
-      self.printWarn("No need to unload box, already unloaded.")
-      return
-    self._isLoaded = False
-    if (self.resource):
-      self.releaseResource()
-    self._safeCallOfUserMethod("onUnload", None)
+    if (self._loadCount > 0):
+      self._loadCount = self._loadCount - 1;
+
+    if (self._loadCount == 0):
+      if (self.resource):
+        self.releaseResource()
+      self._safeCallOfUserMethod("onUnload", None)
 
   def _safeCallOfUserMethod(self, functionName, functionArg):
     try:
@@ -185,4 +186,8 @@ class BehaviorLegacy(qicore.Box, behavior):
     qicore.Box.__init__(self)
     self.setName(name)
     behavior.__init__(self, name)
+
+    # Register default callbacks
+    self.registerOnLoadCallback(self.__onLoad__)
+    self.registerOnUnloadCallback(self.__onUnload__)
 

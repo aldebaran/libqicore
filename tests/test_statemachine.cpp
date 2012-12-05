@@ -8,7 +8,7 @@
 #include <qi/os.hpp>
 
 #include <qicore/statemachine.hpp>
-#include <qicore/state.hpp>
+#include <qicore/box.hpp>
 #include <qicore/transition.hpp>
 
 TEST(QiStateMachine, CreateQiStateMachine)
@@ -19,7 +19,7 @@ TEST(QiStateMachine, CreateQiStateMachine)
 TEST(QiStateMachine, OneState)
 {
   qi::StateMachine sm;
-  qi::State* s = new qi::State();
+  qi::Box* s = new qi::Box();
 
   sm.addState(s);
   sm.setFinalState(s);
@@ -34,8 +34,8 @@ TEST(QiStateMachine, OneState)
 TEST(QiStateMachine, TwoStates)
 {
   qi::StateMachine sm;
-  qi::State* s1 = new qi::State();
-  qi::State* s2 = new qi::State();
+  qi::Box* s1 = new qi::Box();
+  qi::Box* s2 = new qi::Box();
   qi::Transition* toS2 = new qi::Transition(s2);
 
   s1->addTransition(toS2);
@@ -57,12 +57,12 @@ TEST(QiStateMachine, TwoStates)
 TEST(QiStateMachine, TwentyLinearStates)
 {
   qi::StateMachine sm;
-  qi::State* s[20];
+  qi::Box* s[20];
   qi::Transition* toSN[19];
 
   for (unsigned int i = 0; i < 20; i++)
   {
-    s[i] = new qi::State();
+    s[i] = new qi::Box();
     if (i != 0)
       toSN[i - 1] = new qi::Transition(s[i]);
     sm.addState(s[i]);
@@ -88,9 +88,9 @@ TEST(QiStateMachine, TwentyLinearStates)
 TEST(QiStateMachine, FinalInTheMiddle)
 {
   qi::StateMachine sm;
-  qi::State* s1 = new qi::State();
-  qi::State* s2 = new qi::State();
-  qi::State* s3 = new qi::State();
+  qi::Box* s1 = new qi::Box();
+  qi::Box* s2 = new qi::Box();
+  qi::Box* s3 = new qi::Box();
   qi::Transition* toS2 = new qi::Transition(s2);
   qi::Transition* toS3 = new qi::Transition(s3);
 
@@ -116,9 +116,9 @@ TEST(QiStateMachine, FinalInTheMiddle)
 TEST(QiStateMachine, RemoveFinal)
 {
   qi::StateMachine sm;
-  qi::State* s1 = new qi::State();
-  qi::State* s2 = new qi::State();
-  qi::State* s3 = new qi::State();
+  qi::Box* s1 = new qi::Box();
+  qi::Box* s2 = new qi::Box();
+  qi::Box* s3 = new qi::Box();
   qi::Transition* toS2 = new qi::Transition(s2);
   qi::Transition* toS3 = new qi::Transition(s3);
 
@@ -147,9 +147,9 @@ TEST(QiStateMachine, RemoveFinal)
 TEST(QiStateMachine, ChangeInitial)
 {
   qi::StateMachine sm;
-  qi::State* s1 = new qi::State();
-  qi::State* s2 = new qi::State();
-  qi::State* s3 = new qi::State();
+  qi::Box* s1 = new qi::Box();
+  qi::Box* s2 = new qi::Box();
+  qi::Box* s3 = new qi::Box();
   qi::Transition* toS2 = new qi::Transition(s2);
   qi::Transition* toS3 = new qi::Transition(s3);
 
@@ -175,9 +175,9 @@ TEST(QiStateMachine, ChangeInitial)
 TEST(QiStateMachine, ChangeStatesAfterStart)
 {
   qi::StateMachine sm;
-  qi::State* s1 = new qi::State();
-  qi::State* s2 = new qi::State();
-  qi::State* s3 = new qi::State();
+  qi::Box* s1 = new qi::Box();
+  qi::Box* s2 = new qi::Box();
+  qi::Box* s3 = new qi::Box();
   qi::Transition* toS2 = new qi::Transition(s2);
   qi::Transition* toS3 = new qi::Transition(s3);
 
@@ -203,8 +203,8 @@ TEST(QiStateMachine, ChangeStatesAfterStart)
 TEST(QiStateMachine, TwoStatesWithTimeOut)
 {
   qi::StateMachine sm;
-  qi::State* s1 = new qi::State();
-  qi::State* s2 = new qi::State();
+  qi::Box* s1 = new qi::Box();
+  qi::Box* s2 = new qi::Box();
   qi::Transition* toS2 = new qi::Transition(s2);
 
   s1->addTransition(toS2);
@@ -227,12 +227,12 @@ TEST(QiStateMachine, TwoStatesWithTimeOut)
 TEST(QiStateMachine, TenLinearStatesWithTimeOut)
 {
   qi::StateMachine sm;
-  qi::State* s[10];
+  qi::Box* s[10];
   qi::Transition* toSN[9];
 
   for (unsigned int i = 0; i < 10; i++)
   {
-    s[i] = new qi::State();
+    s[i] = new qi::Box();
     if (i != 0)
     {
       toSN[i - 1] = new qi::Transition(s[i]);
@@ -259,10 +259,10 @@ TEST(QiStateMachine, TenLinearStatesWithTimeOut)
 TEST(QiStateMachine, FourStatesMixedTimeOut)
 {
   qi::StateMachine sm;
-  qi::State* s1 = new qi::State();
-  qi::State* s2 = new qi::State();
-  qi::State* s3 = new qi::State();
-  qi::State* s4 = new qi::State();
+  qi::Box* s1 = new qi::Box();
+  qi::Box* s2 = new qi::Box();
+  qi::Box* s3 = new qi::Box();
+  qi::Box* s4 = new qi::Box();
   qi::Transition* toS2 = new qi::Transition(s2);
   qi::Transition* toS3 = new qi::Transition(s3);
   qi::Transition* toS4 = new qi::Transition(s4);

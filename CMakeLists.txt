@@ -10,7 +10,6 @@ include_directories(".")
 set(PUBLIC_HEADERS
     qicore/api.hpp
     qicore/timeline.hpp
-    qicore/state.hpp
     qicore/statemachine.hpp
     qicore/box.hpp
     qicore/transition.hpp)
@@ -23,7 +22,6 @@ qi_create_lib(qicore SRC
   src/xmlutils.hpp src/xmlutils.cpp
   src/actuatorcurve.hpp src/actuatorcurve.cpp
   src/statemachine_private.hpp src/statemachine.cpp
-  src/state_private.hpp src/state.cpp
   src/transition_private.hpp src/transition.cpp
   src/asyncexecuter.hpp src/asyncexecuter.cpp
   src/box_private.hpp src/box.cpp)

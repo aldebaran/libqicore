@@ -108,10 +108,8 @@ def generateResourceMethod(resourceType):
   return resourceMethodMap[resourceType]
 
 class behaviorWaiter_class(qicoreLegacy.BehaviorLegacy):
-  def __init__(self, broker):
+  def __init__(self):
     qicoreLegacy.BehaviorLegacy.__init__(self, "behaviorWaiter")
-    self.boxName = "behaviorWaiter"
-    self.setName("behaviorWaiter")
     self.addInput("onDone")
     self.isComplete = False
 
@@ -121,6 +119,23 @@ class behaviorWaiter_class(qicoreLegacy.BehaviorLegacy):
   def waitForCompletion(self):
     while (self.isComplete == False):
       time.sleep(0.2)
+
+class state_class(qicoreLegacy.BehaviorLegacy):
+  def __init__(self, name):
+    print("name is ", name)
+    qicoreLegacy.BehaviorLegacy.__init__(self, name.encode('ascii', 'ignore'))
+    self._boxList = []
+
+  def onLoad(self):
+    for box in self._boxList:
+      box.__onLoad__()
+
+  def onUnload(self):
+    for box in self._boxList:
+      box.__onUnload__()
+
+  def addBox(self, box):
+    self._boxList.append(box)
 
 class ConnectionType:
   INPUT=0
@@ -156,7 +171,7 @@ class objectFactory:
     return self._boxDict[root]
 
   def createWaiterOnBox(self, box, topdict):
-    waiter = behaviorWaiter_class(self._broker)
+    waiter = behaviorWaiter_class()
     waiter.connectInput("onDone", box, "onStopped")
     self._boxDict[waiter.getName()] = waiter
     topdict[waiter.getName()] = waiter
@@ -178,17 +193,17 @@ class objectFactory:
     self._TimelineDict[boxName] = timelineObject
 
   def parseState(self, stateName):
-    boxesInState = set()
-
+    state = state_class(stateName)
     dom = xml.dom.minidom.parse(self._folderName + stateName + ".xml")
     root = dom.getElementsByTagName('State')[0]
 
     for obj in root.getElementsByTagName("Object"):
       objname = obj.attributes["Name"].value
-      boxesInState.add(objname)
+      self.parseBox(objname)
+      state.addBox(self._boxDict[objname])
 
     if (stateName in self._declaredObjects):
-      return boxesInState
+      return state
     self._declaredObjects.add(stateName)
 
     for link in root.getElementsByTagName("Link"):
@@ -203,6 +218,7 @@ class objectFactory:
       else:
         self._declaredLinks.add(inputObject + inputName + outputObject + outputName)
 
+      # create objects if needed
       self.parseBox(inputObject)
       self.parseBox(outputObject)
 
@@ -213,7 +229,7 @@ class objectFactory:
       if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.PARAMETER):
         self._boxDict[inputObject].connectParameter(str(inputName), self._boxDict[outputObject], outputName)
 
-    return boxesInState
+    return state
 
   def parseStateMachine(self, boxName, parentBoxName):
     if (boxName in self._declaredObjects):
@@ -231,11 +247,7 @@ class objectFactory:
     root = dom.getElementsByTagName('StateMachine')[0]
     for state in root.getElementsByTagName('State'):
       statename = state.attributes["Name"].value
-      stateObject = qicore.State()
-      objects_names = self.parseState(statename)
-      for box in objects_names:
-        stateObject.addBox(self._boxDict[box])
-      stateObject.setName(str(statename))
+      stateObject = self.parseState(statename)
       stateMachineObject.addState(stateObject)
       self._StateDict[statename] = stateObject
 
@@ -284,10 +296,7 @@ class objectFactory:
     boxClass = getattr(module, boxName + "_class")
     boxObject = boxClass()
     self._boxDict[boxName] = boxObject
-
     boxObject.setPath(self._folderName)
-    boxObject.registerOnLoadCallback(boxObject.__onLoad__)
-    boxObject.registerOnUnloadCallback(boxObject.__onUnload__)
 
     connectionMap = {}
 
@@ -309,7 +318,6 @@ class objectFactory:
       f = generateOutputMethod(int(outNature), outName)
       if (f != None):
         setattr(boxObject, outName, types.MethodType(f, boxObject))
-
 
     for param in root.getElementsByTagName('Parameter'):
       paramName = param.attributes["name"].value

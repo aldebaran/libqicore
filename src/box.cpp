@@ -5,14 +5,17 @@
 
 #include <qi/log.hpp>
 
+#include <qicore/transition.hpp>
 #include <qicore/box.hpp>
 #include "box_private.hpp"
+#include "transition_private.hpp"
 
 namespace qi
 {
 
-BoxPrivate::BoxPrivate()
-  : _stateMachine (0),
+BoxPrivate::BoxPrivate(Box* parent)
+  : _parent (parent),
+    _stateMachine (0),
     _timeline (0),
     _name ("Unnamed-Box"),
     _path ("./"),
@@ -71,9 +74,21 @@ void BoxPrivate::invokeCallback(PyObject* callback)
   PyGILState_Release(gstate);
 }
 
+void BoxPrivate::addTransition(Transition *tr)
+{
+  tr->_p->setFromState(_parent);
+  _transitions.push_back(tr);
+}
+
+void BoxPrivate::removeTransition(Transition *tr)
+{
+  _transitions.remove(tr);
+  tr->_p->setFromState(0);
+}
+
 /* Public Class */
 Box::Box()
-  : _p (new BoxPrivate())
+  : _p (new BoxPrivate(this))
 {
 }
 
@@ -140,6 +155,21 @@ void Box::registerOnLoadCallback(PyObject* callable)
 void Box::registerOnUnloadCallback(PyObject* callable)
 {
   _p->registerOnUnloadCallback(callable);
+}
+
+void Box::addTransition(Transition *tr)
+{
+  _p->addTransition(tr);
+}
+
+void Box::removeTransition(Transition *tr)
+{
+  _p->removeTransition(tr);
+}
+
+std::list<Transition*>& Box::getTransitions() const
+{
+  return _p->_transitions;
 }
 
 };

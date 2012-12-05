@@ -11,7 +11,7 @@
 namespace qi
 {
 
-TransitionPrivate::TransitionPrivate(Transition* parent, State* toState)
+TransitionPrivate::TransitionPrivate(Transition* parent, Box* toState)
   : _name ("Unnamed-Transition"),
     _hasTimeOut (false),
     _timeOut (0),
@@ -36,17 +36,17 @@ void TransitionPrivate::setMachine(StateMachine *s)
   _machine = s;
 }
 
-void TransitionPrivate::setFromState(State *s)
+void TransitionPrivate::setFromState(Box *s)
 {
   _fromState = s;
 }
 
-State* TransitionPrivate::getFromState()
+Box* TransitionPrivate::getFromState()
 {
   return _fromState;
 }
 
-State* TransitionPrivate::getToState()
+Box* TransitionPrivate::getToState()
 {
   return _toState;
 }
@@ -63,7 +63,7 @@ void TransitionPrivate::unload()
 
 /* -- Public -- */
 
-Transition::Transition(State* s)
+Transition::Transition(Box* s)
   : _p (new TransitionPrivate(this, s))
 {
 }
@@ -78,12 +78,12 @@ void Transition::trigger()
   _p->triggerTransition();
 }
 
-State* Transition::getFromState() const
+Box* Transition::getFromState() const
 {
   return _p->getFromState();
 }
 
-State* Transition::getToState() const
+Box* Transition::getToState() const
 {
   return _p->getToState();
 }

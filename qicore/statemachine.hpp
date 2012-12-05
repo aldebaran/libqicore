@@ -17,7 +17,7 @@ namespace qi
 
 class StateMachinePrivate;
 class Transition;
-class State;
+class Box;
 
 class QICORE_API StateMachine
 {
@@ -28,12 +28,12 @@ class QICORE_API StateMachine
     void setName(std::string name);
     std::string getName() const;
 
-    bool addState(State* state);
-    bool removeState(State* state);
+    bool addState(Box* state);
+    bool removeState(Box* state);
 
-    bool setInitialState(State* initial);
-    bool setFinalState(State* final);
-    bool removeFinalState(State* final);
+    bool setInitialState(Box* initial);
+    bool setFinalState(Box* final);
+    bool removeFinalState(Box* final);
 
     bool isOnFinalState() const;
 
@@ -41,9 +41,9 @@ class QICORE_API StateMachine
     void pause();
     void stop();
 
-    bool goToState(State* state);
+    bool goToState(Box* state);
     bool executeTransition(Transition* tr);
-    State* getCurrentState() const;
+    Box* getCurrentState() const;
 
     void waitUntilStop();
 

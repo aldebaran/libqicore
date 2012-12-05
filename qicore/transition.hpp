@@ -17,12 +17,12 @@ namespace qi
 
 class TransitionPrivate;
 class StateMachine;
-class State;
+class Box;
 
 class QICORE_API Transition
 {
   public:
-    Transition(State* to);
+    Transition(Box* to);
     ~Transition();
 
     void setName(std::string name);
@@ -31,8 +31,8 @@ class QICORE_API Transition
 
     void trigger();
 
-    State* getFromState() const;
-    State* getToState() const;
+    Box* getFromState() const;
+    Box* getToState() const;
 
     bool hasTimeOut() const;
     int getTimeOut() const;

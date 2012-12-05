@@ -8,13 +8,12 @@
 
 #include <qi/log.hpp>
 
-#include <qicore/state.hpp>
 #include <qicore/transition.hpp>
 #include <qicore/statemachine.hpp>
 
 #include "statemachine_private.hpp"
 #include "transition_private.hpp"
-#include "state_private.hpp"
+#include "box_private.hpp"
 
 namespace qi
 {
@@ -36,15 +35,15 @@ StateMachinePrivate::~StateMachinePrivate()
 {
 }
 
-bool StateMachinePrivate::addState(State* state)
+bool StateMachinePrivate::addState(Box* state)
 {
   _states.insert(state);
   return true;
 }
 
-bool StateMachinePrivate::removeState(State* state)
+bool StateMachinePrivate::removeState(Box* state)
 {
-  std::set<State*>::iterator it = _states.find(state);
+  std::set<Box*>::iterator it = _states.find(state);
 
   if (it == _states.end())
     return false;
@@ -52,7 +51,7 @@ bool StateMachinePrivate::removeState(State* state)
   if ((*it) == _initialState)
     _initialState = 0;
 
-  std::set<State*>::iterator itSet = _finalStates.find(state);
+  std::set<Box*>::iterator itSet = _finalStates.find(state);
   if (itSet != _finalStates.end())
     _finalStates.erase(itSet);
 
@@ -61,9 +60,9 @@ bool StateMachinePrivate::removeState(State* state)
   return true;
 }
 
-bool StateMachinePrivate::setInitialState(State* initial)
+bool StateMachinePrivate::setInitialState(Box* initial)
 {
-  std::set<State*>::iterator it = _states.find(initial);
+  std::set<Box*>::iterator it = _states.find(initial);
 
   if (it == _states.end())
     return false;
@@ -72,9 +71,9 @@ bool StateMachinePrivate::setInitialState(State* initial)
   return true;
 }
 
-bool StateMachinePrivate::setFinalState(State* final)
+bool StateMachinePrivate::setFinalState(Box* final)
 {
-  std::set<State*>::iterator it = _states.find(final);
+  std::set<Box*>::iterator it = _states.find(final);
 
   if (it == _states.end())
     return false;
@@ -83,9 +82,9 @@ bool StateMachinePrivate::setFinalState(State* final)
   return true;
 }
 
-bool StateMachinePrivate::removeFinalState(State* final)
+bool StateMachinePrivate::removeFinalState(Box* final)
 {
-  std::set<State*>::iterator itSet = _finalStates.find(final);
+  std::set<Box*>::iterator itSet = _finalStates.find(final);
 
   if (itSet == _finalStates.end())
     return false;
@@ -96,7 +95,7 @@ bool StateMachinePrivate::removeFinalState(State* final)
 
 bool StateMachinePrivate::isOnFinalState() const
 {
-  std::set<State*>::iterator itSet = _finalStates.find(_currentState);
+  std::set<Box*>::iterator itSet = _finalStates.find(_currentState);
 
   return (itSet != _finalStates.end());
 }
@@ -117,9 +116,9 @@ bool StateMachinePrivate::executeTransition(Transition* tr)
   } /* End locked Section */
 }
 
-bool StateMachinePrivate::goToState(State* state)
+bool StateMachinePrivate::goToState(Box* state)
 {
-  std::set<State*>::iterator it = _states.find(state);
+  std::set<Box*>::iterator it = _states.find(state);
 
   /* Is State present in that StateMachine ? */
   if (it == _states.end())
@@ -137,8 +136,9 @@ bool StateMachinePrivate::goToState(State* state)
     if (_currentState)
       unloadTransitions();
 
-    /* ReLoad Diagram */
-    loadState(state);
+    state->_p->load();
+    if (_currentState)
+      _currentState->_p->unload();
 
     _currentState = state;
     /* Load Transitions */
@@ -206,12 +206,6 @@ void StateMachinePrivate::unloadTransitions()
   }
 }
 
-void StateMachinePrivate::loadState(State* newState)
-{
-  if (newState)
-    newState->_p->loadAllBoxes();
-}
-
 void StateMachinePrivate::setupTimeOut(unsigned int time)
 {
   /* must be in ms */
@@ -251,7 +245,7 @@ void StateMachinePrivate::stop()
     if (_currentState)
     {
       unloadTransitions();
-      _currentState->_p->unloadAllBoxes();
+      _currentState->_p->unload();
     }
     _currentState = 0;
   } /* End locked Section */
@@ -281,27 +275,27 @@ StateMachine::~StateMachine()
   delete _p;
 }
 
-bool StateMachine::addState(State* state)
+bool StateMachine::addState(Box* state)
 {
   return _p->addState(state);
 }
 
-bool StateMachine::removeState(State* state)
+bool StateMachine::removeState(Box* state)
 {
   return _p->removeState(state);
 }
 
-bool StateMachine::setInitialState(State* initial)
+bool StateMachine::setInitialState(Box* initial)
 {
   return _p->setInitialState(initial);
 }
 
-bool StateMachine::setFinalState(State* final)
+bool StateMachine::setFinalState(Box* final)
 {
   return _p->setFinalState(final);
 }
 
-bool StateMachine::removeFinalState(State* final)
+bool StateMachine::removeFinalState(Box* final)
 {
   return _p->removeFinalState(final);
 }
@@ -325,7 +319,7 @@ void StateMachine::pause()
 {
 }
 
-bool StateMachine::goToState(State *state)
+bool StateMachine::goToState(Box *state)
 {
   return _p->goToState(state);
 }
@@ -350,7 +344,7 @@ std::string StateMachine::getName() const
   return _p->_name;
 }
 
-State* StateMachine::getCurrentState() const
+Box* StateMachine::getCurrentState() const
 {
   return _p->_currentState;
 }

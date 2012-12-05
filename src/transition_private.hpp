@@ -11,7 +11,7 @@
 namespace qi
 {
 
-class State;
+class Box;
 class StateMachine;
 class Transition;
 
@@ -20,14 +20,14 @@ class TransitionPrivate
   friend class Transition;
 
   public:
-    TransitionPrivate(Transition* tr, State* toState);
+    TransitionPrivate(Transition* tr, Box* toState);
     virtual ~TransitionPrivate();
 
     void triggerTransition();
-    void setFromState(State* s);
+    void setFromState(Box* s);
 
-    State* getFromState();
-    State* getToState();
+    Box* getFromState();
+    Box* getToState();
 
     void load(StateMachine *s);
     void unload();
@@ -39,8 +39,8 @@ class TransitionPrivate
     bool          _hasTimeOut;
     int           _timeOut;
     StateMachine* _machine;
-    State*        _fromState;
-    State*        _toState;
+    Box*          _fromState;
+    Box*          _toState;
     Transition*   _parent;
 };
 

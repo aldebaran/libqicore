@@ -20,8 +20,11 @@ class BoxPrivate
   friend class Box;
 
   public:
-    BoxPrivate();
+    BoxPrivate(Box* parent);
     ~BoxPrivate();
+
+    void addTransition(Transition* tr);
+    void removeTransition(Transition* tr);
 
     void load();
     void unload();
@@ -32,12 +35,15 @@ class BoxPrivate
   private:
     void invokeCallback(PyObject* callback);
 
+    Box*                  _parent;
     StateMachine*         _stateMachine;
     Timeline*             _timeline;
     std::string           _name;
     std::string           _path;
     PyObject*             _onLoadCallback;
     PyObject*             _onUnloadCallback;
+
+    std::list<Transition*>          _transitions;
 };
 
 };

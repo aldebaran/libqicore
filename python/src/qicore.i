@@ -7,7 +7,6 @@
   #include <qicore/timeline.hpp>
   #include <qicore/box.hpp>
   #include <qicore/statemachine.hpp>
-  #include <qicore/state.hpp>
   #include <qicore/transition.hpp>
 
 %}
@@ -16,5 +15,4 @@
 %include <qicore/timeline.hpp>
 %include <qicore/box.hpp>
 %include <qicore/statemachine.hpp>
-%include <qicore/state.hpp>
 %include <qicore/transition.hpp>

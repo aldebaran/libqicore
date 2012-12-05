@@ -17,7 +17,7 @@
 namespace qi
 {
 
-class State;
+class Box;
 class StateMachine;
 class Transition;
 
@@ -29,12 +29,12 @@ class StateMachinePrivate : public asyncExecuter
     StateMachinePrivate(StateMachine* s);
     ~StateMachinePrivate();
 
-    bool addState(State* state);
-    bool removeState(State* state);
+    bool addState(Box* state);
+    bool removeState(Box* state);
 
-    bool setInitialState(State* initial);
-    bool setFinalState(State* final);
-    bool removeFinalState(State* final);
+    bool setInitialState(Box* initial);
+    bool setFinalState(Box* final);
+    bool removeFinalState(Box* final);
 
     bool isOnFinalState() const;
 
@@ -42,7 +42,7 @@ class StateMachinePrivate : public asyncExecuter
     void stop();
 
     bool executeTransition(Transition* tr);
-    bool goToState(State* state);
+    bool goToState(Box* state);
 
     void waitUntilStop();
 
@@ -53,17 +53,16 @@ class StateMachinePrivate : public asyncExecuter
   private:
     int loadTransitions();
     void unloadTransitions();
-    void loadState(State* newState);
     void setupTimeOut(unsigned int time);
 
     std::string                     _name;
     bool                            _isRunning;
     boost::mutex                    _isRunningMutex;
     boost::condition_variable       _isRunningCondition;
-    std::set<State*>                _states;
-    std::set<State*>                _finalStates;
-    State*                          _initialState;
-    State*                          _currentState;
+    std::set<Box*>                  _states;
+    std::set<Box*>                  _finalStates;
+    Box*                            _initialState;
+    Box*                            _currentState;
     boost::recursive_mutex          _currentStateMutex;
     Transition*                     _timedTransition;
     StateMachine*                   _parent;

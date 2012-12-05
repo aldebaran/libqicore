@@ -20,6 +20,7 @@ namespace qi
 class BoxPrivate;
 class Timeline;
 class StateMachine;
+class Transition;
 
 class QICORE_API Box
 {
@@ -43,6 +44,12 @@ class QICORE_API Box
 
     void registerOnLoadCallback(PyObject* callable);
     void registerOnUnloadCallback(PyObject* callable);
+
+    /* Allow a box to be a state in StateMachine */
+    void addTransition(Transition* tr);
+    void removeTransition(Transition* tr);
+
+    std::list<Transition*>& getTransitions() const;
 
     BoxPrivate*           _p;
 };
