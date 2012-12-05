@@ -141,6 +141,7 @@ class objectFactory:
     self._folderName = folderName
     self._broker = broker
     self._declaredObjects = set()
+    self._declaredLinks = set()
     self._boxDict = {}
     self._StateMachineDict = {}
     self._TransitionDict = {}
@@ -176,25 +177,32 @@ class objectFactory:
     self._boxDict[parentName].setTimeline(timelineObject)
     self._TimelineDict[boxName] = timelineObject
 
-  def parseDiagram(self, boxName):
-    boxesInDiagram = set()
+  def parseState(self, stateName):
+    boxesInState = set()
 
-    dom = xml.dom.minidom.parse(self._folderName + boxName + ".xml")
-    root = dom.getElementsByTagName('Diagram')[0]
+    dom = xml.dom.minidom.parse(self._folderName + stateName + ".xml")
+    root = dom.getElementsByTagName('State')[0]
 
     for obj in root.getElementsByTagName("Object"):
       objname = obj.attributes["Name"].value
-      boxesInDiagram.add(objname)
+      boxesInState.add(objname)
 
-    if (boxName in self._declaredObjects):
-      return boxesInDiagram
-    self._declaredObjects.add(boxName)
+    if (stateName in self._declaredObjects):
+      return boxesInState
+    self._declaredObjects.add(stateName)
 
     for link in root.getElementsByTagName("Link"):
       inputObject = link.attributes["InputObject"].value
       outputObject = link.attributes["OutputObject"].value
       inputName = link.attributes["InputName"].value
       outputName = link.attributes["OutputName"].value
+
+      # We do not want to connect boxes multiples times
+      if ((inputObject + inputName + outputObject + outputName) in self._declaredLinks):
+        continue
+      else:
+        self._declaredLinks.add(inputObject + inputName + outputObject + outputName)
+
       self.parseBox(inputObject)
       self.parseBox(outputObject)
 
@@ -205,7 +213,7 @@ class objectFactory:
       if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.PARAMETER):
         self._boxDict[inputObject].connectParameter(str(inputName), self._boxDict[outputObject], outputName)
 
-    return boxesInDiagram
+    return boxesInState
 
   def parseStateMachine(self, boxName, parentBoxName):
     if (boxName in self._declaredObjects):
@@ -223,33 +231,28 @@ class objectFactory:
     root = dom.getElementsByTagName('StateMachine')[0]
     for state in root.getElementsByTagName('State'):
       statename = state.attributes["Name"].value
-      statename = boxName + "_" + statename
-      objs = state.attributes["Objects"].value
       stateObject = qicore.State()
-      objsList = objs.split(';')
-      for diag in objsList:
-        if (diag != ""):
-          objects_names = self.parseDiagram(diag)
-          for box in objects_names:
-            stateObject.addBox(self._boxDict[box])
+      objects_names = self.parseState(statename)
+      for box in objects_names:
+        stateObject.addBox(self._boxDict[box])
       stateObject.setName(str(statename))
       stateMachineObject.addState(stateObject)
       self._StateDict[statename] = stateObject
 
     for tr in root.getElementsByTagName('Transition'):
-      fromState = "_" + tr.attributes["From"].value
-      toState = "_" + tr.attributes["To"].value
+      fromState = tr.attributes["From"].value
+      toState = tr.attributes["To"].value
       timeOut = int(tr.attributes["TimeOut"].value)
-      transitionObject = qicore.Transition(self._StateDict[boxName + toState])
+      transitionObject = qicore.Transition(self._StateDict[toState])
       if (timeOut != -1):
         transitionObject.setTimeOut(timeOut)
-      self._StateDict[boxName + fromState].addTransition(transitionObject)
-      self._TransitionDict[boxName + fromState + "__to__" + boxName + toState] = transitionObject
+      self._StateDict[fromState].addTransition(transitionObject)
+      self._TransitionDict[fromState + "__to__" + toState] = transitionObject
 
     for fstate in root.getElementsByTagName('FinalState'):
-      stateMachineObject.setFinalState(self._StateDict[boxName + "_" + fstate.attributes["Name"].value])
+      stateMachineObject.setFinalState(self._StateDict[fstate.attributes["Name"].value])
 
-    stateMachineObject.setInitialState(self._StateDict[boxName + "_" + root.getElementsByTagName('InitialState')[0].attributes["Name"].value])
+    stateMachineObject.setInitialState(self._StateDict[root.getElementsByTagName('InitialState')[0].attributes["Name"].value])
 
     stateMachineObject.setName(str(boxName))
     self._boxDict[parentBoxName].setStateMachine(stateMachineObject)

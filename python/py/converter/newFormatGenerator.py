@@ -70,21 +70,23 @@ def write_box_meta(f, node):
                     os.linesep))
   f.write("</Box>" + os.linesep)
 
-def write_diagram_meta(f, node):
+def write_state_meta(f, node):
   f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
-  f.write("<Diagram scale=\"{}\" >{}".format(node.scale, os.linesep))
+  f.write("<State>{}".format(os.linesep))
 
-  for box in node.boxes:
-    f.write("\t<Object Name=\"{}\" />{}".format(box.name, os.linesep))
+  for diag in node.objects:
+    for box in diag.boxes:
+      f.write("\t<Object Name=\"{}\" />{}".format(box.name, os.linesep))
 
-  for link in node.links:
-    f.write("\t<Link InputObject=\"{}\" InputName=\"{}\" OutputObject=\"{}\" OutputName=\"{}\" />{}"
-        .format(link.inputowner,
-                link.inputName,
-                link.outputowner,
-                link.outputName,
-                os.linesep))
-  f.write("</Diagram>" + os.linesep)
+  for diag in node.objects:
+    for link in diag.links:
+      f.write("\t<Link InputObject=\"{}\" InputName=\"{}\" OutputObject=\"{}\" OutputName=\"{}\" />{}"
+          .format(link.inputowner,
+                  link.inputName,
+                  link.outputowner,
+                  link.outputName,
+                  os.linesep))
+  f.write("</State>" + os.linesep)
 
 def write_actuatorList(f, node):
   f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
@@ -126,7 +128,7 @@ def computeTimeOut(state, fps):
   fpms = int(fps) / 1000
   return int(frames / fpms)
 
-def write_state_machine(f, stateList, fps):
+def write_state_machine(f, machineName, stateList, fps):
   f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
   f.write("<StateMachine>" + os.linesep)
 
@@ -135,22 +137,24 @@ def write_state_machine(f, stateList, fps):
   timeoutTable = []
 
   for i in range(l):
-    f.write("\t<State Name=\"{}\" Objects=\"{}\" />{}"
-            .format("state_" + str(i),
-                    build_objects_list(stateList[i]),
+    stateName = machineName + "_state_" + str(i)
+    f.write("\t<State Name=\"{}\" />{}"
+            .format(stateName,
                     os.linesep))
+    stateFile = open(stateName + ".xml", encoding='utf-8', mode='w')
+    write_state_meta(stateFile, stateList[i])
     timeoutTable.append(computeTimeOut(stateList[i], fps))
   f.write("\t<InitialState Name=\"{}\" />{}"
-            .format("state_0",
+            .format(machineName + "_state_0",
                     os.linesep))
   f.write("\t<FinalState Name=\"{}\" />{}"
-            .format("state_" + str(l - 1),
+            .format(machineName + "_state_" + str(l - 1),
                     os.linesep))
 
   for i in range(l - 1):
     f.write("\t<Transition From=\"{}\" To=\"{}\" TimeOut=\"{}\" />{}"
-            .format("state_" + str(i),
-                    "state_" + str(i + 1),
+            .format(machineName + "_state_" + str(i),
+                    machineName + "_state_" + str(i + 1),
                     timeoutTable[i],
                     os.linesep))
   f.write("</StateMachine>" + os.linesep)
@@ -229,9 +233,6 @@ class newFormatGenerator:
   def visit_Diagram(self, node):
     for child in node.boxes:
       self.visit(child)
-    f = open(node.name + ".xml", encoding='utf-8', mode='w')
-    write_diagram_meta(f, node)
-    f.close()
 
   def convertTimelineLayers(self, node):
     lastFrame = -1
@@ -272,7 +273,7 @@ class newFormatGenerator:
     f = open(node.name + "_state_machine.xml", encoding='utf-8', mode='w')
     if (node.fps == None):
       node.fps = 25
-    write_state_machine(f, stateList, node.fps)
+    write_state_machine(f, node.name, stateList, node.fps)
     f.close()
 
   def convertToStateMachine(self, intervalList, endFrame):
