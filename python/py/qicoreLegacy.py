@@ -9,11 +9,16 @@ import sys
 import qicore
 import qimessagingswig
 
-class behavior:
+class BehaviorLegacy(qicore.Box):
   def __init__(self, name):
-    self._name = name
+    qicore.Box.__init__(self)
+    self.setName(name)
     self.resource = False
     self._loadCount = 0
+
+    # Register default callbacks
+    self.registerOnLoadCallback(self.__onLoad__)
+    self.registerOnUnloadCallback(self.__onUnload__)
 
     self._inputSignalsMap = {}
     self._outputSignalsMap = {}
@@ -101,9 +106,6 @@ class behavior:
           + " with " + str(paramCount))
     self.printWarn("This function is no more used")
 
-  def getName(self):
-    return self._name
-
   def addCallbackToSignal(self, signalName, callback):
     if (signalName in self._inputSignalsMap):
       self._inputSignalsMap[signalName].connect(callback)
@@ -161,6 +163,16 @@ class behavior:
         self.releaseResource()
       self._safeCallOfUserMethod("onUnload", None)
 
+  # This method is called by the Timeline when the job is done
+  def __onTimelineStopped__(self):
+    if (self.hasStateMachine()):
+      self.getStateMachine().stop()
+
+    # Stimulate all outputs
+    for name, sig in self._outputSignalsMap.items():
+      sig.trigger(None)
+
+
   def _safeCallOfUserMethod(self, functionName, functionArg):
     try:
       if(functionName in dir(self)):
@@ -179,15 +191,4 @@ class behavior:
         self.printError(str(err2))
     sys.exit(2)
     return False
-
-
-class BehaviorLegacy(qicore.Box, behavior):
-  def __init__(self, name):
-    qicore.Box.__init__(self)
-    self.setName(name)
-    behavior.__init__(self, name)
-
-    # Register default callbacks
-    self.registerOnLoadCallback(self.__onLoad__)
-    self.registerOnUnloadCallback(self.__onUnload__)
 

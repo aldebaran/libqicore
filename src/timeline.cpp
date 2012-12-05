@@ -28,7 +28,8 @@ TimelinePrivate::TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker)
     _currentDoInterpolationMoveOrderId(-1),
     _name("Timeline"),
     _resourcesAcquisition(PASSIVE),
-    _methodMonitor()
+    _methodMonitor(),
+    _onStoppedCallback(0)
 {
   try
   {
@@ -215,6 +216,8 @@ bool TimelinePrivate::update(void)
     stimulateStoppedOutputs();
     _currentFrame = _startFrame;
     killMotionOrders();
+
+    invokeCallback(_onStoppedCallback);
 
     return false;
   }
@@ -456,6 +459,35 @@ std::string TimelinePrivate::getName() const
   return _name;
 }
 
+void TimelinePrivate::invokeCallback(PyObject *callback)
+{
+  if (!callback)
+    return;
+
+  PyObject* ret;
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  ret = PyObject_CallFunctionObjArgs(callback, NULL);
+  if (!ret)
+  {
+    qiLogError("qiCore.box") << "Unable to call python callback";
+    PyErr_Print();
+    PyErr_Clear();
+  }
+
+  Py_XDECREF(ret);
+
+  PyGILState_Release(gstate);
+}
+
+void TimelinePrivate::registerOnStoppedCallback(PyObject *p)
+{
+  Py_XDECREF(_onStoppedCallback);
+  _onStoppedCallback = p;
+  Py_XINCREF(_onStoppedCallback);
+}
+
 /* -- Public -- */
 
 Timeline::Timeline(boost::shared_ptr<AL::ALBroker> broker)
@@ -526,6 +558,11 @@ void Timeline::setFPS(const int fps)
 void Timeline::waitForTimelineCompletion()
 {
   _p->waitForExecuterCompletion();
+}
+
+void Timeline::registerOnStoppedCallback(PyObject *p)
+{
+  _p->registerOnStoppedCallback(p);
 }
 
 };

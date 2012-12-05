@@ -122,7 +122,6 @@ class behaviorWaiter_class(qicoreLegacy.BehaviorLegacy):
 
 class state_class(qicoreLegacy.BehaviorLegacy):
   def __init__(self, name):
-    print("name is ", name)
     qicoreLegacy.BehaviorLegacy.__init__(self, name.encode('ascii', 'ignore'))
     self._boxList = []
 
@@ -189,6 +188,8 @@ class objectFactory:
 
     timelineObject = qicore.Timeline(self._broker.getALBroker())
     timelineObject.loadFromFile(str(self._folderName + boxName + ".xml"))
+    parentBox = self._boxDict[parentName]
+    timelineObject.registerOnStoppedCallback(self._boxDict[parentName].__onTimelineStopped__)
     self._boxDict[parentName].setTimeline(timelineObject)
     self._TimelineDict[boxName] = timelineObject
 

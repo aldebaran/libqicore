@@ -11,6 +11,7 @@
 # include <string>
 
 # include <boost/shared_ptr.hpp>
+# include <Python.h>
 
 # include <qicore/api.hpp>
 
@@ -43,6 +44,9 @@ class QICORE_API Timeline
     void setFPS(const int fps);
 
     void waitForTimelineCompletion();
+
+    /* Function that will be called when Timeline is finished */
+    void registerOnStoppedCallback(PyObject*);
 
   private:
     TimelinePrivate* _p;
