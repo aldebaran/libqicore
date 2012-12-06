@@ -3,6 +3,7 @@
  * Aldebaran Robotics (c) 2007-2012 All Rights Reserved
  */
 
+#include <qi/os.hpp>
 #include "asyncexecuter.hpp"
 
 namespace qi
@@ -79,7 +80,7 @@ void asyncExecuter::executerLoop()
         _pauseRequestCondition.wait(pauseLock);
     }
 
-    boost::this_thread::sleep(boost::posix_time::milliseconds(_interval));
+    qi::os::msleep(_interval);
 
     if (!update())
       break;

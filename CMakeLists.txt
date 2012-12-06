@@ -26,7 +26,7 @@ qi_create_lib(qicore SRC
   src/asyncexecuter.hpp src/asyncexecuter.cpp
   src/box_private.hpp src/box.cpp)
 
-qi_use_lib(qicore ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
+qi_use_lib(qicore QI ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
 
 qi_install(tests/test_statemachine.cpp DESTINATION ".")
 
