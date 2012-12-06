@@ -274,7 +274,7 @@ class objectFactory:
 
   def convertParameter(self, value, content_type):
     if (content_type == ParameterType.STRING or content_type == ParameterType.RESOURCE):
-      return value
+      return value.encode("ascii", "ignore")
     elif (content_type == ParameterType.BOOL):
       return value == "True"
     elif (content_type == ParameterType.INT):
