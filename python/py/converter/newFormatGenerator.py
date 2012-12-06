@@ -81,7 +81,7 @@ def write_state_meta(f, node):
   f.write("\t<Interval begin=\"{}\" end=\"{}\" />{}".format(node.begin, node.end, os.linesep))
 
   for label in node.labels:
-    f.write("\t<Label name=\"{}\" />{}".format(label, os.linesep))
+    f.write("\t<Label Name=\"{}\" />{}".format(label, os.linesep))
 
   for diag in node.objects:
     for link in diag.links:

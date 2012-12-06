@@ -51,6 +51,13 @@ class QICORE_API Box
 
     std::list<Transition*>& getTransitions() const;
 
+    /* These methods allow to support legacy GoTo */
+    void addLabel(std::string label);
+    const std::vector<std::string>& getLabels() const;
+    void setInterval(unsigned int a, unsigned int b);
+    unsigned int getIntervalBegin();
+    unsigned int getIntervalEnd();
+
     BoxPrivate*           _p;
 };
 

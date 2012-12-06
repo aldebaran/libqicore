@@ -20,7 +20,11 @@ BoxPrivate::BoxPrivate(Box* parent)
     _name ("Unnamed-Box"),
     _path ("./"),
     _onLoadCallback(0),
-    _onUnloadCallback(0)
+    _onUnloadCallback(0),
+    _transitions(),
+    _labels(),
+    _begin(0),
+    _end(0)
 {
 }
 
@@ -170,6 +174,32 @@ void Box::removeTransition(Transition *tr)
 std::list<Transition*>& Box::getTransitions() const
 {
   return _p->_transitions;
+}
+
+void Box::addLabel(std::string label)
+{
+  _p->_labels.push_back(label);
+}
+
+void Box::setInterval(unsigned int a, unsigned int b)
+{
+  _p->_begin = a;
+  _p->_end = b;
+}
+
+const std::vector<std::string>& Box::getLabels() const
+{
+  return _p->_labels;
+}
+
+unsigned int Box::getIntervalBegin()
+{
+  return _p->_begin;
+}
+
+unsigned int Box::getIntervalEnd()
+{
+  return _p->_end;
 }
 
 };

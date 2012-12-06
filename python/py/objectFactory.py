@@ -207,6 +207,15 @@ class objectFactory:
       return state
     self._declaredObjects.add(stateName)
 
+    for label in root.getElementsByTagName("Label"):
+      labelName = label.attributes["name"].value
+      state.addLabel(labelName.encode("ascii", "ignore"))
+
+    interval = root.getElementsByTagName("Interval")
+    intervalBegin = int(interval.attributes["begin"]).value)
+    intervalEnd = int(interval.attributes["end"]).value)
+    state.setInterval(intervalBegin, intervalEnd)
+
     for link in root.getElementsByTagName("Link"):
       inputObject = link.attributes["InputObject"].value
       outputObject = link.attributes["OutputObject"].value
