@@ -172,6 +172,7 @@ def write_main(f):
           + "  print(\"Usage: python2 main.py IP_Address Port\")" + os.linesep
           + "  sys.exit(2)" + os.linesep
           + "broker = ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, sys.argv[1], int(sys.argv[2]))" + os.linesep
+          + "ALProxy.initProxies()" + os.linesep
           + "factory = objectFactory.objectFactory(os.path.dirname(sys.argv[0]), broker)" + os.linesep
           + "root = factory.instanciateObjects(globals())" + os.linesep
           + "waiter = factory.createWaiterOnBox(root, globals())" + os.linesep

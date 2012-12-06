@@ -78,6 +78,7 @@ do
   else
     passCount=$((passCount + 1))
     printPass
+    echo ""
   fi
   rm -Rf objects
   count=$((count + 1))
