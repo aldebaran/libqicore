@@ -78,6 +78,11 @@ def write_state_meta(f, node):
     for box in diag.boxes:
       f.write("\t<Object Name=\"{}\" />{}".format(box.name, os.linesep))
 
+  f.write("\t<Interval begin=\"{}\" end=\"{}\" />{}".format(node.begin, node.end, os.linesep))
+
+  for label in node.labels:
+    f.write("\t<Label name=\"{}\" />{}".format(label, os.linesep))
+
   for diag in node.objects:
     for link in diag.links:
       f.write("\t<Link InputObject=\"{}\" InputName=\"{}\" OutputObject=\"{}\" OutputName=\"{}\" />{}"
@@ -182,7 +187,8 @@ def write_main(f):
           )
 
 class interval:
-  def __init__(self, a, b, obj):
+  def __init__(self, name, a, b, obj):
+    self.name = name
     self.begin = int(a)
     self.end = int(b)
     self.obj = obj
@@ -191,6 +197,7 @@ class state:
   def __init__(self):
     self.begin = -1
     self.end = -1
+    self.labels = []
     self.obj_nb = 0
     self.objects = []
 
@@ -247,10 +254,10 @@ class newFormatGenerator:
         keyframe = layer.behaviorKeyFrames[i]
         if (i != (len(layer.behaviorKeyFrames) - 1)):
           nextframe = layer.behaviorKeyFrames[i + 1]
-          intervalList.append(interval(keyframe.index, nextframe.index, keyframe.child))
+          intervalList.append(interval(keyframe.name, keyframe.index, nextframe.index, keyframe.child))
         else:
           lastFrame = max(lastFrame, int(keyframe.index))
-          intervalList.append(interval(keyframe.index, -1, keyframe.child))
+          intervalList.append(interval(keyframe.name, keyframe.index, -1, keyframe.child))
 
         self.visit(keyframe.child)
 
@@ -267,7 +274,7 @@ class newFormatGenerator:
 
     print("----------------- Intervals --------------------")
     for inter in intervalList:
-      print(inter.begin, " -> ", inter.end)
+      print(inter.name, " : ", inter.begin, " -> ", inter.end)
 
     stateList = self.convertToStateMachine(intervalList, lastFrame)
 
@@ -288,13 +295,19 @@ class newFormatGenerator:
     while (len(currentInterList) > 0):
       currentStateBegin = (max(currentInterList, key=lambda inter: inter.begin)).begin
       currentStateEnd = 0
+      currentStateLabels = []
       nextStateBegin = endFrame
+
+      lastInter = currentInterList.pop()
+      currentInterList.append(lastInter)
+      currentStateLabels.append(lastInter.name)
 
       # Retrieve all intervals that starts with the same x
       # Take the start of the next interval as well
       while (len(intervalList) > 0):
         nextInter = intervalList.pop(0)
         if (nextInter.begin == currentStateBegin):
+          currentStateLabels.append(nextInter.name)
           currentInterList.append(nextInter)
         else:
           intervalList.insert(0, nextInter)
@@ -308,6 +321,7 @@ class newFormatGenerator:
       currentState.begin = currentStateBegin
       currentState.end = min(currentStateEnd, nextStateBegin)
       currentState.obj_nb = len(currentInterList)
+      currentState.labels = currentStateLabels
 
       for inter in currentInterList:
         (currentState.objects).append(inter.obj)
@@ -328,6 +342,6 @@ class newFormatGenerator:
 
     print("------------------ States ----------------------")
     for st in stateList:
-      print("State : ", st.begin, " -> ", st.end, "with : ", st.obj_nb)
+      print("State : ", st.begin, " -> ", st.end, ", with : ", st.obj_nb, "keyframes, labels : ", st.labels)
     return stateList
 
