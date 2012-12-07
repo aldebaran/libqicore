@@ -28,6 +28,9 @@ class nameMapBuilder:
     return ""
 
   def formatName(self, name):
+    if (name is None):
+      return "unnamed_object"
+
     result = ""
     for char in name:
       if char in string.printable:

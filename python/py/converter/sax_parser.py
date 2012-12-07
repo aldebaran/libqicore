@@ -5,6 +5,8 @@
 ## found in the COPYING file.
 
 import xml.sax
+import io
+import re
 
 import xar_types
 import box
@@ -13,7 +15,21 @@ import timeline
 import behaviorLayer
 import behaviorKeyFrame
 
+def checkOpenfile(file):
+  f = io.open(file, encoding='utf-8', mode='r')
+  header = f.readline()
+  header = header + f.readline()
+  if (not "xar_version=\"3\"" in header):
+    f.close()
+    return None
+  return f
+
+
 def parse(file):
+  f = checkOpenfile(file)
+  if (f is None):
+    return None
+
   parser = xml.sax.make_parser()
   handler = xarHandler()
   parser.setContentHandler(handler)

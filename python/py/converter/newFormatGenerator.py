@@ -16,6 +16,9 @@ import behaviorKeyFrame
 import code_patcher
 
 def write_box_meta(f, node):
+  if (node.tooltip is None):
+    node.tooltip = ""
+
   f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
   f.write("<Box id=\"{}\" content=\"{}\" robot=\"{}\" tooltip=\"{}\" bitmap=\"{}\" bitmap_expanded=\"{}\" plugin=\"{}\" x=\"{}\" y=\"{}\" >{}"
             .format(node.id_,
@@ -29,6 +32,8 @@ def write_box_meta(f, node):
                     node.y,
                     os.linesep))
   for input in node.inputs:
+    if (input.tooltip is None):
+      input.tooltip = ""
     f.write("\t<Input name=\"{}\" type=\"{}\" type_size=\"{}\" nature=\"{}\" inner=\"{}\" tooltip=\"{}\" id=\"{}\" />{}"
         .format(input.name,
                 input.type,
@@ -39,6 +44,8 @@ def write_box_meta(f, node):
                 input.id,
                 os.linesep))
   for output in node.outputs:
+    if (output.tooltip is None):
+      output.tooltip = ""
     f.write("\t<Output name=\"{}\" type=\"{}\" type_size=\"{}\" nature=\"{}\" inner=\"{}\" tooltip=\"{}\" id=\"{}\" />{}"
         .format(output.name,
                 output.type,
@@ -49,6 +56,8 @@ def write_box_meta(f, node):
                 output.id,
                 os.linesep))
   for parameter in node.parameters:
+    if (parameter.tooltip is None):
+      parameter.tooltip = ""
     f.write("\t<Parameter name=\"{}\" inherits_from_parent=\"{}\" content_type=\"{}\" value=\"{}\" default_value=\"{}\" min=\"{}\" max=\"{}\" tooltip=\"{}\" id=\"{}\" custom_choice=\"{}\" />{}"
         .format(parameter.name,
                 parameter.inherits_from_parent,

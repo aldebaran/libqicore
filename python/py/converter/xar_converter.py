@@ -24,6 +24,9 @@ def main():
     folder = "objects"
 
   root = parse(sys.argv[1])
+  if (root is None):
+    print("Incorrect File format, file must be in valid XML, xar_version 3")
+    sys.exit(2)
   nmb = nameMapBuilder.nameMapBuilder()
   nmb.visit(root)
 
