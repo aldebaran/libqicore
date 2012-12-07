@@ -34,6 +34,11 @@ function printPass
   echo -e "=====> [\e[4;32mPASS\e[0m]"
 }
 
+function printNull
+{
+  echo -e "=====> [NULL]"
+}
+
 count=1
 errorConversionCount=0
 errorRunTimeCount=0
@@ -44,8 +49,15 @@ for str in $fileList
 do
   echo "[$count/$fileNumber] : $str"
   ../xar_converter.py "$str" >> $logFile 2> $errorFile
-  if [ $? -ne 0 ]
+  result=$?
+  if [ $result -ne 0 ]
   then
+    if [ $result -eq 12 ]
+    then
+      printNull "Incorrect format, abort test"
+      echo ""
+      continue
+    fi
     errorConversionCount=$((errorConversionCount + 1))
     printError "Conversion fail"
     echo `cat $errorFile`
