@@ -162,6 +162,7 @@ class objectFactory:
     self._StateDict = {}
     self._TimelineDict = {}
     self._connectionTypeForBox = {}
+    self._boxStack = []
 
   def instanciateObjects(self, topdict, root = "l0_root"):
     self.parseBox(root)
@@ -208,12 +209,12 @@ class objectFactory:
     self._declaredObjects.add(stateName)
 
     for label in root.getElementsByTagName("Label"):
-      labelName = label.attributes["name"].value
+      labelName = label.attributes["Name"].value
       state.addLabel(labelName.encode("ascii", "ignore"))
 
-    interval = root.getElementsByTagName("Interval")
-    intervalBegin = int(interval.attributes["begin"]).value)
-    intervalEnd = int(interval.attributes["end"]).value)
+    interval = root.getElementsByTagName("Interval")[0]
+    intervalBegin = int(interval.attributes["begin"].value)
+    intervalEnd = int(interval.attributes["end"].value)
     state.setInterval(intervalBegin, intervalEnd)
 
     for link in root.getElementsByTagName("Link"):
@@ -345,6 +346,13 @@ class objectFactory:
 
     self._connectionTypeForBox[boxName] = connectionMap
 
+    if (len(self._boxStack) != 0):
+      parentBox = self._boxStack.pop()
+      self._boxStack.append(parentBox)
+      boxObject.setParentBox(parentBox)
+    self._boxStack.append(boxObject)
+
     self.parseTimeline(boxName + "_timeline", boxName)
     self.parseStateMachine(boxName + "_state_machine", boxName)
+    self._boxStack.pop()
 

@@ -23,8 +23,8 @@ BoxPrivate::BoxPrivate(Box* parent)
     _onUnloadCallback(0),
     _transitions(),
     _labels(),
-    _begin(0),
-    _end(0)
+    _begin(-1),
+    _end(-1)
 {
 }
 
@@ -68,7 +68,7 @@ void BoxPrivate::invokeCallback(PyObject* callback)
   ret = PyObject_CallFunctionObjArgs(callback, NULL);
   if (!ret)
   {
-    qiLogError("qiCore.box") << "Unable to call python callback";
+    qiLogError("qiCore.box") << "Box is unable to call python callback";
     PyErr_Print();
     PyErr_Clear();
   }
@@ -181,7 +181,7 @@ void Box::addLabel(std::string label)
   _p->_labels.push_back(label);
 }
 
-void Box::setInterval(unsigned int a, unsigned int b)
+void Box::setInterval(int a, int b)
 {
   _p->_begin = a;
   _p->_end = b;
@@ -192,12 +192,12 @@ const std::vector<std::string>& Box::getLabels() const
   return _p->_labels;
 }
 
-unsigned int Box::getIntervalBegin()
+int Box::getIntervalBegin()
 {
   return _p->_begin;
 }
 
-unsigned int Box::getIntervalEnd()
+int Box::getIntervalEnd()
 {
   return _p->_end;
 }

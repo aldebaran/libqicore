@@ -135,6 +135,7 @@ void TimelinePrivate::killMotionOrders()
 
 void TimelinePrivate::play()
 {
+  qiLogDebug("qiCore.Timeline") << "Play timeline";
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
   if (_enabled == false || _fps == 0)
@@ -149,12 +150,14 @@ void TimelinePrivate::play()
 
 void TimelinePrivate::pause()
 {
-  pauseExecuter();
+  qiLogDebug("qiCore.Timeline") << "Pause timeline";
+  waitUntilPauseExecuter();
   killMotionOrders();
 }
 
 void TimelinePrivate::stop()
 {
+  qiLogDebug("qiCore.Timeline") << "Stop timeline";
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
   stopExecuter();
@@ -163,8 +166,9 @@ void TimelinePrivate::stop()
   _currentFrame = _startFrame;
 }
 
-void TimelinePrivate::goTo(const int &pFrame)
+void TimelinePrivate::goTo(int pFrame)
 {
+  qiLogDebug("qiCore.Timeline") << "goto timeline with : " << pFrame;
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
   if (!_enabled)
     return;
@@ -178,7 +182,7 @@ int TimelinePrivate::getSize() const
   return _endFrame - _startFrame;
 }
 
-void TimelinePrivate::setFPS(const int pFps)
+void TimelinePrivate::setFPS(int pFps)
 {
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
@@ -208,7 +212,6 @@ bool TimelinePrivate::update(void)
   }
 
   // if on the end frame
-  // or if on the last motion keyframe with no behaviour layers
   if ( ((_endFrame >= 1) && (_currentFrame >= _endFrame))
     || (_currentFrame < _startFrame))
   {
@@ -471,7 +474,7 @@ void TimelinePrivate::invokeCallback(PyObject *callback)
   ret = PyObject_CallFunctionObjArgs(callback, NULL);
   if (!ret)
   {
-    qiLogError("qiCore.box") << "Unable to call python callback";
+    qiLogError("qiCore.Timeline") << "Timeline is unable to call python callback";
     PyErr_Print();
     PyErr_Clear();
   }

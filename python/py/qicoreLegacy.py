@@ -9,12 +9,28 @@ import sys
 import qicore
 import qimessagingswig
 
+
+# This class just bind a Timeline and a StateMachine
+class TimelineLegacy:
+  def __init__(self, timeline, stateMachine):
+    self._stateMachine = stateMachine
+    self._timeline = timeline
+
+  def goTo(self, label):
+    frame = label
+    if (self._stateMachine is not None):
+      frame = self._stateMachine.goToLabel(label)
+    if (self._timeline is not None):
+      self._timeline.goTo(frame)
+
+
 class BehaviorLegacy(qicore.Box):
   def __init__(self, name):
     qicore.Box.__init__(self)
     self.setName(name)
     self.resource = False
     self._loadCount = 0
+    self._parentBox = None
 
     # Register default callbacks
     self.registerOnLoadCallback(self.__onLoad__)
@@ -197,4 +213,30 @@ class BehaviorLegacy(qicore.Box):
 
   def log(self, string):
     self.printInfo(string)
+
+  def setParentBox(self, box):
+    self._parentBox = box
+
+
+  # Compatibility layer for Parent Timeline Control
+
+  def getParentTimeline(self):
+    return TimelineLegacy(self._parentBox.getTimeline(), self._parentBox.getStateMachine())
+
+  def stopTimelineParent(self):
+    # Yup, Stop is just a pause in legacy format
+    if (self._parentBox is None):
+      return
+    if (self._parentBox.hasTimeline()):
+      self._parentBox.getTimeline().pause()
+    if (self._parentBox.hasStateMachine()):
+      self._parentBox.getStateMachine().pause()
+
+  def playTimelineParent(self):
+    if (self._parentBox is None):
+      return
+    if (self._parentBox.hasTimeline()):
+      self._parentBox.getTimeline().play()
+    if (self._parentBox.hasStateMachine()):
+      self._parentBox.getStateMachine().run()
 

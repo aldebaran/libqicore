@@ -54,9 +54,9 @@ class QICORE_API Box
     /* These methods allow to support legacy GoTo */
     void addLabel(std::string label);
     const std::vector<std::string>& getLabels() const;
-    void setInterval(unsigned int a, unsigned int b);
-    unsigned int getIntervalBegin();
-    unsigned int getIntervalEnd();
+    void setInterval(int a, int b);
+    int getIntervalBegin();
+    int getIntervalEnd();
 
     BoxPrivate*           _p;
 };

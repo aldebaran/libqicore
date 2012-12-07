@@ -39,10 +39,13 @@ class StateMachinePrivate : public asyncExecuter
     bool isOnFinalState() const;
 
     void run();
+    void pause();
     void stop();
 
     bool executeTransition(Transition* tr);
     bool goToState(Box* state);
+    int goToLabel(std::string label);
+    int goToLabel(int label);
 
     void waitUntilStop();
 
@@ -56,6 +59,7 @@ class StateMachinePrivate : public asyncExecuter
     void setupTimeOut(unsigned int time);
 
     std::string                     _name;
+    bool                            _isPaused;
     bool                            _isRunning;
     boost::mutex                    _isRunningMutex;
     boost::condition_variable       _isRunningCondition;

@@ -21,6 +21,7 @@ namespace qi
 StateMachinePrivate::StateMachinePrivate(StateMachine *s)
   : asyncExecuter(42),
     _name ("Unnamed-StateMachine"),
+    _isPaused (false),
     _isRunning (false),
     _isRunningMutex (),
     _isRunningCondition(),
@@ -102,6 +103,12 @@ bool StateMachinePrivate::isOnFinalState() const
 
 bool StateMachinePrivate::executeTransition(Transition* tr)
 {
+  if (_isPaused)
+  {
+    qiLogDebug("qiCore.StateMachine") << "StateMachine is paused, transition dropped." << std::endl;
+    return false;
+  }
+
   { /* Locked Section */
     boost::recursive_mutex::scoped_lock currentStateLock(_currentStateMutex);
 
@@ -110,7 +117,10 @@ bool StateMachinePrivate::executeTransition(Transition* tr)
      * are triggered at the same time
      */
     if (_currentState != tr->getFromState())
+    {
+      qiLogDebug("qiCore.StateMachine") << "Timed transition expired, transition dropped." << std::endl;
       return false;
+    }
 
     return goToState(tr->getToState());
   } /* End locked Section */
@@ -131,7 +141,7 @@ bool StateMachinePrivate::goToState(Box* state)
 
     /* Stop the timeOut timer if needed */
     if (_timedTransition != 0)
-      stopExecuter();
+      pauseExecuter();
 
     if (_currentState)
       unloadTransitions();
@@ -149,6 +159,47 @@ bool StateMachinePrivate::goToState(Box* state)
   } /* End locked Section */
 
   return true;
+}
+
+int StateMachinePrivate::goToLabel(std::string label)
+{
+  qiLogDebug("qiCore.StateMachine") << "goToLabel: " << label << std::endl;
+
+  for (std::set<Box*>::const_iterator it = _states.begin();
+        it != _states.end(); it++)
+  {
+    const std::vector<std::string> labels = (*it)->getLabels();
+
+    for (std::vector<std::string>::const_iterator it2 = labels.begin();
+          it2 != labels.end(); it2++)
+    {
+      if ((*it2) == label)
+      {
+        if (!goToState(*it))
+          return -1;
+        return (*it)->getIntervalBegin();
+      }
+    }
+  }
+
+  return -1;
+}
+
+int StateMachinePrivate::goToLabel(int label)
+{
+  qiLogDebug("qiCore.StateMachine") << "goToLabel: " << label << std::endl;
+
+  for (std::set<Box*>::const_iterator it = _states.begin();
+        it != _states.end(); it++)
+  {
+    if ((*it)->getIntervalBegin() <= label && (*it)->getIntervalEnd() >= label)
+    {
+      goToState(*it);
+      return (*it)->getIntervalBegin();
+    }
+  }
+
+  return -1;
 }
 
 bool StateMachinePrivate::update()
@@ -218,6 +269,12 @@ void StateMachinePrivate::run()
 {
   qiLogDebug("qiCore.StateMachine") << "Starting StateMachine : " << _name;
 
+  if (_isPaused)
+  {
+    _isPaused = false;
+    return;
+  }
+
   { /* Locked Section */
     boost::mutex::scoped_lock lock(_isRunningMutex);
 
@@ -253,6 +310,13 @@ void StateMachinePrivate::stop()
   _isRunningCondition.notify_all();
 
   qiLogDebug("qiCore.StateMachine") << "StateMachine Stopped : " << _name;
+}
+
+void StateMachinePrivate::pause()
+{
+  _isPaused = true;
+  _timedTransition = 0;
+  pauseExecuter();
 }
 
 void StateMachinePrivate::waitUntilStop()
@@ -317,6 +381,7 @@ void StateMachine::stop()
 
 void StateMachine::pause()
 {
+  _p->pause();
 }
 
 bool StateMachine::goToState(Box *state)
@@ -347,6 +412,16 @@ std::string StateMachine::getName() const
 Box* StateMachine::getCurrentState() const
 {
   return _p->_currentState;
+}
+
+int StateMachine::goToLabel(std::string label)
+{
+  return _p->goToLabel(label);
+}
+
+int StateMachine::goToLabel(int label)
+{
+  return _p->goToLabel(label);
 }
 
 };

@@ -29,7 +29,19 @@ class asyncExecuter
     bool isPlaying();
 
     void playExecuter();
+    /*
+     * Send the message to executer to pause as soon as possible
+     * Note that when exiting this function, the worker thread may
+     * not be paused yet.
+     */
     void pauseExecuter();
+    /*
+     * Send the message to executer to pause and wait for it
+     * Use this function to be sure that update() will not be called
+     * once again.
+     * When exiting this function, the executer is paused
+     */
+    void waitUntilPauseExecuter();
     void stopExecuter();
 
   protected:

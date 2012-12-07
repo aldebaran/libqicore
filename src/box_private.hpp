@@ -45,8 +45,8 @@ class BoxPrivate
 
     std::list<Transition*>          _transitions;
     std::vector<std::string>        _labels;
-    unsigned int                    _begin;
-    unsigned int                    _end;
+    int                    _begin;
+    int                    _end;
 };
 
 };

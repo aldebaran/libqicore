@@ -50,6 +50,13 @@ void asyncExecuter::pauseExecuter()
   _pauseRequest = true;
 }
 
+void asyncExecuter::waitUntilPauseExecuter()
+{
+  boost::mutex::scoped_lock pauseLock(_pauseRequestMutex);
+  _pauseRequest = true;
+  _pauseRequestCondition.wait(pauseLock);
+}
+
 void asyncExecuter::stopExecuter()
 {
   {
@@ -74,6 +81,8 @@ void asyncExecuter::executerLoop()
 
   while (true)
   {
+    /* Notify users that wait for pause */
+    _pauseRequestCondition.notify_all();
     {
       boost::mutex::scoped_lock pauseLock(_pauseRequestMutex);
       while (_pauseRequest)

@@ -38,10 +38,16 @@ class QICORE_API StateMachine
     bool isOnFinalState() const;
 
     void run();
+    /*
+     * When StateMachine is paused, you can not trigger transitions.
+     * You can change the state by using goToState / goToLabel
+     */
     void pause();
     void stop();
 
     bool goToState(Box* state);
+    int goToLabel(std::string label);
+    int goToLabel(int label);
     bool executeTransition(Transition* tr);
     Box* getCurrentState() const;
 

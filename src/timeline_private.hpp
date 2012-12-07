@@ -53,10 +53,10 @@ public:
   void play(void);
   void pause(void);
   void stop(void);
-  void goTo(const int &pFrame);
+  void goTo(int pFrame);
   int getSize() const;
   int getFPS(void) const;
-  void setFPS(const int pFps);
+  void setFPS(int pFps);
 
   bool getEnabled() const;
   int getCurrentFrame() const;
