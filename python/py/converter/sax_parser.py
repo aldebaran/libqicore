@@ -6,7 +6,6 @@
 
 import xml.sax
 import io
-import re
 
 import xar_types
 import box
@@ -22,18 +21,18 @@ def checkOpenfile(file):
   if (not "xar_version=\"3\"" in header):
     f.close()
     return None
+  f.close()
   return f
 
-
-def parse(file):
-  f = checkOpenfile(file)
+def parse(filename):
+  f = checkOpenfile(filename)
   if (f is None):
     return None
 
   parser = xml.sax.make_parser()
   handler = xarHandler()
   parser.setContentHandler(handler)
-  parser.parse(file)
+  parser.parse(filename)
   return handler.getRoot()
 
 class xarHandler(xml.sax.handler.ContentHandler):
