@@ -8,6 +8,7 @@ echo "Starting..."
 forceContinue=$1
 
 logFile=test_result.log
+errorFile=test_result.err
 
 rm -Rf objects $logFile
 fileList=`find ../../../../../../ -name 'behavior.xar' -printf "%p:"`
@@ -47,7 +48,7 @@ IFS=:
 for str in $fileList
 do
   echo "[$count/$fileNumber] : $str"
-  ../xar_converter.py "$str" >> $logFile
+  ../xar_converter.py "$str" >> $logFile 2> $errorFile
   result=$?
   if [ $result -ne 0 ]
   then
@@ -67,7 +68,7 @@ do
     fi
     continue
   fi
-  timeout 10 python2 objects/main.py 127.0.0.1 9559 >> $logFile
+  timeout 10 python2 objects/main.py 127.0.0.1 9559 >> $logFile 2> $errorFile
   result=$?
   if [ $result -ne 0 ]
   then
