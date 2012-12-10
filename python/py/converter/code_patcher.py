@@ -42,6 +42,8 @@ class patcher:
     # Code that require a translation ...
     warning = "# /!!\ This code has been removed by the qicore Converter, no more supported..."
     self._code = self._code.replace("ALFrameManager", "self")
+    self._code = self._code.replace("ALProxy(\"self\")", "self")
+
     #FIXME: This value cannot be acquired at this time...
     self._code = self._code.replace("self.getTimelineFps(self.getName())", "25")
 
@@ -50,7 +52,6 @@ class patcher:
       self._code = self._code.replace("self.setTimelineFps(self.getName(), newfps)", "self.getTimeline().setFPS(newfps)")
     else:
       self._code = self._code.replace("self.setTimelineFps(self.getName(), newfps)", "pass")
-    self._code = self._code.replace("self.getBehaviorPath(self.behaviorId)", "self.getPath()")
 
   def patch(self):
     if (self._code.lstrip() == ""):

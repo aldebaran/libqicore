@@ -31,6 +31,7 @@ class BehaviorLegacy(qicore.Box):
     self.resource = False
     self._loadCount = 0
     self._parentBox = None
+    self.behaviorId = name
 
     # Register default callbacks
     self.registerOnLoadCallback(self.__onLoad__)
@@ -219,7 +220,6 @@ class BehaviorLegacy(qicore.Box):
 
 
   # Compatibility layer for Parent Timeline Control
-
   def getParentTimeline(self):
     return TimelineLegacy(self._parentBox.getTimeline(), self._parentBox.getStateMachine())
 
@@ -239,4 +239,8 @@ class BehaviorLegacy(qicore.Box):
       self._parentBox.getTimeline().play()
     if (self._parentBox.hasStateMachine()):
       self._parentBox.getStateMachine().run()
+
+  # Compatibilty layer for FrameManager
+  def getBehaviorPath(self, behaviorId):
+    return self.getPath()
 
