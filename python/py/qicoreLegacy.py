@@ -195,6 +195,7 @@ class BehaviorLegacy(qicore.Box):
   def __onLoad__(self):
     # Load the box only once
     if (self._loadCount == 0):
+      self.printDebug("Load")
       self._safeCallOfUserMethod("onLoad", None)
       self.stimulateIO("onLoad", None)
 
@@ -208,6 +209,7 @@ class BehaviorLegacy(qicore.Box):
       if (self.resource):
         self.releaseResource()
       self._safeCallOfUserMethod("onUnload", None)
+      self.printDebug("Unload")
 
   # This method is called by the Timeline when the job is done
   def __onTimelineStopped__(self):
