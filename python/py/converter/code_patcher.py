@@ -62,6 +62,7 @@ class patcher:
     self._code = ( "#!/usr/bin/env python" + os.linesep
                   + "# -*- coding: utf-8 -*-" + os.linesep * 2
                   + "import time" + os.linesep
+                  + "import random" + os.linesep
                   + "from naoqi import *" + os.linesep
                   + "import qicore" + os.linesep
                   + "import qicoreLegacy" + os.linesep * 2
