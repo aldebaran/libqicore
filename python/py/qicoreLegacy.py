@@ -5,6 +5,9 @@
 ## found in the COPYING file.
 
 import sys
+import logging
+
+import allog
 
 import qicore
 import qimessagingswig
@@ -23,6 +26,24 @@ class TimelineLegacy:
     if (self._timeline is not None):
       self._timeline.goTo(frame)
 
+class BehaviorLogHandler(logging.Handler):
+  def __init__(self):
+    logging.Handler.__init__(self)
+
+  def emit(self, record):
+    level_to_function = {
+      logging.DEBUG: allog.debug,
+      logging.INFO: allog.info,
+      logging.WARNING: allog.warning,
+      logging.ERROR: allog.error,
+      logging.CRITICAL: allog.fatal,
+    }
+    function = level_to_function.get(record.levelno, allog.debug)
+    function(record.getMessage(),
+             record.name,
+             record.filename,
+             record.funcName,
+             record.lineno)
 
 class BehaviorLegacy(qicore.Box):
   def __init__(self, name):
@@ -41,18 +62,23 @@ class BehaviorLegacy(qicore.Box):
     self._outputSignalsMap = {}
     self._parameterMaps = {}
 
+    self.logger = logging.getLogger(name)
+    logHandler = BehaviorLogHandler()
+    self.logger.addHandler(logHandler)
+    self.logger.setLevel(logging.DEBUG)
+
 
   def printDebug(self, mystr):
-    print("[DEBUG] " + self.getName() + " : " + mystr)
+    self.logger.debug(str(self.getName() + " : " + mystr))
 
   def printWarn(self, mystr):
-    print("[WARN ] " + self.getName() + " : " + mystr)
+    self.logger.warning(str(self.getName() + " : " + mystr))
 
   def printError(self, mystr):
-    print("[ERROR] " + self.getName() + " : " + mystr)
+    self.logger.error(str(self.getName() + " : " + mystr))
 
   def printInfo(self, mystr):
-    print("[INFO] " + self.getName() + " : " + mystr)
+    self.logger.info(str(self.getName() + " : " + mystr))
 
   def printFatal(self, mystr):
     sys.stderr.write("[FATAL] " + self.getName() + " : " + mystr)
