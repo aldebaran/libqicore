@@ -61,6 +61,8 @@ class BehaviorLegacy(qicore.Box):
     self._inputSignalsMap = {}
     self._outputSignalsMap = {}
     self._parameterMaps = {}
+    self._callbackIdMap = {}
+    self._connectionCounter = {}
 
     self.logger = logging.getLogger(name)
     logHandler = BehaviorLogHandler()
@@ -152,39 +154,65 @@ class BehaviorLegacy(qicore.Box):
           + " with " + str(paramCount))
     self.printWarn("This function is no more used")
 
-  def addCallbackToSignal(self, signalName, callback):
-    if (signalName in self._inputSignalsMap):
-      self._inputSignalsMap[signalName].connect(callback)
-    elif (signalName in self._outputSignalsMap):
-      self._outputSignalsMap[signalName].connect(callback)
-    else:
-      self.printWarn("Unable to connect " + signalName + " : signal not found")
-
   def _findUserMethod(self, methodName):
     if (methodName in dir(self)):
       return getattr(self, methodName)
     else:
       return None
 
+  def addCallbackToSignal(self, signalName, callback):
+    if (signalName in self._inputSignalsMap):
+      return self._inputSignalsMap[signalName].connect(callback)
+    elif (signalName in self._outputSignalsMap):
+      return self._outputSignalsMap[signalName].connect(callback)
+    else:
+      return None
+
+  def removeCallbackToSignal(self, signalName, callbackId):
+    if (signalName in self._inputSignalsMap):
+      return self._inputSignalsMap[signalName].connect(callbackId)
+    elif (signalName in self._outputSignalsMap):
+      return self._outputSignalsMap[signalName].connect(callbackId)
+    else:
+      return False
+
   def connectInput(self, inputName, target, signalName):
     self.printDebug("ConnectInput " + inputName + " from " + self.getName()
         + " to " + signalName + " from " + target.getName())
+
     methodName = "onInput_" + inputName + "__"
-    f = self._findUserMethod(methodName)
-    if (f is None):
-      self.printWarn("Unable to find " + methodName)
+    connectionName = str(methodName + signalName)
+
+    if (connectionName in self._connectionCounter):
+      self.printDebug("Already connected: increment connection counter")
+      self._connectionCounter[connectionName] = self._connectionCounter[connectionName] + 1
     else:
-      target.addCallbackToSignal(signalName, f)
+      f = self._findUserMethod(methodName)
+      if (f is None):
+        self.printWarn("Unable to find " + methodName)
+      else:
+        signalId = target.addCallbackToSignal(signalName, f)
+        self._callbackIdMap[connectionName] = signalId
+        self._connectionCounter[connectionName] = 1
 
   def connectOutput(self, outputName, target, signalName):
     self.printDebug("ConnectOutput " + outputName + " from " + self.getName()
         + " to " + signalName + " from " + target.getName())
+
     methodName = outputName
-    f = self._findUserMethod(methodName)
-    if (f is None):
-      self.printWarn("Unable to find " + methodName)
+    connectionName = str(methodName + signalName)
+
+    if (connectionName in self._connectionCounter):
+      self.printDebug("Already connected: increment connection counter")
+      self._connectionCounter[connectionName] = self._connectionCounter[connectionName] + 1
     else:
-      target.addCallbackToSignal(signalName, f)
+      f = self._findUserMethod(methodName)
+      if (f is None):
+        self.printWarn("Unable to find " + methodName)
+      else:
+        signalId = target.addCallbackToSignal(signalName, f)
+        self._callbackIdMap[connectionName] = signalId
+        self._connectionCounter[connectionName] = 1
 
   def connectParameter(self, parameterName, target, signalName):
     self.printDebug("ConnectParameter " + parameterName + " from " + self.getName()
@@ -192,16 +220,59 @@ class BehaviorLegacy(qicore.Box):
     self.printError("Not implemented yet")
     sys.exit(2)
 
+  def disconnectInput(self, inputName, target, signalName):
+    self.printDebug("disconnectInput " + inputName + " from " + self.getName()
+        + " to " + signalName + " from " + target.getName())
+
+    methodName = "onInput_" + inputName + "__"
+    connectionName = str(methodName + signalName)
+    if (not (connectionName in self._connectionCounter)):
+      self.printError("Unable to disconnect, this connection is unknown")
+      return
+
+    self._connectionCounter[connectionName] = self._connectionCounter[connectionName] - 1
+    if (self._connectionCounter[connectionName] == 0):
+      del self._connectionCounter[connectionName]
+      target._inputSignalsMap[signalName].disconnect(self._callbackIdMap[connectionName])
+      del self._callbackIdMap[connectionName]
+
+
+  def disconnectOutput(self, outputName, target, signalName):
+    self.printDebug("disconnectOutput " + outputName + " from " + self.getName()
+        + " to " + signalName + " from " + target.getName())
+
+    methodName = outputName
+    connectionName = str(methodName + signalName)
+    if (not (connectionName in self._connectionCounter)):
+      self.printError("Unable to disconnect, this connection is unknown")
+      return
+
+    self._connectionCounter[connectionName] = self._connectionCounter[connectionName] - 1
+    if (self._connectionCounter[connectionName] == 0):
+      del self._connectionCounter[connectionName]
+      target._outputSignalsMap[signalName].disconnect(self._callbackIdMap[connectionName])
+      del self._callbackIdMap[connectionName]
+
+  def disconnectParameter(self, parameterName, target, signalName):
+    self.printDebug("disconnectParameter " + parameterName + " from " + self.getName()
+        + " to " + signalName + " from " + target.getName())
+    self.printError("Not implemented yet")
+    sys.exit(2)
+
   def __onLoad__(self):
     # Load the box only once
-    if (self._loadCount == 0):
-      self.printDebug("Load")
-      self._safeCallOfUserMethod("onLoad", None)
-      self.stimulateIO("onLoad", None)
+    self.printDebug("Load with count = " + str(self._loadCount))
 
     self._loadCount = self._loadCount + 1;
 
+    if (self._loadCount == 1):
+      self._safeCallOfUserMethod("onLoad", None)
+      self.stimulateIO("onLoad", None)
+
+
   def __onUnload__(self):
+    self.printDebug("Unload with count = " + str(self._loadCount))
+
     if (self._loadCount > 0):
       self._loadCount = self._loadCount - 1;
 

@@ -120,26 +120,45 @@ class behaviorWaiter_class(qicoreLegacy.BehaviorLegacy):
     while (self.isComplete == False):
       time.sleep(0.2)
 
+class ConnectionType:
+  INPUT=0
+  OUTPUT=1
+  PARAMETER=2
+
+class Connection:
+  inputObject = ""
+  inputName = ""
+  outputObject = ""
+  outputName = ""
+  ctype = None
+
 class state_class(qicoreLegacy.BehaviorLegacy):
   def __init__(self, name):
     qicoreLegacy.BehaviorLegacy.__init__(self, name.encode('ascii', 'ignore'))
     self._boxList = []
+    self._connectionsList = []
 
   def onLoad(self):
+    # Create connections local to the state
+    for f in self._connectionsList:
+      f(True)
+
     for box in self._boxList:
       box.__onLoad__()
 
   def onUnload(self):
+    # Destroy connections local to the state
+    for f in self._connectionsList:
+      f(False)
+
     for box in self._boxList:
       box.__onUnload__()
 
   def addBox(self, box):
     self._boxList.append(box)
 
-class ConnectionType:
-  INPUT=0
-  OUTPUT=1
-  PARAMETER=2
+  def addConnection(self, connector):
+    self._connectionsList.append(connector)
 
 def safeOpen(filename):
   try:
@@ -194,6 +213,24 @@ class objectFactory:
     self._boxDict[parentName].setTimeline(timelineObject)
     self._TimelineDict[boxName] = timelineObject
 
+  def connectionFunctionGenerate(self, inputBox, inputName, outputBox, outputName, ctype):
+    connectFunctionMap = { ConnectionType.INPUT : "connectInput",
+                           ConnectionType.OUTPUT : "connectOutput",
+                           ConnectionType.PARAMETER : "connectParameter"}
+    disconnectFunctionMap = { ConnectionType.INPUT : "disconnectInput",
+                              ConnectionType.OUTPUT : "disconnectOutput",
+                              ConnectionType.PARAMETER : "disconnectParameter"}
+    def connect(enable):
+      if (enable):
+        f = getattr(inputBox, connectFunctionMap[ctype])
+        f(inputName, outputBox, outputName)
+      else:
+        f = getattr(inputBox, disconnectFunctionMap[ctype])
+        f(inputName, outputBox, outputName)
+
+    return connect
+
+
   def parseState(self, stateName):
     state = state_class(stateName)
     dom = xml.dom.minidom.parse(self._folderName + stateName + ".xml")
@@ -223,22 +260,15 @@ class objectFactory:
       inputName = link.attributes["InputName"].value
       outputName = link.attributes["OutputName"].value
 
-      # We do not want to connect boxes multiples times
-      if ((inputObject + inputName + outputObject + outputName) in self._declaredLinks):
-        continue
-      else:
-        self._declaredLinks.add(inputObject + inputName + outputObject + outputName)
-
       # create objects if needed
       self.parseBox(inputObject)
       self.parseBox(outputObject)
 
-      if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.INPUT):
-        self._boxDict[inputObject].connectInput(str(inputName), self._boxDict[outputObject], outputName)
-      if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.OUTPUT):
-        self._boxDict[inputObject].connectOutput(str(inputName), self._boxDict[outputObject], outputName)
-      if (self._connectionTypeForBox[inputObject][inputName] == ConnectionType.PARAMETER):
-        self._boxDict[inputObject].connectParameter(str(inputName), self._boxDict[outputObject], outputName)
+      f = self.connectionFunctionGenerate(self._boxDict[inputObject], str(inputName),
+                                          self._boxDict[outputObject], str(outputName),
+                                          self._connectionTypeForBox[inputObject][inputName])
+      state.addConnection(f)
+
 
     return state
 
