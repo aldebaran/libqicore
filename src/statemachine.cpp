@@ -24,7 +24,6 @@ StateMachinePrivate::StateMachinePrivate(StateMachine *s)
     _isPaused (false),
     _isRunning (false),
     _isRunningMutex (),
-    _isRunningCondition(),
     _initialState (0),
     _currentState (0),
     _timedTransition (0),
@@ -118,7 +117,7 @@ bool StateMachinePrivate::executeTransition(Transition* tr)
      */
     if (_currentState != tr->getFromState())
     {
-      qiLogDebug("qiCore.StateMachine") << "Timed transition expired, transition dropped." << std::endl;
+      qiLogDebug("qiCore.StateMachine") << "Transition expired, transition dropped." << std::endl;
       return false;
     }
 
@@ -134,29 +133,35 @@ bool StateMachinePrivate::goToState(Box* state)
   if (it == _states.end())
     return false;
 
+  /* Stop the timeOut timer if needed */
+  if (_timedTransition != 0)
+    pauseExecuter();
+
+  Box* toLoad = state;
+  Box* toUnload = 0;
+  int timeOut = -1;
+
+  qiLogDebug("qiCore.StateMachine") << "Transition from state: " << (_currentState ? _currentState->getName() : "Null")
+                                    << " to state: " << state->getName() << std::endl;
+
   { /* Locked Section */
     boost::recursive_mutex::scoped_lock currentStateLock(_currentStateMutex);
-    qiLogDebug("qiCore.StateMachine") << "Transition from state: " << (_currentState ? _currentState->getName() : "Null")
-                                      << " to state: " << state->getName() << std::endl;
 
-    /* Stop the timeOut timer if needed */
-    if (_timedTransition != 0)
-      pauseExecuter();
-
-    if (_currentState)
-      unloadTransitions();
-
-    state->_p->load();
-    if (_currentState)
-      _currentState->_p->unload();
-
+    toUnload = _currentState;
+    unloadTransitions(toUnload);
+    timeOut = loadTransitions(toLoad);
     _currentState = state;
-    /* Load Transitions */
-    int timeOut = loadTransitions();
-    if (timeOut != -1)
-      setupTimeOut(timeOut);
 
   } /* End locked Section */
+
+  if (toLoad)
+  {
+    toLoad->_p->load();
+    if (timeOut != -1)
+      setupTimeOut(timeOut);
+  }
+  if (toUnload)
+    toUnload->_p->unload();
 
   return true;
 }
@@ -217,9 +222,12 @@ bool StateMachinePrivate::update()
   return true;
 }
 
-int StateMachinePrivate::loadTransitions()
+int StateMachinePrivate::loadTransitions(Box* state)
 {
-  std::list<Transition*>& trs = _currentState->getTransitions();
+  if (!state)
+    return -1;
+
+  std::list<Transition*>& trs = state->getTransitions();
   int timeOut = -1;
 
   for (std::list<Transition*>::iterator it = trs.begin();
@@ -246,9 +254,12 @@ int StateMachinePrivate::loadTransitions()
   return timeOut;
 }
 
-void StateMachinePrivate::unloadTransitions()
+void StateMachinePrivate::unloadTransitions(Box* state)
 {
-  std::list<Transition*>& trs = _currentState->getTransitions();
+  if (!state)
+    return;
+
+  std::list<Transition*>& trs = state->getTransitions();
 
   for (std::list<Transition*>::iterator it = trs.begin();
         it != trs.end(); it++)
@@ -296,18 +307,7 @@ void StateMachinePrivate::stop()
     _isRunning = false;
   } /* End locked Section */
 
-  { /* Locked Section */
-    boost::recursive_mutex::scoped_lock currentStateLock(_currentStateMutex);
-
-    if (_currentState)
-    {
-      unloadTransitions();
-      _currentState->_p->unload();
-    }
-    _currentState = 0;
-  } /* End locked Section */
-
-  _isRunningCondition.notify_all();
+  goToState(0);
 
   qiLogDebug("qiCore.StateMachine") << "StateMachine Stopped : " << _name;
 }
@@ -317,14 +317,6 @@ void StateMachinePrivate::pause()
   _isPaused = true;
   _timedTransition = 0;
   pauseExecuter();
-}
-
-void StateMachinePrivate::waitUntilStop()
-{
-  boost::mutex::scoped_lock lock(_isRunningMutex);
-
-  if (_isRunning)
-    _isRunningCondition.wait(lock);
 }
 
 /* -- Public -- */
@@ -392,11 +384,6 @@ bool StateMachine::goToState(Box *state)
 bool StateMachine::executeTransition(Transition *tr)
 {
   return _p->executeTransition(tr);
-}
-
-void StateMachine::waitUntilStop()
-{
-  _p->waitUntilStop();
 }
 
 void StateMachine::setName(std::string name)

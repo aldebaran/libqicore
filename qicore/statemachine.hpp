@@ -51,8 +51,6 @@ class QICORE_API StateMachine
     bool executeTransition(Transition* tr);
     Box* getCurrentState() const;
 
-    void waitUntilStop();
-
   private:
     StateMachinePrivate        *_p;
 };

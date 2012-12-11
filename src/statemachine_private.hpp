@@ -47,22 +47,19 @@ class StateMachinePrivate : public asyncExecuter
     int goToLabel(std::string label);
     int goToLabel(int label);
 
-    void waitUntilStop();
-
   protected:
     /* CallBack function for timed transitions */
     virtual bool update();
 
   private:
-    int loadTransitions();
-    void unloadTransitions();
+    int loadTransitions(Box* state);
+    void unloadTransitions(Box* state);
     void setupTimeOut(unsigned int time);
 
     std::string                     _name;
     bool                            _isPaused;
     bool                            _isRunning;
     boost::mutex                    _isRunningMutex;
-    boost::condition_variable       _isRunningCondition;
     std::set<Box*>                  _states;
     std::set<Box*>                  _finalStates;
     Box*                            _initialState;
