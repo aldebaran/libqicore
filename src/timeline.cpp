@@ -157,13 +157,18 @@ void TimelinePrivate::pause()
 
 void TimelinePrivate::stop()
 {
-  qiLogDebug("qiCore.Timeline") << "Stop timeline";
-  boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
-
+  qiLogDebug("qiCore.Timeline") << "Stopping timeline";
   stopExecuter();
-  killMotionOrders();
-  _currentFrame = -1;
-  _currentFrame = _startFrame;
+
+  {
+    boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
+
+    killMotionOrders();
+    _currentFrame = -1;
+    _currentFrame = _startFrame;
+  }
+
+  qiLogDebug("qiCore.Timeline") << "Timeline stopped";
 }
 
 void TimelinePrivate::goTo(int pFrame)

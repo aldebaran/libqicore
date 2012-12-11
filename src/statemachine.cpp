@@ -163,6 +163,7 @@ bool StateMachinePrivate::goToState(Box* state)
   if (toUnload)
     toUnload->_p->unload();
 
+  qiLogDebug("qiCore.StateMachine") << "Transition Done";
   return true;
 }
 

@@ -66,6 +66,10 @@ void asyncExecuter::stopExecuter()
     _isPlaying = false;
   }
 
+  /* First force the thread to be in an interruptible point */
+  /* Avoid some race conditions */
+  waitUntilPauseExecuter();
+
   _executerThread.interrupt();
   _executerThread.join();
 
@@ -81,6 +85,8 @@ void asyncExecuter::executerLoop()
 
   while (true)
   {
+    qi::os::msleep(_interval);
+
     /* Notify users that wait for pause */
     _pauseRequestCondition.notify_all();
     {
@@ -88,8 +94,6 @@ void asyncExecuter::executerLoop()
       while (_pauseRequest)
         _pauseRequestCondition.wait(pauseLock);
     }
-
-    qi::os::msleep(_interval);
 
     if (!update())
       break;
