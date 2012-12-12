@@ -11,7 +11,7 @@ logFile=test_result.log
 errorFile=test_result.err
 
 rm -Rf objects $logFile
-fileList=`find ../../../../../../ -name 'behavior.xar' -printf "%p:"`
+fileList=`find ../../../../../../behaviors/ -name 'behavior.xar' -printf "%p:"`
 fileNumber="${fileList//[^:]/}"
 fileNumber=${#fileNumber}
 
@@ -68,7 +68,7 @@ do
     fi
     continue
   fi
-  timeout 15 python2 objects/main.py 127.0.0.1 9559 >> $logFile 2> $errorFile
+  timeout 60 python2 objects/main.py 127.0.0.1 9559 >> $logFile 2> $errorFile
   result=$?
   if [ $result -ne 0 ]
   then
