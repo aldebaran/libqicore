@@ -236,7 +236,7 @@ class BehaviorLegacy(qicore.Box):
     if (self._connectionCounter[connectionName] == 0):
       self.printDebug("Counter == zero : Unload")
       del self._connectionCounter[connectionName]
-      target._inputSignalsMap[signalName].disconnect(self._callbackIdMap[connectionName])
+      self.removeCallbackToSignal(signalName, self._callbackIdMap[connectionName])
       del self._callbackIdMap[connectionName]
 
 
@@ -254,7 +254,7 @@ class BehaviorLegacy(qicore.Box):
     if (self._connectionCounter[connectionName] == 0):
       self.printDebug("Counter == zero : Unload")
       del self._connectionCounter[connectionName]
-      target._outputSignalsMap[signalName].disconnect(self._callbackIdMap[connectionName])
+      self.removeCallbackToSignal(signalName, self._callbackIdMap[connectionName])
       del self._callbackIdMap[connectionName]
 
   def disconnectParameter(self, parameterName, target, signalName):
