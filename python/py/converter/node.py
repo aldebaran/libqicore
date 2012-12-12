@@ -4,14 +4,16 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
-class node:
-  def __init__(self, name):
-    self.nodeName = name
-    self._functionMap = None
+class Node(object):
 
-  def printName(self):
-    print(self.nodeName)
+    def __init__(self, name):
+        self.node_name = name
+        self._function_map = None
 
-  def attachAttribute(self, name, attrs):
-    if (name in self._functionMap.keys()):
-      self._functionMap[name](self, attrs)
+    def print_name(self):
+        print(self.node_name)
+
+    def attach_attribute(self, name, attrs):
+        if (name in self._function_map.keys()):
+            self._function_map[name](self, attrs)
+

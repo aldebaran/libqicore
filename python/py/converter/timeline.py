@@ -4,53 +4,48 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
-import node
-import xar_types
+import converter.node as node
+import converter.xar_types as xar_types
 
-class timeline(node.node):
-  def __init__(self, attrs):
-    node.node.__init__(self, "Timeline")
+class Timeline(node.Node):
 
-    self.name = ""
-    self.fps = attrs.getValue("fps")
-    self.resources_acquisition = attrs.getValue("resources_acquisition")
-    self.size = attrs.getValue("size")
-    self.enable = attrs.getValue("enable")
-    self.start_frame = attrs.getValue("start_frame")
-    self.end_frame = attrs.getValue("end_frame")
-    self.scale = attrs.getValue("scale")
+    def __init__(self, attrs):
+        super(Timeline, self).__init__("Timeline")
 
-    self.watches = ''
-    self.behaviorLayers = []
-    self.actuatorList = []
-    self._functionMap = { 'watches' : timeline.attachWatches,
-                          'diagram' : timeline.attachDiagram,
-                          'ActuatorCurve' : timeline.attachActuatorCurve,
-                          'Key' : timeline.attachKey,
-                          'BehaviorLayer' : timeline.attachChild}
+        self.name = ""
+        self.fps = attrs.getValue("fps")
+        self.resources_acquisition = attrs.getValue("resources_acquisition")
+        self.size = attrs.getValue("size")
+        self.enable = attrs.getValue("enable")
+        self.start_frame = attrs.getValue("start_frame")
+        self.end_frame = attrs.getValue("end_frame")
+        self.scale = attrs.getValue("scale")
 
-  def attachWatches(self, attrs):
-    #Dummy Value
-    self.watches = attrs.getValue('dummy')
+        self.watches = ''
+        self.behavior_layers = []
+        self.actuator_list = []
+        self._function_map = { 'watches' : Timeline.attach_watches,
+                               'ActuatorCurve' : Timeline.attach_actuator_curve,
+                               'Key' : Timeline.attach_key,
+                               'BehaviorLayer' : Timeline.attach_child }
 
-  def attachChild(self, child):
-    self.behaviorLayers.append(child)
+    def attach_watches(self, attrs):
+        #Dummy Value
+        self.watches = attrs.getValue('dummy')
 
-  def attachBehaviorKeyFrame(self, attrs):
-    self.behaviorKeyFrames = xar_types.behaviorKeyFrame(attrs.getValue('name'),
-                                                        attrs.getValue('index'),
-                                                        attrs.getValue('bitmap'))
+    def attach_child(self, child):
+        self.behavior_layers.append(child)
 
-  def attachDiagram(self, diagram):
-    self.diagram = diagram
+    def attach_actuator_curve(self, attrs):
+        actuator = xar_types.actuatorCurve(attrs.getValue("name"),
+                                           attrs.getValue("actuator"),
+                                           attrs.getValue("recordable"),
+                                           attrs.getValue("mute"),
+                                           attrs.getValue("alwaysVisible"))
+        self.actuator_list.append(actuator)
 
-  def attachActuatorCurve(self, attrs):
-    self.actuatorList.append(xar_types.actuatorCurve(attrs.getValue("name"),
-                                                      attrs.getValue("actuator"),
-                                                      attrs.getValue("recordable"),
-                                                      attrs.getValue("mute"),
-                                                      attrs.getValue("alwaysVisible")))
+    def attach_key(self, attrs):
+        actuator = self.actuator_list[len(self.actuator_list) - 1]
+        actuator.keys.append(xar_types.key(attrs.getValue("frame"),
+                                           attrs.getValue("value")))
 
-  def attachKey(self, attrs):
-    (self.actuatorList[len(self.actuatorList) - 1]).keys.append(xar_types.key(attrs.getValue("frame"),
-                                                                                attrs.getValue("value")))

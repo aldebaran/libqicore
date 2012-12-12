@@ -6,9 +6,8 @@ add_definitions( -DNETWORK_HEARTBEAT )
 include(qibuild/swig/python)
 
 set (_pyfiles
-  "${CMAKE_CURRENT_SOURCE_DIR}/py/qicoreLegacy.py"
-  "${CMAKE_CURRENT_SOURCE_DIR}/py/objectFactory.py"
-  "${CMAKE_CURRENT_SOURCE_DIR}/py/converter/xar_converter.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/py/qicore_legacy.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/py/object_factory.py"
 )
 
 install( FILES
