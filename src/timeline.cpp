@@ -225,6 +225,7 @@ bool TimelinePrivate::update(void)
     _currentFrame = _startFrame;
     killMotionOrders();
 
+    qiLogDebug("qiCore.Timeline") << "Timeline is done, invoking callback";
     invokeCallback(_onStoppedCallback);
 
     return false;

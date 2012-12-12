@@ -53,6 +53,9 @@ void asyncExecuter::pauseExecuter()
 void asyncExecuter::waitUntilPauseExecuter()
 {
   boost::mutex::scoped_lock pauseLock(_pauseRequestMutex);
+
+  if (_pauseRequest == true)
+    return;
   _pauseRequest = true;
   _pauseRequestCondition.wait(pauseLock);
 }
