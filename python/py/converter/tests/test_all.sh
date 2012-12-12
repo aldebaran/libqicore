@@ -39,7 +39,7 @@ function printNull
   echo -e "=====> [NULL]"
 }
 
-count=1
+count=0
 errorConversionCount=0
 errorRunTimeCount=0
 timeoutCount=0
