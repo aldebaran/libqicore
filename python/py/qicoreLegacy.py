@@ -69,7 +69,7 @@ class BehaviorLegacy(qicore.Box):
     self.logger.addHandler(logHandler)
     self.logger.setLevel(logging.DEBUG)
 
-    self._previousOnLoad = None
+    self._previousOnLoad = []
 
 
   def printDebug(self, mystr):
@@ -298,7 +298,7 @@ class BehaviorLegacy(qicore.Box):
   # This method will activate the right boxes
   def __onNewState__(self):
     self.stimulateIO("onLoad", None)
-    self._previousOnLoad = self._inputSignalsMap["onLoad"]
+    self._previousOnLoad.append(self._inputSignalsMap["onLoad"])
     self._inputSignalsMap["onLoad"] = qimessagingswig.qi_signal()
 
   def _safeCallOfUserMethod(self, functionName, functionArg):
