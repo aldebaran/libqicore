@@ -113,11 +113,6 @@ class nameMapBuilder:
       link.inputowner = idMap[link.inputowner]
       link.outputowner = idMap[link.outputowner]
 
-      # Detect a frameManager hack
-      if (link.outputowner == parentName):
-        if (self.find_input_nature(self._boxes[link.outputowner], link.indexofoutput) == str(code_patcher.InputType.ONLOAD)):
-          self.fix_onLoad(self._boxes[link.inputowner], link, idMap)
-
       link.inputName = self.find_port_name(self._boxes[link.inputowner], link.indexofinput)
       link.outputName = self.find_port_name(self._boxes[link.outputowner], link.indexofoutput)
 

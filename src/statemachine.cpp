@@ -27,7 +27,8 @@ StateMachinePrivate::StateMachinePrivate(StateMachine *s)
     _initialState (0),
     _currentState (0),
     _timedTransition (0),
-    _parent (s)
+    _parent (s),
+    _newStateCallback (0)
 {
 }
 
@@ -157,11 +158,14 @@ bool StateMachinePrivate::goToState(Box* state)
   if (toLoad)
   {
     toLoad->_p->load();
-    if (timeOut != -1)
-      setupTimeOut(timeOut);
   }
   if (toUnload)
     toUnload->_p->unload();
+
+  invokeCallback(_newStateCallback);
+
+  if (timeOut != -1)
+    setupTimeOut(timeOut);
 
   qiLogDebug("qiCore.StateMachine") << "Transition Done";
   return true;
@@ -320,6 +324,35 @@ void StateMachinePrivate::pause()
   pauseExecuter();
 }
 
+void StateMachinePrivate::registerNewStateCallback(PyObject* p)
+{
+  Py_XDECREF(_newStateCallback);
+  _newStateCallback = p;
+  Py_XINCREF(_newStateCallback);
+}
+
+void StateMachinePrivate::invokeCallback(PyObject* callback)
+{
+  if (!callback)
+    return;
+
+  PyObject* ret;
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  ret = PyObject_CallFunctionObjArgs(callback, NULL);
+  if (!ret)
+  {
+    qiLogError("qiCore.box") << "StateMachine is unable to call python callback";
+    PyErr_Print();
+    PyErr_Clear();
+  }
+
+  Py_XDECREF(ret);
+
+  PyGILState_Release(gstate);
+}
+
 /* -- Public -- */
 
 StateMachine::StateMachine()
@@ -410,6 +443,11 @@ int StateMachine::goToLabel(std::string label)
 int StateMachine::goToLabel(int label)
 {
   return _p->goToLabel(label);
+}
+
+void StateMachine::registerNewStateCallback(PyObject* p)
+{
+  _p->registerNewStateCallback(p);
 }
 
 };

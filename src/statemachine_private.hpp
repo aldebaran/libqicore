@@ -12,6 +12,7 @@
 
 # include <boost/thread/mutex.hpp>
 
+# include <qicore/statemachine.hpp>
 # include "asyncexecuter.hpp"
 
 namespace qi
@@ -47,6 +48,9 @@ class StateMachinePrivate : public asyncExecuter
     int goToLabel(std::string label);
     int goToLabel(int label);
 
+    /* Function will be called when StateMachine entre a new state */
+    void registerNewStateCallback(PyObject*);
+
   protected:
     /* CallBack function for timed transitions */
     virtual bool update();
@@ -55,6 +59,7 @@ class StateMachinePrivate : public asyncExecuter
     int loadTransitions(Box* state);
     void unloadTransitions(Box* state);
     void setupTimeOut(unsigned int time);
+    void invokeCallback(PyObject* p);
 
     std::string                     _name;
     bool                            _isPaused;
@@ -67,6 +72,7 @@ class StateMachinePrivate : public asyncExecuter
     boost::recursive_mutex          _currentStateMutex;
     Transition*                     _timedTransition;
     StateMachine*                   _parent;
+    PyObject*                       _newStateCallback;
 };
 
 };

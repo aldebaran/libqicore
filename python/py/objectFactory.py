@@ -309,6 +309,7 @@ class objectFactory:
 
     stateMachineObject.setName(str(boxName))
     self._boxDict[parentBoxName].setStateMachine(stateMachineObject)
+    stateMachineObject.registerNewStateCallback(self._boxDict[parentBoxName].__onNewState__)
 
     self._StateMachineDict[boxName] = stateMachineObject
 

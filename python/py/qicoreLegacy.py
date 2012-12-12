@@ -69,6 +69,8 @@ class BehaviorLegacy(qicore.Box):
     self.logger.addHandler(logHandler)
     self.logger.setLevel(logging.DEBUG)
 
+    self._previousOnLoad = None
+
 
   def printDebug(self, mystr):
     self.logger.debug(str(self.getName() + " : " + mystr))
@@ -232,6 +234,7 @@ class BehaviorLegacy(qicore.Box):
 
     self._connectionCounter[connectionName] = self._connectionCounter[connectionName] - 1
     if (self._connectionCounter[connectionName] == 0):
+      self.printDebug("Counter == zero : Unload")
       del self._connectionCounter[connectionName]
       target._inputSignalsMap[signalName].disconnect(self._callbackIdMap[connectionName])
       del self._callbackIdMap[connectionName]
@@ -249,6 +252,7 @@ class BehaviorLegacy(qicore.Box):
 
     self._connectionCounter[connectionName] = self._connectionCounter[connectionName] - 1
     if (self._connectionCounter[connectionName] == 0):
+      self.printDebug("Counter == zero : Unload")
       del self._connectionCounter[connectionName]
       target._outputSignalsMap[signalName].disconnect(self._callbackIdMap[connectionName])
       del self._callbackIdMap[connectionName]
@@ -267,7 +271,6 @@ class BehaviorLegacy(qicore.Box):
 
     if (self._loadCount == 1):
       self._safeCallOfUserMethod("onLoad", None)
-      self.stimulateIO("onLoad", None)
 
 
   def __onUnload__(self):
@@ -291,6 +294,12 @@ class BehaviorLegacy(qicore.Box):
     for name, sig in self._outputSignalsMap.items():
       sig.trigger(None)
 
+  # This method is called by the state machine when entering a new state
+  # This method will activate the right boxes
+  def __onNewState__(self):
+    self.stimulateIO("onLoad", None)
+    self._previousOnLoad = self._inputSignalsMap["onLoad"]
+    self._inputSignalsMap["onLoad"] = qimessagingswig.qi_signal()
 
   def _safeCallOfUserMethod(self, functionName, functionArg):
     try:

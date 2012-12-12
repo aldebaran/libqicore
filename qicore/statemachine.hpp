@@ -10,6 +10,8 @@
 
 # include <string>
 
+# include <Python.h>
+
 # include <qicore/api.hpp>
 
 namespace qi
@@ -50,6 +52,9 @@ class QICORE_API StateMachine
     int goToLabel(int label);
     bool executeTransition(Transition* tr);
     Box* getCurrentState() const;
+
+    /* Function will be called when StateMachine entre a new state */
+    void registerNewStateCallback(PyObject *);
 
   private:
     StateMachinePrivate        *_p;
