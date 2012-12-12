@@ -68,7 +68,7 @@ do
     fi
     continue
   fi
-  timeout 10 python2 objects/main.py 127.0.0.1 9559 >> $logFile 2> $errorFile
+  timeout 15 python2 objects/main.py 127.0.0.1 9559 >> $logFile 2> $errorFile
   result=$?
   if [ $result -ne 0 ]
   then
