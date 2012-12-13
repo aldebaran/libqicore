@@ -4,6 +4,7 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+import codecs
 import xml.sax
 
 import converter.xar_types as xar_types
@@ -24,7 +25,7 @@ def generate_tree_from_filename(filename):
     return handler.get_root()
 
 def _check_open_file(filename):
-    with open(filename, encoding='utf-8', mode='r') as ofile:
+    with codecs.open(filename, encoding='utf-8', mode='r') as ofile:
         header = ofile.readline()
         header = header + ofile.readline()
         if (not ("xar_version=\"3\"" in header)):

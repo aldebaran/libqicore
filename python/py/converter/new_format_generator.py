@@ -4,6 +4,7 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+import codecs
 import os
 
 import converter.code_patcher as code_patcher
@@ -38,7 +39,7 @@ class NewFormatGenerator:
         self._boxes = boxes
 
     def generate_main(self):
-        with open("main.py", encoding='utf-8', mode='w') as fmain:
+        with codecs.open("main.py", encoding='utf-8', mode='w') as fmain:
             file_writer.write_main(fmain)
 
     def visit(self, node):
@@ -53,16 +54,18 @@ class NewFormatGenerator:
             self._convert_timelinelayers(node)
 
         if (node.actuator_list):
-            with open(node.name + "_timeline.xml",
-                      encoding='utf-8', mode='w') as fti:
+            with codecs.open(node.name + "_timeline.xml",
+                              encoding='utf-8', mode='w') as fti:
                 file_writer.write_actuatorList(fti, node)
 
     def _visit_box(self, node):
-        with open(node.name + ".py", encoding='utf-8', mode='w') as fpy:
+        with codecs.open(node.name + ".py",
+                         encoding='utf-8', mode='w') as fpy:
             script = code_patcher.patch(node)
             fpy.write(script + os.linesep)
 
-        with open(node.name + '.xml', encoding='utf-8', mode='w') as fxml:
+        with codecs.open(node.name + '.xml',
+                         encoding='utf-8', mode='w') as fxml:
             file_writer.write_box_meta(fxml, node)
 
         self.visit(node.child)
@@ -112,8 +115,8 @@ class NewFormatGenerator:
         if (node.fps == None):
             node.fps = 25
 
-        with open(node.name + "_state_machine.xml",
-                  encoding='utf-8', mode='w') as fst:
+        with codecs.open(node.name + "_state_machine.xml",
+                         encoding='utf-8', mode='w') as fst:
             file_writer.write_state_machine(fst, node.name,
                                             state_list, node.fps)
 

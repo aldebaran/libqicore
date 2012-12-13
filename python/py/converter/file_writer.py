@@ -4,6 +4,7 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+import codecs
 import os
 import cgi
 
@@ -146,7 +147,7 @@ def _compute_timeout(state, fps):
     if (int(fps) == 0):
         return -1
     frames = state.end - state.begin
-    fpms = int(fps) / 1000
+    fpms = float(fps) / 1000
     return int(frames / fpms)
 
 def write_state_machine(f, machine_name, state_list, fps):
@@ -162,7 +163,8 @@ def write_state_machine(f, machine_name, state_list, fps):
         f.write("\t<State Name=\"{}\" />{}"
                 .format(state_name,
                         os.linesep))
-        with open(state_name + ".xml", encoding='utf-8', mode='w') as sfile:
+        with codecs.open(state_name + ".xml",
+                         encoding='utf-8', mode='w') as sfile:
             write_state_meta(sfile, state_list[i])
         timeout_table.append(_compute_timeout(state_list[i], fps))
 
