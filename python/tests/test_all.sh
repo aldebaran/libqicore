@@ -49,7 +49,7 @@ for str in $fileList
 do
   count=$((count + 1))
   echo "[$count/$fileNumber] : $str"
-  ../py/xar_converter.py "$str" >> $logFile 2> $errorFile
+  python2 ../py/xar_converter.py "$str" >> $logFile 2> $errorFile
   result=$?
   if [ $result -ne 0 ]
   then
