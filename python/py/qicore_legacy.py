@@ -132,8 +132,10 @@ class BehaviorLegacy(qicore.Box):
 
     def getParametersList(self):
         self.printDebug("getParametersList")
-        self.printError("Not implemented yet")
-        sys.exit(2)
+        p_list = []
+        for name, param in self._parameterMaps.items():
+            p_list.append(name)
+        return p_list
 
     def setParameter(self, parameterName, value):
         self.printDebug("setParameter with name " + parameterName)
@@ -216,11 +218,32 @@ class BehaviorLegacy(qicore.Box):
                 self._callbackIdMap[connectionName] = signalId
                 self._connectionCounter[connectionName] = 1
 
+    def _generate_parameter_callback(self, parameterName, parameterMap):
+        def callback(value):
+            if (not parameterName in parameterMap):
+                return
+            else:
+                parameterMap[parameterName] = value
+        return callback
+
     def connectParameter(self, parameterName, target, signalName):
         self.printDebug("ConnectParameter " + parameterName + " from " + self.getName()
                 + " to " + signalName + " from " + target.getName())
-        self.printError("Not implemented yet")
-        sys.exit(2)
+
+        connectionName = str(parameterName + signalName)
+
+        if (connectionName in self._connectionCounter):
+            self.printDebug("Already connected: increment connection counter")
+            self._connectionCounter[connectionName] = self._connectionCounter[connectionName] + 1
+        else:
+            if (not parameterName in self._parameterMaps):
+                self.printWarn("Unable to find " + parameterName)
+            else:
+                callback = self._generate_parameter_callback(parameterName, self._parameterMaps)
+                signalId = target.addCallbackToSignal(signalName, callback)
+                self._callbackIdMap[connectionName] = signalId
+                self._connectionCounter[connectionName] = 1
+
 
     def disconnectInput(self, inputName, target, signalName):
         self.printDebug("disconnectInput " + inputName + " from " + self.getName()
@@ -260,8 +283,18 @@ class BehaviorLegacy(qicore.Box):
     def disconnectParameter(self, parameterName, target, signalName):
         self.printDebug("disconnectParameter " + parameterName + " from " + self.getName()
                 + " to " + signalName + " from " + target.getName())
-        self.printError("Not implemented yet")
-        sys.exit(2)
+
+        connectionName = str(parameterName + signalName)
+        if (not (connectionName in self._connectionCounter)):
+            self.printError("Unable to disconnect, this connection is unknown")
+            return
+
+        self._connectionCounter[connectionName] = self._connectionCounter[connectionName] - 1
+        if (self._connectionCounter[connectionName] == 0):
+            self.printDebug("Counter == zero : Unload")
+            del self._connectionCounter[connectionName]
+            self.removeCallbackToSignal(signalName, self._callbackIdMap[connectionName])
+            del self._callbackIdMap[connectionName]
 
     def __onLoad__(self):
         # Load the box only once
