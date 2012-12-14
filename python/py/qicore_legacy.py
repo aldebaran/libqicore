@@ -153,7 +153,7 @@ class BehaviorLegacy(qicore.Box):
         else:
             self.printWarn("Unable to stimulate IO " + name + " : signal not found")
 
-    def BIND_PYTHON(self, moduleName, methodName, paramCount):
+    def BIND_PYTHON(self, moduleName, methodName, paramCount = -1):
         self.printDebug("BIND_PYTHON " + methodName + " from " + moduleName
                     + " with " + str(paramCount))
         self.printWarn("This function is no more used")
