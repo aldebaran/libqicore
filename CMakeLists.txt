@@ -24,7 +24,8 @@ qi_create_lib(qicore SRC
   src/statemachine_private.hpp src/statemachine.cpp
   src/transition_private.hpp src/transition.cpp
   src/asyncexecuter.hpp src/asyncexecuter.cpp
-  src/box_private.hpp src/box.cpp)
+  src/box_private.hpp src/box.cpp
+  src/pythoncallback.hpp src/pythoncallback.cpp)
 
 qi_use_lib(qicore QI ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
 

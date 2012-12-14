@@ -21,6 +21,7 @@
 
 #include "actuatorcurve.hpp"
 #include "asyncexecuter.hpp"
+#include "pythoncallback.hpp"
 
 namespace AL
 {
@@ -103,8 +104,6 @@ private:
   void killTimer();
   void TimerLoop(int interval);
 
-  void invokeCallback(PyObject* callback);
-
   boost::shared_ptr<AL::ALMemoryProxy>  _memoryProxy;
   boost::shared_ptr<AL::ALMotionProxy>  _motionProxy;
   int                                   _fps;
@@ -129,7 +128,7 @@ private:
   std::string                           _name;
   MotionResourcesHandler                _resourcesAcquisition;
   mutable boost::recursive_mutex        _methodMonitor;
-  PyObject*                             _onStoppedCallback;
+  PythonCallback                        _onStoppedCallback;
 };
 
 };

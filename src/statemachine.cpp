@@ -162,7 +162,7 @@ bool StateMachinePrivate::goToState(Box* state)
   if (toUnload)
     toUnload->_p->unload();
 
-  invokeCallback(_newStateCallback);
+  _newStateCallback();
 
   if (timeOut != -1)
     setupTimeOut(timeOut);
@@ -326,31 +326,7 @@ void StateMachinePrivate::pause()
 
 void StateMachinePrivate::registerNewStateCallback(PyObject* p)
 {
-  Py_XDECREF(_newStateCallback);
-  _newStateCallback = p;
-  Py_XINCREF(_newStateCallback);
-}
-
-void StateMachinePrivate::invokeCallback(PyObject* callback)
-{
-  if (!callback)
-    return;
-
-  PyObject* ret;
-  PyGILState_STATE gstate;
-  gstate = PyGILState_Ensure();
-
-  ret = PyObject_CallFunctionObjArgs(callback, NULL);
-  if (!ret)
-  {
-    qiLogError("qiCore.box") << "StateMachine is unable to call python callback";
-    PyErr_Print();
-    PyErr_Clear();
-  }
-
-  Py_XDECREF(ret);
-
-  PyGILState_Release(gstate);
+  _newStateCallback.assignCallback(p);
 }
 
 /* -- Public -- */

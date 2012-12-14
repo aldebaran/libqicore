@@ -226,7 +226,7 @@ bool TimelinePrivate::update(void)
     killMotionOrders();
 
     qiLogDebug("qiCore.Timeline") << "Timeline is done, invoking callback";
-    invokeCallback(_onStoppedCallback);
+    _onStoppedCallback();
 
     return false;
   }
@@ -468,33 +468,9 @@ std::string TimelinePrivate::getName() const
   return _name;
 }
 
-void TimelinePrivate::invokeCallback(PyObject *callback)
-{
-  if (!callback)
-    return;
-
-  PyObject* ret;
-  PyGILState_STATE gstate;
-  gstate = PyGILState_Ensure();
-
-  ret = PyObject_CallFunctionObjArgs(callback, NULL);
-  if (!ret)
-  {
-    qiLogError("qiCore.Timeline") << "Timeline is unable to call python callback";
-    PyErr_Print();
-    PyErr_Clear();
-  }
-
-  Py_XDECREF(ret);
-
-  PyGILState_Release(gstate);
-}
-
 void TimelinePrivate::registerOnStoppedCallback(PyObject *p)
 {
-  Py_XDECREF(_onStoppedCallback);
-  _onStoppedCallback = p;
-  Py_XINCREF(_onStoppedCallback);
+  _onStoppedCallback.assignCallback(p);
 }
 
 /* -- Public -- */

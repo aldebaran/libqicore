@@ -34,48 +34,22 @@ BoxPrivate::~BoxPrivate()
 
 void BoxPrivate::load()
 {
-  invokeCallback(_onLoadCallback);
+  _onLoadCallback();
 }
 
 void BoxPrivate::unload()
 {
-  invokeCallback(_onUnloadCallback);
+  _onUnloadCallback();
 }
 
 void BoxPrivate::registerOnLoadCallback(PyObject* callable)
 {
-  Py_XDECREF(_onLoadCallback);
-  _onLoadCallback = callable;
-  Py_XINCREF(_onLoadCallback);
+  _onLoadCallback.assignCallback(callable);
 }
 
 void BoxPrivate::registerOnUnloadCallback(PyObject* callable)
 {
-  Py_XDECREF(_onUnloadCallback);
-  _onUnloadCallback = callable;
-  Py_XINCREF(_onUnloadCallback);
-}
-
-void BoxPrivate::invokeCallback(PyObject* callback)
-{
-  if (!callback)
-    return;
-
-  PyObject* ret;
-  PyGILState_STATE gstate;
-  gstate = PyGILState_Ensure();
-
-  ret = PyObject_CallFunctionObjArgs(callback, NULL);
-  if (!ret)
-  {
-    qiLogError("qiCore.box") << "Box is unable to call python callback";
-    PyErr_Print();
-    PyErr_Clear();
-  }
-
-  Py_XDECREF(ret);
-
-  PyGILState_Release(gstate);
+  _onUnloadCallback.assignCallback(callable);
 }
 
 void BoxPrivate::addTransition(Transition *tr)

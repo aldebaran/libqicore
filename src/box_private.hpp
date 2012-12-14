@@ -12,6 +12,8 @@
 # include <qicore/statemachine.hpp>
 # include <qicore/timeline.hpp>
 
+# include "pythoncallback.hpp"
+
 namespace qi
 {
 
@@ -33,15 +35,13 @@ class BoxPrivate
     void registerOnUnloadCallback(PyObject* callable);
 
   private:
-    void invokeCallback(PyObject* callback);
-
     Box*                  _parent;
     StateMachine*         _stateMachine;
     Timeline*             _timeline;
     std::string           _name;
     std::string           _path;
-    PyObject*             _onLoadCallback;
-    PyObject*             _onUnloadCallback;
+    PythonCallback        _onLoadCallback;
+    PythonCallback        _onUnloadCallback;
 
     std::list<Transition*>          _transitions;
     std::vector<std::string>        _labels;
