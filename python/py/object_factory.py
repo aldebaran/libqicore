@@ -4,386 +4,273 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
-import sys
-import os
-import io
+import codecs
 import time
 import types
 import xml.dom.minidom
 
 import qicore
 import qicore_legacy
-from converter.xar_types import *
+import function_generator as f_gen
+from converter.xar_types import ConnectionType, ParameterType, IOType
 
-# Function generator for Input, Outputs, ...
+class BehaviorWaiterClass(qicore_legacy.BehaviorLegacy):
 
-def generateInputMethod(methodType, name):
-    def onStart(self, p):
-        if(not self._safeCallOfUserMethod("onInput_" + name, p)):
-            self.releaseResource()
-        if (self.hasTimeline()):
-            self.getTimeline().play()
-        if (self.hasStateMachine()):
-            self.getStateMachine().run()
-            self.stimulateIO(name, p)
-
-    def onStop(self, p):
-        if(not self._safeCallOfUserMethod("onInput_" + name, p)):
-            self.releaseResource()
-            return
-        self.stimulateIO(name, p)
-
-    inputMethodMap = { InputType.ONLOAD : None,
-                                          InputType.UNDEF : onStop,
-                                          InputType.ONSTART : onStart,
-                                          InputType.ONSTOP : onStop,
-                                          InputType.STMVALUE: None}
-
-    return inputMethodMap[methodType]
-
-def generateOutputMethod(methodType, name):
-    def stopped(self, p = None):
-        if (self.hasTimeline()):
-            self.getTimeline().stop()
-        if (self.hasStateMachine()):
-            self.getStateMachine().stop()
-        self.stimulateIO(name, p)
-
-    def punctual(self, p = None):
-        self.stimulateIO(name, p)
-
-    outputMethodMap = { OutputType.STOPPED : stopped,
-                                            OutputType.PUNCTUAL : punctual}
-
-    return outputMethodMap[methodType]
-
-def generateResourceMethod(resourceType):
-    def lock(self, resourceName):
-        pass
-
-    def stop_on_demand(self, resourceName):
-        bExist = True
-        try:
-            self.onResourceLost()
-        except:
-            try:
-                self.onResourceLost(None)
-            except:
-                bExist = False
-        if (self.hasTimeline()):
-            self.getTimeline().stop()
-        if (self.StateMachine()):
-            self.getStateMachine().stop()
-        self.releaseResource()
-        if (not bExist):
-            try:
-                self.onStopped()
-            except:
-                try:
-                    self.onStopped(None)
-                except:
-                    pass
-
-    def pause_on_demand(self, resourceName):
-        if (self.hasTimeline()):
-            self.getTimeline().pause()
-        if (self.hasStateMachine()):
-            self.getStateMachine().pause()
-        self.releaseResource()
-        self.waitResourceFree()
-        self.waitResources()
-        if (self.hasTimeline()):
-            self.getTimeline().play()
-        if (self.hasStateMachine()):
-            self.getStateMachine().play()
-
-    def callback_on_demand(self, resourceName):
-        self._safeCallOfUserMethod("onResource", resourceName)
-
-    resourceMethodMap = {ResourceMode.LOCK : lock,
-                                              ResourceMode.STOP_ON_DEMAND: stop_on_demand,
-                                              ResourceMode.PAUSE_ON_DEMAND: pause_on_demand,
-                                              ResourceMode.CALLBACK_ON_DEMAND: callback_on_demand}
-
-    return resourceMethodMap[resourceType]
-
-class behaviorWaiter_class(qicore_legacy.BehaviorLegacy):
     def __init__(self):
         qicore_legacy.BehaviorLegacy.__init__(self, "behaviorWaiter")
         self.addInput("onDone")
-        self.isComplete = False
+        self.is_complete = False
 
-    def onInput_onDone__(self, p):
-        self.isComplete = True
+    def onInput_onDone__(self, param):
+        self.is_complete = True
 
-    def waitForCompletion(self):
-        while (self.isComplete == False):
+    def wait_for_completion(self):
+        while not self.is_complete:
             time.sleep(0.2)
 
-class ConnectionType:
-    INPUT=0
-    OUTPUT=1
-    PARAMETER=2
+def _convert_parameter(value, content_type):
+    if (content_type == ParameterType.STRING
+        or content_type == ParameterType.RESOURCE):
+        return value.encode("ascii", "ignore")
+    elif (content_type == ParameterType.BOOL):
+        return value == "True"
+    elif (content_type == ParameterType.INT):
+        return int(value)
+    elif (content_type == ParameterType.DOUBLE):
+        return float(value)
+    else:
+        return value
 
-class Connection:
-    inputObject = ""
-    inputName = ""
-    outputObject = ""
-    outputName = ""
-    ctype = None
+class StateClass(qicore_legacy.BehaviorLegacy):
 
-class state_class(qicore_legacy.BehaviorLegacy):
     def __init__(self, name):
-        qicore_legacy.BehaviorLegacy.__init__(self, name.encode('ascii', 'ignore'))
-        self._boxList = []
-        self._connectionsList = []
+        qicore_legacy.BehaviorLegacy.__init__(self,
+                                              name.encode('ascii', 'ignore'))
+        self._box_list = []
+        self._connection_list = []
 
     def onLoad(self):
         # Create connections local to the state
-        for f in self._connectionsList:
-            f(True)
+        for func in self._connection_list:
+            func(True)
 
-        for box in self._boxList:
+        for box in self._box_list:
             box.__onLoad__()
 
     def onUnload(self):
         # Destroy connections local to the state
-        for f in self._connectionsList:
-            f(False)
+        for func in self._connection_list:
+            func(False)
 
-        for box in self._boxList:
+        for box in self._box_list:
             box.__onUnload__()
 
-    def addBox(self, box):
-        self._boxList.append(box)
+    def add_box(self, box):
+        self._box_list.append(box)
 
-    def addConnection(self, connector):
-        self._connectionsList.append(connector)
+    def add_connection(self, connector):
+        self._connection_list.append(connector)
 
-def safeOpen(filename):
-    try:
-        f = io.open(filename, encoding='utf-8', mode='r')
-        return f
-    except IOError as e:
-        return None
+class ObjectFactory(object):
 
-class objectFactory:
-    def __init__(self, folderName, broker):
-        if (folderName != "" and not folderName.endswith("/")):
-            folderName += "/"
-        self._folderName = folderName
+    def __init__(self, folder_name, broker):
+        if (folder_name != "" and not folder_name.endswith("/")):
+            folder_name += "/"
+        self._folder_name = folder_name
         self._broker = broker
-        self._declaredObjects = set()
-        self._declaredLinks = set()
-        self._boxDict = {}
-        self._StateMachineDict = {}
-        self._TransitionDict = {}
-        self._StateDict = {}
-        self._TimelineDict = {}
-        self._connectionTypeForBox = {}
-        self._boxStack = []
+        self._declared_objects = set()
+        self._declared_links = set()
+        self._box_dict = {}
+        self._statemachine_dict = {}
+        self._transition_dict = {}
+        self._state_dict = {}
+        self._timeline_dict = {}
+        self._connection_type_for_box = {}
+        self._box_stack = []
 
-    def instanciateObjects(self, topdict, root = "l0_root"):
-        self.parseBox(root)
-        for name,obj in self._boxDict.items():
+    def instanciate_objects(self, topdict, root = "l0_root"):
+        self._parse_box(root)
+        for name, obj in self._box_dict.items():
             topdict[name] = obj
-        return self._boxDict[root]
+        return self._box_dict[root]
 
-    def createWaiterOnBox(self, box, topdict):
-        waiter = behaviorWaiter_class()
+    def create_waiter_on_box(self, box, topdict):
+        waiter = BehaviorWaiterClass()
         waiter.connectInput("onDone", box, "onStopped")
-        self._boxDict[waiter.getName()] = waiter
+        self._box_dict[waiter.getName()] = waiter
         topdict[waiter.getName()] = waiter
         return waiter
 
-    def parseTimeline(self, boxName, parentName):
-        if (boxName in self._declaredObjects):
+    def _parse_timeline(self, box_name, parent_name):
+        if (box_name in self._declared_objects):
             return
 
-        self._declaredObjects.add(boxName)
-        timelineFile = safeOpen(self._folderName + boxName + ".xml")
-        if (timelineFile == None):
-            return
-        timelineFile.close()
+        self._declared_objects.add(box_name)
+        try:
+            t_file = codecs.open(self._folder_name + box_name + ".xml",
+                                 encoding="utf-8", mode='r')
+        except IOError:
+            return None
+        t_file.close()
 
-        timelineObject = qicore.Timeline(self._broker.getALBroker())
-        timelineObject.loadFromFile(str(self._folderName + boxName + ".xml"))
-        parentBox = self._boxDict[parentName]
-        timelineObject.registerOnStoppedCallback(self._boxDict[parentName].__onTimelineStopped__)
-        self._boxDict[parentName].setTimeline(timelineObject)
-        self._TimelineDict[boxName] = timelineObject
-
-    def connectionFunctionGenerate(self, inputBox, inputName, outputBox, outputName, ctype):
-        connectFunctionMap = { ConnectionType.INPUT : "connectInput",
-                                                      ConnectionType.OUTPUT : "connectOutput",
-                                                      ConnectionType.PARAMETER : "connectParameter"}
-        disconnectFunctionMap = { ConnectionType.INPUT : "disconnectInput",
-                                                            ConnectionType.OUTPUT : "disconnectOutput",
-                                                            ConnectionType.PARAMETER : "disconnectParameter"}
-        def connect(enable):
-            if (enable):
-                f = getattr(inputBox, connectFunctionMap[ctype])
-                f(inputName, outputBox, outputName)
-            else:
-                f = getattr(inputBox, disconnectFunctionMap[ctype])
-                f(inputName, outputBox, outputName)
-
-        return connect
+        timeline_obj = qicore.Timeline(self._broker.getALBroker())
+        timeline_obj.loadFromFile(str(self._folder_name + box_name + ".xml"))
+        timeline_obj.registerOnStoppedCallback(self._box_dict[parent_name].__onTimelineStopped__)
+        self._box_dict[parent_name].setTimeline(timeline_obj)
+        self._timeline_dict[box_name] = timeline_obj
 
 
-    def parseState(self, stateName):
-        state = state_class(stateName)
-        dom = xml.dom.minidom.parse(self._folderName + stateName + ".xml")
+    def _parse_state(self, state_name):
+        state = StateClass(state_name)
+        dom = xml.dom.minidom.parse(self._folder_name + state_name + ".xml")
         root = dom.getElementsByTagName('State')[0]
 
         for obj in root.getElementsByTagName("Object"):
             objname = obj.attributes["Name"].value
-            self.parseBox(objname)
-            state.addBox(self._boxDict[objname])
+            self._parse_box(objname)
+            state.add_box(self._box_dict[objname])
 
-        if (stateName in self._declaredObjects):
+        if (state_name in self._declared_objects):
             return state
-        self._declaredObjects.add(stateName)
+        self._declared_objects.add(state_name)
 
         for label in root.getElementsByTagName("Label"):
-            labelName = label.attributes["Name"].value
-            state.addLabel(labelName.encode("ascii", "ignore"))
+            label_name = label.attributes["Name"].value
+            state.addLabel(label_name.encode("ascii", "ignore"))
 
         interval = root.getElementsByTagName("Interval")[0]
-        intervalBegin = int(interval.attributes["begin"].value)
-        intervalEnd = int(interval.attributes["end"].value)
-        state.setInterval(intervalBegin, intervalEnd)
+        interval_begin = int(interval.attributes["begin"].value)
+        interval_end = int(interval.attributes["end"].value)
+        state.setInterval(interval_begin, interval_end)
 
         for link in root.getElementsByTagName("Link"):
-            inputObject = link.attributes["InputObject"].value
-            outputObject = link.attributes["OutputObject"].value
-            inputName = link.attributes["InputName"].value
-            outputName = link.attributes["OutputName"].value
+            input_obj = link.attributes["InputObject"].value
+            output_obj = link.attributes["OutputObject"].value
+            input_name = link.attributes["InputName"].value
+            output_name = link.attributes["OutputName"].value
 
             # create objects if needed
-            self.parseBox(inputObject)
-            self.parseBox(outputObject)
+            self._parse_box(input_obj)
+            self._parse_box(output_obj)
 
-            f = self.connectionFunctionGenerate(self._boxDict[inputObject], str(inputName),
-                                                                                    self._boxDict[outputObject], str(outputName),
-                                                                                    self._connectionTypeForBox[inputObject][inputName])
-            state.addConnection(f)
+            ctype = self._connection_type_for_box[input_obj][input_name]
+            func = f_gen.generate_connection_function(self._box_dict[input_obj],
+                                                      str(input_name),
+                                                      self._box_dict[output_obj],
+                                                      str(output_name),
+                                                      ctype)
+            state.add_connection(func)
 
 
         return state
 
-    def parseStateMachine(self, boxName, parentBoxName):
-        if (boxName in self._declaredObjects):
+    def _parse_statemachine(self, box_name, parent_box_name):
+        if (box_name in self._declared_objects):
             return
 
-        self._declaredObjects.add(boxName)
-
-        stateMachineObject = qicore.StateMachine()
+        self._declared_objects.add(box_name)
+        sm_obj = qicore.StateMachine()
 
         try:
-            dom = xml.dom.minidom.parse(self._folderName + boxName + ".xml")
-        except IOError as e:
+            dom = xml.dom.minidom.parse(self._folder_name + box_name + ".xml")
+        except IOError:
             return
 
         root = dom.getElementsByTagName('StateMachine')[0]
         for state in root.getElementsByTagName('State'):
             statename = state.attributes["Name"].value
-            stateObject = self.parseState(statename)
-            stateMachineObject.addState(stateObject)
-            self._StateDict[statename] = stateObject
+            state_obj = self._parse_state(statename)
+            sm_obj.addState(state_obj)
+            self._state_dict[statename] = state_obj
 
-        for tr in root.getElementsByTagName('Transition'):
-            fromState = tr.attributes["From"].value
-            toState = tr.attributes["To"].value
-            timeOut = int(tr.attributes["TimeOut"].value)
-            transitionObject = qicore.Transition(self._StateDict[toState])
-            if (timeOut != -1):
-                transitionObject.setTimeOut(timeOut)
-            self._StateDict[fromState].addTransition(transitionObject)
-            self._TransitionDict[fromState + "__to__" + toState] = transitionObject
+        for tra in root.getElementsByTagName('Transition'):
+            from_state = tra.attributes["From"].value
+            to_state = tra.attributes["To"].value
+            timeout = int(tra.attributes["TimeOut"].value)
+            transition_obj = qicore.Transition(self._state_dict[to_state])
+            if (timeout != -1):
+                transition_obj.setTimeOut(timeout)
+            self._state_dict[from_state].addTransition(transition_obj)
+            self._transition_dict[from_state + "__to__" + to_state] = transition_obj
 
         for fstate in root.getElementsByTagName('FinalState'):
-            stateMachineObject.setFinalState(self._StateDict[fstate.attributes["Name"].value])
+            sm_obj.setFinalState(self._state_dict[fstate.attributes["Name"].value])
 
-        stateMachineObject.setInitialState(self._StateDict[root.getElementsByTagName('InitialState')[0].attributes["Name"].value])
+        initial_state = root.getElementsByTagName('InitialState')[0]
+        initial_state_name = initial_state.attributes["Name"].value
+        sm_obj.setInitialState(self._state_dict[initial_state_name])
 
-        stateMachineObject.setName(str(boxName))
-        self._boxDict[parentBoxName].setStateMachine(stateMachineObject)
-        stateMachineObject.registerNewStateCallback(self._boxDict[parentBoxName].__onNewState__)
+        sm_obj.setName(str(box_name))
+        self._box_dict[parent_box_name].setStateMachine(sm_obj)
+        sm_obj.registerNewStateCallback(self._box_dict[parent_box_name].__onNewState__)
 
-        self._StateMachineDict[boxName] = stateMachineObject
+        self._statemachine_dict[box_name] = sm_obj
 
-    def convertParameter(self, value, content_type):
-        if (content_type == ParameterType.STRING or content_type == ParameterType.RESOURCE):
-            return value.encode("ascii", "ignore")
-        elif (content_type == ParameterType.BOOL):
-            return value == "True"
-        elif (content_type == ParameterType.INT):
-            return int(value)
-        elif (content_type == ParameterType.DOUBLE):
-            return float(value)
-        else:
-            return value
-
-    def parseBox(self, boxName):
-        if (boxName in self._declaredObjects):
+    def _parse_box(self, box_name):
+        if (box_name in self._declared_objects):
             return
 
-        self._declaredObjects.add(boxName)
+        self._declared_objects.add(box_name)
 
-        dom = xml.dom.minidom.parse(self._folderName + boxName + ".xml")
+        dom = xml.dom.minidom.parse(self._folder_name + box_name + ".xml")
         root = dom.getElementsByTagName('Box')[0]
 
-        module = __import__(boxName)
-        boxClass = getattr(module, boxName + "_class")
-        boxObject = boxClass()
-        self._boxDict[boxName] = boxObject
-        boxObject.setPath(self._folderName)
+        module = __import__(box_name)
+        box_class = getattr(module, box_name + "_class")
+        box_object = box_class()
+        self._box_dict[box_name] = box_object
+        box_object.setPath(self._folder_name)
 
-        connectionMap = {}
+        connection_map = {}
 
         for inp in root.getElementsByTagName('Input'):
-            inpName = inp.attributes["name"].value
-            inpNature = inp.attributes["nature"].value
-            connectionMap[inpName] = ConnectionType.INPUT
-            boxObject.addInput(inpName)
-            f = generateInputMethod(int(inpNature), inpName)
-            if (f != None):
-                setattr(boxObject, "onInput_" + inpName + "__", types.MethodType(f, boxObject))
+            inp_name = inp.attributes["name"].value
+            inp_nature = inp.attributes["nature"].value
+            connection_map[inp_name] = ConnectionType.INPUT
+            box_object.addInput(inp_name)
+            meth = f_gen.generate_input_method(int(inp_nature), inp_name)
+            if meth:
+                setattr(box_object, "onInput_" + inp_name + "__",
+                        types.MethodType(meth, box_object))
 
         for out in root.getElementsByTagName('Output'):
-            outName = out.attributes["name"].value
-            outType = out.attributes["type"].value
-            outNature = out.attributes["nature"].value
-            connectionMap[outName] = ConnectionType.OUTPUT
-            boxObject.addOutput(outName, int(outType == IOType.BANG))
-            f = generateOutputMethod(int(outNature), outName)
-            if (f != None):
-                setattr(boxObject, outName, types.MethodType(f, boxObject))
+            out_name = out.attributes["name"].value
+            out_type = out.attributes["type"].value
+            out_nature = out.attributes["nature"].value
+            connection_map[out_name] = ConnectionType.OUTPUT
+            box_object.addOutput(out_name, int(out_type == IOType.BANG))
+            meth = f_gen.generate_output_method(int(out_nature), out_name)
+            if meth:
+                setattr(box_object, out_name, types.MethodType(meth,
+                                                               box_object))
 
         for param in root.getElementsByTagName('Parameter'):
-            paramName = param.attributes["name"].value
-            paramValue = param.attributes["value"].value
-            paramContentType = param.attributes["content_type"].value
-            paramInherits = param.attributes["inherits_from_parent"].value
-            connectionMap[paramName] = ConnectionType.PARAMETER
-            boxObject.addParameter(paramName, self.convertParameter(paramValue, int(paramContentType)), paramInherits == 1)
+            param_name = param.attributes["name"].value
+            param_value = param.attributes["value"].value
+            param_content_type = param.attributes["content_type"].value
+            param_inherits = param.attributes["inherits_from_parent"].value
+            connection_map[param_name] = ConnectionType.PARAMETER
+            box_object.addParameter(param_name,
+                                    _convert_parameter(param_value,
+                                                       int(param_content_type)),
+                                    param_inherits == 1)
 
         for res in root.getElementsByTagName("Resource"):
-            resourceType = res.attributes["type"].value
-            f = generateResourceMethod(resourceType)
-            if (f != None):
-                setattr(boxObject, "__onResource__", types.MethodType(f, boxObject))
+            resource_type = res.attributes["type"].value
+            meth = f_gen.generate_resource_method(resource_type)
+            if meth:
+                setattr(box_object, "__onResource__",
+                        types.MethodType(meth, box_object))
 
-        self._connectionTypeForBox[boxName] = connectionMap
+        self._connection_type_for_box[box_name] = connection_map
 
-        if (len(self._boxStack) != 0):
-            parentBox = self._boxStack.pop()
-            self._boxStack.append(parentBox)
-            boxObject.setParentBox(parentBox)
-        self._boxStack.append(boxObject)
+        if (self._box_stack):
+            parent_box = self._box_stack.pop()
+            self._box_stack.append(parent_box)
+            box_object.setParentBox(parent_box)
+        self._box_stack.append(box_object)
 
-        self.parseTimeline(boxName + "_timeline", boxName)
-        self.parseStateMachine(boxName + "_state_machine", boxName)
-        self._boxStack.pop()
+        self._parse_timeline(box_name + "_timeline", box_name)
+        self._parse_statemachine(box_name + "_state_machine", box_name)
+        self._box_stack.pop()
 

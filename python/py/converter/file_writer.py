@@ -196,10 +196,10 @@ def write_main(fmain):
             + "  sys.exit(2)" + os.linesep
             + "broker = ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, sys.argv[1], int(sys.argv[2]))" + os.linesep
             + "ALProxy.initProxies()" + os.linesep
-            + "factory = object_factory.objectFactory(os.path.dirname(sys.argv[0]), broker)" + os.linesep
-            + "root = factory.instanciateObjects(globals())" + os.linesep
-            + "waiter = factory.createWaiterOnBox(root, globals())" + os.linesep
+            + "factory = object_factory.ObjectFactory(os.path.dirname(sys.argv[0]), broker)" + os.linesep
+            + "root = factory.instanciate_objects(globals())" + os.linesep
+            + "waiter = factory.create_waiter_on_box(root, globals())" + os.linesep
             + "root.__onLoad__()" + os.linesep
             + "root.onInput_onStart__(None)" + os.linesep
-            + "waiter.waitForCompletion()" + os.linesep)
+            + "waiter.wait_for_completion()" + os.linesep)
 
