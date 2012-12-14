@@ -128,11 +128,14 @@ bool StateMachinePrivate::executeTransition(Transition* tr)
 
 bool StateMachinePrivate::goToState(Box* state)
 {
-  std::set<Box*>::iterator it = _states.find(state);
+  if (state)
+  {
+    std::set<Box*>::iterator it = _states.find(state);
 
-  /* Is State present in that StateMachine ? */
-  if (it == _states.end())
-    return false;
+    /* Is State present in that StateMachine ? */
+    if (it == _states.end())
+      return false;
+  }
 
   /* Stop the timeOut timer if needed */
   if (_timedTransition != 0)
@@ -143,8 +146,7 @@ bool StateMachinePrivate::goToState(Box* state)
   int timeOut = -1;
 
   qiLogDebug("qiCore.StateMachine") << "Transition from state: " << (_currentState ? _currentState->getName() : "Null")
-                                    << " to state: " << state->getName() << std::endl;
-
+                                    << " to state: " <<  (state ? state->getName() : "Null") << std::endl;
   { /* Locked Section */
     boost::recursive_mutex::scoped_lock currentStateLock(_currentStateMutex);
 
@@ -156,9 +158,7 @@ bool StateMachinePrivate::goToState(Box* state)
   } /* End locked Section */
 
   if (toLoad)
-  {
     toLoad->_p->load();
-  }
   if (toUnload)
     toUnload->_p->unload();
 
