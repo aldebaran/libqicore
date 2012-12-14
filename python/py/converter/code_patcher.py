@@ -30,6 +30,7 @@ def _generate_class(box, code):
 def _replace_not_supported_code(box, code):
     code = code.replace("ALFrameManager", "self")
     code = code.replace("ALProxy(\"self\")", "self")
+    code = code.replace("GeneratedClass.", "qicore_legacy.BehaviorLeagcy.")
 
     # FIXME: This value cannot be acquired at this time...
     code = code.replace("self.getTimelineFps(self.getName())", "25")
