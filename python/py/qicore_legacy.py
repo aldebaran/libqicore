@@ -347,7 +347,7 @@ class BehaviorLegacy(qicore.Box):
 
     def stopTimelineParent(self):
         # Yup, Stop is just a pause in legacy format
-        if (self._parent_box is None):
+        if not self._parent_box:
             return
         if (self._parent_box.hasTimeline()):
             self._parent_box.getTimeline().pause()
@@ -355,12 +355,23 @@ class BehaviorLegacy(qicore.Box):
             self._parent_box.getStateMachine().pause()
 
     def playTimelineParent(self):
-        if (self._parent_box is None):
+        if not self._parent_box:
             return
         if (self._parent_box.hasTimeline()):
             self._parent_box.getTimeline().play()
         if (self._parent_box.hasStateMachine()):
             self._parent_box.getStateMachine().run()
+
+    def gotoAndPlayParent(self, label):
+        if not self._parent_box:
+          return
+        self.stopTimelineParent()
+        frame = label
+        if (self._parent_box.hasStateMachine()):
+            frame = self._parent_box.getStateMachine().goToLabel(label)
+        if (self._parent_box.hasTimeline()):
+            self._parent_box.getTimeline().goTo(frame)
+        self.playTimelineParent()
 
     # Compatibilty layer for FrameManager
     def getBehaviorPath(self, behavior_id):
