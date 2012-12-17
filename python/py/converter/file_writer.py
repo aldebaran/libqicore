@@ -12,10 +12,10 @@ def write_box_meta(f, node):
     if (node.tooltip is None):
         node.tooltip = ""
 
-    f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
-    f.write(("<Box id=\"{}\" content=\"{}\" robot=\"{}\" tooltip=\"{}\""
-             + " bitmap=\"{}\" bitmap_expanded=\"{}\" plugin=\"{}\""
-             + " x=\"{}\" y=\"{}\" >{}")
+    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
+    f.write((u"<Box id=\"{}\" content=\"{}\" robot=\"{}\" tooltip=\"{}\""
+             + u" bitmap=\"{}\" bitmap_expanded=\"{}\" plugin=\"{}\""
+             + u" x=\"{}\" y=\"{}\" >{}")
             .format(node.id_,
                     node.name + ".py",
                     node.robot,
@@ -30,8 +30,8 @@ def write_box_meta(f, node):
     for input in node.inputs:
         if (input.tooltip is None):
             input.tooltip = ""
-        f.write(("\t<Input name=\"{}\" type=\"{}\" type_size=\"{}\""
-                 + " nature=\"{}\" inner=\"{}\" tooltip=\"{}\" id=\"{}\" />{}")
+        f.write((u"\t<Input name=\"{}\" type=\"{}\" type_size=\"{}\""
+                 + u" nature=\"{}\" inner=\"{}\" tooltip=\"{}\" id=\"{}\" />{}")
                 .format(input.name,
                         input.type,
                         input.type_size,
@@ -44,8 +44,8 @@ def write_box_meta(f, node):
     for output in node.outputs:
         if (output.tooltip is None):
             output.tooltip = ""
-        f.write(("\t<Output name=\"{}\" type=\"{}\" type_size=\"{}\""
-                 + " nature=\"{}\" inner=\"{}\" tooltip=\"{}\" id=\"{}\" />{}")
+        f.write((u"\t<Output name=\"{}\" type=\"{}\" type_size=\"{}\""
+                 + u" nature=\"{}\" inner=\"{}\" tooltip=\"{}\" id=\"{}\" />{}")
                 .format(output.name,
                         output.type,
                         output.type_size,
@@ -58,10 +58,10 @@ def write_box_meta(f, node):
     for parameter in node.parameters:
         if (parameter.tooltip is None):
             parameter.tooltip = ""
-        f.write(("\t<Parameter name=\"{}\" inherits_from_parent=\"{}\""
-                 + " content_type=\"{}\" value=\"{}\" default_value=\"{}\""
-                 + " min=\"{}\" max=\"{}\" tooltip=\"{}\" id=\"{}\""
-                 + " custom_choice=\"{}\" />{}")
+        f.write((u"\t<Parameter name=\"{}\" inherits_from_parent=\"{}\""
+                 + u" content_type=\"{}\" value=\"{}\" default_value=\"{}\""
+                 + u" min=\"{}\" max=\"{}\" tooltip=\"{}\" id=\"{}\""
+                 + u" custom_choice=\"{}\" />{}")
                 .format(parameter.name,
                         parameter.inherits_from_parent,
                         parameter.content_type,
@@ -75,46 +75,46 @@ def write_box_meta(f, node):
                         os.linesep))
 
     for resource in node.resources:
-        f.write("\t<Resource name=\"{}\" type=\"{}\" timeout=\"{}\" />{}"
+        f.write(u"\t<Resource name=\"{}\" type=\"{}\" timeout=\"{}\" />{}"
                         .format(resource.name,
                                 resource.type,
                                 resource.timeout,
                                 os.linesep))
 
-    f.write("</Box>" + os.linesep)
+    f.write(u"</Box>" + os.linesep)
 
 def write_state_meta(f, node):
-    f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
-    f.write("<State>{}".format(os.linesep))
+    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
+    f.write(u"<State>{}".format(os.linesep))
 
     for diag in node.objects:
         for box in diag.boxes:
-            f.write("\t<Object Name=\"{}\" />{}"
+            f.write(u"\t<Object Name=\"{}\" />{}"
                     .format(box.name, os.linesep))
 
-    f.write("\t<Interval begin=\"{}\" end=\"{}\" />{}"
+    f.write(u"\t<Interval begin=\"{}\" end=\"{}\" />{}"
             .format(node.begin, node.end, os.linesep))
 
     for label in node.labels:
-        f.write("\t<Label Name=\"{}\" />{}"
+        f.write(u"\t<Label Name=\"{}\" />{}"
                 .format(label, os.linesep))
 
     for diag in node.objects:
         for link in diag.links:
-            f.write(("\t<Link InputObject=\"{}\" InputName=\"{}\""
-                     + " OutputObject=\"{}\" OutputName=\"{}\" />{}")
+            f.write((u"\t<Link InputObject=\"{}\" InputName=\"{}\""
+                     + u" OutputObject=\"{}\" OutputName=\"{}\" />{}")
                     .format(link.inputowner,
                             link.inputName,
                             link.outputowner,
                             link.outputName,
                             os.linesep))
-    f.write("</State>" + os.linesep)
+    f.write(u"</State>" + os.linesep)
 
 def write_actuatorList(f, node):
-    f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
-    f.write(("<Timeline fps=\"{}\" resources_acquisition=\"{}\" size=\"{}\""
-             + " enable=\"{}\" start_frame=\"{}\" end_frame=\"{}\""
-             + " scale=\"{}\" >{}")
+    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
+    f.write((u"<Timeline fps=\"{}\" resources_acquisition=\"{}\" size=\"{}\""
+             + u" enable=\"{}\" start_frame=\"{}\" end_frame=\"{}\""
+             + u" scale=\"{}\" >{}")
             .format(node.fps,
                     node.resources_acquisition,
                     node.size,
@@ -125,8 +125,8 @@ def write_actuatorList(f, node):
                     os.linesep))
 
     for actuator in node.actuator_list:
-        f.write(("\t<ActuatorCurve name=\"{}\" actuator=\"{}\""
-                 + " recordable=\"{}\" mute=\"{}\" alwaysVisible=\"{}\" >{}")
+        f.write((u"\t<ActuatorCurve name=\"{}\" actuator=\"{}\""
+                 + u" recordable=\"{}\" mute=\"{}\" alwaysVisible=\"{}\" >{}")
                 .format(actuator.name,
                         actuator.actuator,
                         actuator.recordable,
@@ -135,13 +135,13 @@ def write_actuatorList(f, node):
                         os.linesep))
 
         for key in actuator.keys:
-            f.write("\t\t<Key frame=\"{}\" value=\"{}\" />{}"
+            f.write(u"\t\t<Key frame=\"{}\" value=\"{}\" />{}"
                     .format(key.frame,
                             key.value,
                             os.linesep))
 
-        f.write("\t</ActuatorCurve>{}".format(os.linesep))
-    f.write("</Timeline>{}".format(os.linesep))
+        f.write(u"\t</ActuatorCurve>{}".format(os.linesep))
+    f.write(u"</Timeline>{}".format(os.linesep))
 
 def _compute_timeout(state, fps):
     if (int(fps) == 0):
@@ -151,8 +151,8 @@ def _compute_timeout(state, fps):
     return int(frames / fpms)
 
 def write_state_machine(f, machine_name, state_list, fps):
-    f.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
-    f.write("<StateMachine>" + os.linesep)
+    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
+    f.write(u"<StateMachine>" + os.linesep)
 
     l = len(state_list)
 
@@ -160,7 +160,7 @@ def write_state_machine(f, machine_name, state_list, fps):
 
     for i in range(l):
         state_name = machine_name + "_state_" + str(i)
-        f.write("\t<State Name=\"{}\" />{}"
+        f.write(u"\t<State Name=\"{}\" />{}"
                 .format(state_name,
                         os.linesep))
         with codecs.open(state_name + ".xml",
@@ -168,38 +168,38 @@ def write_state_machine(f, machine_name, state_list, fps):
             write_state_meta(sfile, state_list[i])
         timeout_table.append(_compute_timeout(state_list[i], fps))
 
-    f.write("\t<InitialState Name=\"{}\" />{}"
+    f.write(u"\t<InitialState Name=\"{}\" />{}"
             .format(machine_name + "_state_0", os.linesep))
-    f.write("\t<FinalState Name=\"{}\" />{}"
+    f.write(u"\t<FinalState Name=\"{}\" />{}"
             .format(machine_name + "_state_" + str(l - 1), os.linesep))
 
     for i in range(l - 1):
-        f.write("\t<Transition From=\"{}\" To=\"{}\" TimeOut=\"{}\" />{}"
+        f.write(u"\t<Transition From=\"{}\" To=\"{}\" TimeOut=\"{}\" />{}"
                 .format(machine_name + "_state_" + str(i),
                         machine_name + "_state_" + str(i + 1),
                         timeout_table[i],
                         os.linesep))
 
-    f.write("</StateMachine>" + os.linesep)
+    f.write(u"</StateMachine>" + os.linesep)
 
 
 def write_main(fmain):
-    fmain.write("#!/usr/bin/env python" + os.linesep
-            + "# -*- coding: utf-8 -*-" + os.linesep + os.linesep
-            + "import os" + os.linesep
-            + "import sys" + os.linesep * 2
-            + "from naoqi import *" + os.linesep
-            + "import qicore" + os.linesep
-            + "import object_factory" + os.linesep + os.linesep
-            + "if (len(sys.argv) != 3):" + os.linesep
-            + "  print(\"Usage: python2 main.py IP_Address Port\")" + os.linesep
-            + "  sys.exit(2)" + os.linesep
-            + "broker = ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, sys.argv[1], int(sys.argv[2]))" + os.linesep
-            + "ALProxy.initProxies()" + os.linesep
-            + "factory = object_factory.ObjectFactory(os.path.dirname(sys.argv[0]), broker)" + os.linesep
-            + "root = factory.instanciate_objects(globals())" + os.linesep
-            + "waiter = factory.create_waiter_on_box(root, globals())" + os.linesep
-            + "root.__onLoad__()" + os.linesep
-            + "root.onInput_onStart__(None)" + os.linesep
-            + "waiter.wait_for_completion()" + os.linesep)
+    fmain.write(u"#!/usr/bin/env python" + os.linesep
+            + u"# -*- coding: utf-8 -*-" + os.linesep + os.linesep
+            + u"import os" + os.linesep
+            + u"import sys" + os.linesep * 2
+            + u"from naoqi import *" + os.linesep
+            + u"import qicore" + os.linesep
+            + u"import object_factory" + os.linesep + os.linesep
+            + u"if (len(sys.argv) != 3):" + os.linesep
+            + u"  print(\"Usage: python2 main.py IP_Address Port\")" + os.linesep
+            + u"  sys.exit(2)" + os.linesep
+            + u"broker = ALBroker(\"pythonBroker\", \"0.0.0.0\", 9600, sys.argv[1], int(sys.argv[2]))" + os.linesep
+            + u"ALProxy.initProxies()" + os.linesep
+            + u"factory = object_factory.ObjectFactory(os.path.dirname(sys.argv[0]), broker)" + os.linesep
+            + u"root = factory.instanciate_objects(globals())" + os.linesep
+            + u"waiter = factory.create_waiter_on_box(root, globals())" + os.linesep
+            + u"root.__onLoad__()" + os.linesep
+            + u"root.onInput_onStart__(None)" + os.linesep
+            + u"waiter.wait_for_completion()" + os.linesep)
 
