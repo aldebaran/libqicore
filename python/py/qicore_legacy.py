@@ -9,6 +9,7 @@ import logging
 
 import allog
 import qimessagingswig
+from converter.xar_types import InputType, OutputType
 
 import qicore
 
@@ -57,6 +58,7 @@ class BehaviorLegacy(qicore.Box):
 
         self._input_signal_map = {}
         self._output_signal_map = {}
+        self._io_type_map = {}
         self._parameter_map = {}
         self._callback_id_map = {}
         self._connection_counter = {}
@@ -108,13 +110,22 @@ class BehaviorLegacy(qicore.Box):
         self.print_debug("releaseResource")
         self.print_error("Not implemented yet")
 
-    def addInput(self, input_name):
+    def _add_to_io_type_map(self, name, ctype):
+        if ctype:
+            if not ctype in self._io_type_map:
+                self._io_type_map[ctype] = [name]
+            else:
+                self._io_type_map[ctype].append(name)
+
+    def addInput(self, input_name, ctype = None):
         self.print_debug("addInput with name " + input_name)
+        self._add_to_io_type_map(input_name, ctype)
         self._input_signal_map[input_name] = qimessagingswig.qi_signal()
 
-    def addOutput(self, output_name, is_bang):
+    def addOutput(self, output_name, is_bang, ctype = None):
         self.print_debug("addOutput with name " + output_name + " is_bang : "
                           + str(is_bang))
+        self._add_to_io_type_map(output_name, ctype)
         self._output_signal_map[output_name] = qimessagingswig.qi_signal()
         self.print_warn("IsBang parameter is not used for the moment")
 
@@ -324,14 +335,19 @@ class BehaviorLegacy(qicore.Box):
     def setParentBox(self, box):
         self._parent_box = box
 
+    def get_io_with_type(self, ctype):
+        if ctype in self._io_type_map:
+            return self._io_type_map[ctype]
+
     # This method is called by the Timeline when the job is done
     def __onTimelineStopped__(self):
         if (self.hasStateMachine()):
             self.getStateMachine().stop()
 
-        # Stimulate all outputs
-        for name, sig in self._output_signal_map.items():
-            sig.trigger(None)
+        # Stimulate STOPPED outputs
+        if OutputType.STOPPED in self._io_type_map:
+            for sig_name in self._io_type_map[OutputType.STOPPED]:
+                self._output_signal_map[sig_name].trigger()
 
     # This method is called by the state machine when entering a new state
     # This method will activate the right boxes

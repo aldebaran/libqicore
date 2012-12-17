@@ -12,7 +12,7 @@ import xml.dom.minidom
 import qicore
 import qicore_legacy
 import function_generator as f_gen
-from converter.xar_types import ConnectionType, ParameterType, IOType
+from converter.xar_types import ConnectionType, ParameterType, IOType, OutputType
 
 class BehaviorWaiterClass(qicore_legacy.BehaviorLegacy):
 
@@ -96,7 +96,9 @@ class ObjectFactory(object):
 
     def create_waiter_on_box(self, box, topdict):
         waiter = BehaviorWaiterClass()
-        waiter.connectInput("onDone", box, "onStopped")
+        io_list = box.get_io_with_type(OutputType.STOPPED)
+        for io_name in io_list:
+            waiter.connectInput("onDone", box, io_name)
         self._box_dict[waiter.getName()] = waiter
         topdict[waiter.getName()] = waiter
         return waiter
@@ -225,10 +227,10 @@ class ObjectFactory(object):
 
         for inp in root.getElementsByTagName('Input'):
             inp_name = inp.attributes["name"].value
-            inp_nature = inp.attributes["nature"].value
+            inp_nature = int(inp.attributes["nature"].value)
             connection_map[inp_name] = ConnectionType.INPUT
-            box_object.addInput(inp_name)
-            meth = f_gen.generate_input_method(int(inp_nature), inp_name)
+            box_object.addInput(inp_name, inp_nature)
+            meth = f_gen.generate_input_method(inp_nature, inp_name)
             if meth:
                 setattr(box_object, "onInput_" + inp_name + "__",
                         types.MethodType(meth, box_object))
@@ -236,10 +238,10 @@ class ObjectFactory(object):
         for out in root.getElementsByTagName('Output'):
             out_name = out.attributes["name"].value
             out_type = out.attributes["type"].value
-            out_nature = out.attributes["nature"].value
+            out_nature = int(out.attributes["nature"].value)
             connection_map[out_name] = ConnectionType.OUTPUT
-            box_object.addOutput(out_name, int(out_type == IOType.BANG))
-            meth = f_gen.generate_output_method(int(out_nature), out_name)
+            box_object.addOutput(out_name, int(out_type == IOType.BANG), out_nature)
+            meth = f_gen.generate_output_method(out_nature, out_name)
             if meth:
                 setattr(box_object, out_name, types.MethodType(meth,
                                                                box_object))
