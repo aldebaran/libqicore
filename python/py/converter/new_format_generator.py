@@ -185,5 +185,13 @@ class NewFormatGenerator:
             # print("State : ", st.begin, " -> ", st.end, ", with : ",
             #       st.obj_nb, "keyframes, labels : ", st.labels)
 
+        # If no behaviorKeyFrame start at 1, we create an empty state
+        if state_list:
+            if state_list[0].begin != 1:
+                first_state = State()
+                first_state.begin = 1
+                first_state.end = state_list[0].begin
+                state_list.insert(0, first_state)
+
         return state_list
 
