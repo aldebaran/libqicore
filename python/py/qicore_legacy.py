@@ -351,7 +351,7 @@ class BehaviorLegacy(qicore.Box):
         # Stimulate STOPPED outputs
         if OutputType.STOPPED in self._io_type_map:
             for sig_name in self._io_type_map[OutputType.STOPPED]:
-                self._output_signal_map[sig_name].trigger()
+                self._output_signal_map[sig_name].trigger(None)
 
     # This method is called by the state machine when entering a new state
     # This method will activate the right boxes

@@ -20,7 +20,7 @@ class BehaviorWaiterClass(qicore_legacy.BehaviorLegacy):
         self.addInput("onDone")
         self.is_complete = False
 
-    def onInput_onDone__(self, param):
+    def onInput_onDone__(self, param = None):
         self.is_complete = True
 
     def wait_for_completion(self):
