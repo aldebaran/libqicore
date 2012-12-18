@@ -48,7 +48,7 @@ class BehaviorLogHandler(logging.Handler):
 
 class BehaviorLegacy(qicore.Box):
 
-    def __init__(self, name):
+    def __init__(self, name, io_info = None):
         qicore.Box.__init__(self)
         self.setName(name)
         self.resource = False
@@ -72,6 +72,10 @@ class BehaviorLegacy(qicore.Box):
         logHandler = BehaviorLogHandler()
         self.logger.addHandler(logHandler)
         self.logger.setLevel(logging.DEBUG)
+
+        # Create IO on box
+        if io_info:
+            io_info.add_io_to_box(self)
 
 
     def print_debug(self, mystr):

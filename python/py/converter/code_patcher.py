@@ -10,7 +10,7 @@ import re
 def _construct_init_code(box):
     init_code = ("qicore_legacy.BehaviorLegacy.__init__(self, \""
                  + box.name
-                 + "\")"
+                 + "\", io_info)"
                  + os.linesep)
 
     return init_code.rstrip()
@@ -74,5 +74,6 @@ def patch(box):
     else:
         code = code.replace("GeneratedClass.__init__(self, False)", init_code)
     code = _replace_not_supported_code(box, code)
+    code = code.replace("def __init__(self", "def __init__(self, io_info")
     return code
 

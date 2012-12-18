@@ -4,6 +4,8 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+import types
+
 from converter.xar_types import ConnectionType, InputType
 from converter.xar_types import OutputType, ResourceMode
 
@@ -118,3 +120,43 @@ def generate_connection_function(input_box, input_name, output_box,
 
     return connect
 
+
+class IOInfo:
+    def __init__(self):
+        self._inputs = []
+        self._outputs = []
+        self._parameters = []
+        self._resources = []
+
+    def add_input(self, name, nature, method):
+        self._inputs.append((name, nature, method))
+
+    def add_output(self, name, is_bang, nature, method):
+        self._outputs.append((name, is_bang, nature, method))
+
+    def add_parameter(self, name, value, inherits):
+        self._parameters.append((name, value, inherits))
+
+    def add_resource(self, method):
+        self._resources.append(("resource_name", method))
+
+    def add_io_to_box(self, box_object):
+        for inp in self._inputs:
+            box_object.addInput(inp[0], inp[1])
+            if inp[2]:
+                setattr(box_object, "onInput_" + inp[0] + "__",
+                        types.MethodType(inp[2], box_object))
+
+        for out in self._outputs:
+            box_object.addOutput(out[0], out[1], out[2])
+            if out[3]:
+                setattr(box_object, out[0], types.MethodType(out[3],
+                                                             box_object))
+
+        for param in self._parameters:
+            box_object.addParameter(param[0], param[1], param[2])
+
+        for res in self._resources:
+            if res[1]:
+                setattr(box_object, "__onResource__",
+                        types.MethodType(res[1], box_object))

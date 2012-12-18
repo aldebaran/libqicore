@@ -6,7 +6,6 @@
 
 import codecs
 import time
-import types
 import xml.dom.minidom
 
 import qicore
@@ -217,34 +216,25 @@ class ObjectFactory(object):
         dom = xml.dom.minidom.parse(self._folder_name + box_name + ".xml")
         root = dom.getElementsByTagName('Box')[0]
 
-        module = __import__(box_name)
-        box_class = getattr(module, box_name + "_class")
-        box_object = box_class()
-        self._box_dict[box_name] = box_object
-        box_object.setPath(self._folder_name)
-
+        io_info = f_gen.IOInfo()
         connection_map = {}
 
         for inp in root.getElementsByTagName('Input'):
             inp_name = inp.attributes["name"].value
             inp_nature = int(inp.attributes["nature"].value)
             connection_map[inp_name] = ConnectionType.INPUT
-            box_object.addInput(inp_name, inp_nature)
             meth = f_gen.generate_input_method(inp_nature, inp_name)
-            if meth:
-                setattr(box_object, "onInput_" + inp_name + "__",
-                        types.MethodType(meth, box_object))
+            io_info.add_input(inp_name, inp_nature, meth)
 
         for out in root.getElementsByTagName('Output'):
             out_name = out.attributes["name"].value
             out_type = out.attributes["type"].value
             out_nature = int(out.attributes["nature"].value)
             connection_map[out_name] = ConnectionType.OUTPUT
-            box_object.addOutput(out_name, int(out_type == IOType.BANG), out_nature)
             meth = f_gen.generate_output_method(out_nature, out_name)
-            if meth:
-                setattr(box_object, out_name, types.MethodType(meth,
-                                                               box_object))
+            io_info.add_output(out_name,
+                               int(out_type == IOType.BANG),
+                               out_nature, meth)
 
         for param in root.getElementsByTagName('Parameter'):
             param_name = param.attributes["name"].value
@@ -252,19 +242,23 @@ class ObjectFactory(object):
             param_content_type = param.attributes["content_type"].value
             param_inherits = param.attributes["inherits_from_parent"].value
             connection_map[param_name] = ConnectionType.PARAMETER
-            box_object.addParameter(param_name,
-                                    _convert_parameter(param_value,
-                                                       int(param_content_type)),
-                                    param_inherits == 1)
+            io_info.add_parameter(param_name,
+                                  _convert_parameter(param_value,
+                                                     int(param_content_type)),
+                                  param_inherits == 1)
 
         for res in root.getElementsByTagName("Resource"):
             resource_type = res.attributes["type"].value
             meth = f_gen.generate_resource_method(resource_type)
-            if meth:
-                setattr(box_object, "__onResource__",
-                        types.MethodType(meth, box_object))
+            io_info.add_resource(meth)
 
         self._connection_type_for_box[box_name] = connection_map
+
+        module = __import__(box_name)
+        box_class = getattr(module, box_name + "_class")
+        box_object = box_class(io_info)
+        self._box_dict[box_name] = box_object
+        box_object.setPath(self._folder_name)
 
         if (self._box_stack):
             parent_box = self._box_stack.pop()
