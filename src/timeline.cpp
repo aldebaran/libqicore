@@ -201,12 +201,6 @@ int TimelinePrivate::getFPS() const
   return _fps;
 }
 
-void TimelinePrivate::stimulateStoppedOutputs()
-{
-  /* Can change a value in almemory to acknowledge that
-     timeline execution is finished */
-}
-
 bool TimelinePrivate::update(void)
 {
   boost::unique_lock<boost::recursive_mutex> _lock(_methodMonitor);
@@ -221,7 +215,6 @@ bool TimelinePrivate::update(void)
     || (_currentFrame < _startFrame))
   {
     updateFrameInSTM();
-    stimulateStoppedOutputs();
     _currentFrame = _startFrame;
     killMotionOrders();
 

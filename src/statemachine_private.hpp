@@ -9,6 +9,7 @@
 # define STATE_MACHINE_PRIVATE_H_
 
 # include <set>
+# include <queue>
 
 # include <boost/thread/mutex.hpp>
 
@@ -44,10 +45,10 @@ class StateMachinePrivate : public asyncExecuter
     void pause();
     void stop();
 
-    bool executeTransition(Transition* tr);
-    bool goToState(Box* state);
     int goToLabel(std::string label);
     int goToLabel(int label);
+    bool goToState(Box* state);
+    bool executeTransition(Transition* tr);
 
     /* Function will be called when StateMachine entre a new state */
     void registerNewStateCallback(PyObject*);
@@ -57,22 +58,23 @@ class StateMachinePrivate : public asyncExecuter
     virtual bool update();
 
   private:
+    int updateState(Box* state);
     int loadTransitions(Box* state);
     void unloadTransitions(Box* state);
-    void setupTimeOut(unsigned int time);
 
     std::string                     _name;
     bool                            _isPaused;
-    bool                            _isRunning;
-    boost::mutex                    _isRunningMutex;
     std::set<Box*>                  _states;
     std::set<Box*>                  _finalStates;
     Box*                            _initialState;
     Box*                            _currentState;
-    boost::recursive_mutex          _currentStateMutex;
+    int                             _timeOut;
     Transition*                     _timedTransition;
     StateMachine*                   _parent;
     PythonCallback                  _newStateCallback;
+
+    std::queue<Box*>                _nextStateQueue;
+    boost::mutex                    _nextStateQueueMutex;
 };
 
 };

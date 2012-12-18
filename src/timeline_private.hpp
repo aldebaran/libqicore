@@ -100,7 +100,6 @@ private:
    * prepareInterpolationCommand will call this method, that will check for resources and then send command if everything is ok.
    */
   bool sendInterpolationCommand(const std::vector<std::string>& names, const AL::ALValue& times, const AL::ALValue& keys);
-  void stimulateStoppedOutputs();
   void killTimer();
   void TimerLoop(int interval);
 
