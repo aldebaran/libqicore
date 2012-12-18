@@ -19,7 +19,7 @@ namespace qi
 {
 
 StateMachinePrivate::StateMachinePrivate(StateMachine *s)
-  : asyncExecuter(1000 / 25),
+  : asyncExecuter(0),
     _name ("Unnamed-StateMachine"),
     _isPaused (false),
     _initialState (0),
@@ -28,7 +28,7 @@ StateMachinePrivate::StateMachinePrivate(StateMachine *s)
     _timedTransition (0),
     _parent (s),
     _newStateCallback (0),
-
+    _executerInterval(1),
     _nextStateQueue(),
     _nextStateQueueMutex()
 {
@@ -222,7 +222,7 @@ bool StateMachinePrivate::update()
 
   /* Update time left for timed transition */
   if (_timedTransition)
-    _timeOut -= (1000 / 25);
+    _timeOut -= _executerInterval;
 
   /* Take the next state in locked queue */
   {
@@ -317,6 +317,7 @@ void StateMachinePrivate::run()
   {
     /* It is safe to call updateState only when executer is not running */
     _timeOut = updateState(_initialState);
+    setInterval(_executerInterval);
     playExecuter();
   }
 

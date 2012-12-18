@@ -72,7 +72,7 @@ class StateMachinePrivate : public asyncExecuter
     Transition*                     _timedTransition;
     StateMachine*                   _parent;
     PythonCallback                  _newStateCallback;
-
+    unsigned int                    _executerInterval;
     std::queue<Box*>                _nextStateQueue;
     boost::mutex                    _nextStateQueueMutex;
 };
