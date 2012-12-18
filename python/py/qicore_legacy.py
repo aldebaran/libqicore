@@ -51,6 +51,7 @@ class BehaviorLegacy(qicore.Box):
     def __init__(self, name, io_info = None):
         qicore.Box.__init__(self)
         self.setName(name)
+        self.boxName = name # Created for compat purposes
         self.resource = False
         self._load_count = 0
         self._parent_box = None
@@ -189,7 +190,7 @@ class BehaviorLegacy(qicore.Box):
         elif (signal_name in self._output_signal_map):
             return self._output_signal_map[signal_name].connect(callback)
         else:
-            return None
+            return False
 
     def removeCallbackToSignal(self, signal_name, callback_id):
         if (signal_name in self._input_signal_map):
@@ -206,15 +207,18 @@ class BehaviorLegacy(qicore.Box):
         else:
             self.print_debug("Counter == zero : Connect")
             signal_id = target.addCallbackToSignal(signal_name, callback)
-            self._callback_id_map[connection_name] = signal_id
-            self._connection_counter[connection_name] = 1
+            if signal_id:
+                self._callback_id_map[connection_name] = signal_id
+                self._connection_counter[connection_name] = 1
+            else:
+                self.print_error("An error occured during connection... ")
 
     def connectInput(self, input_name, target, signal_name):
         self.print_debug("ConnectInput " + input_name + " from " + self.getName()
                 + " to " + signal_name + " from " + target.getName())
 
         method_name = "onInput_" + input_name + "__"
-        connection_name = str(method_name + signal_name)
+        connection_name = str(method_name + target.getName() + signal_name)
         callback = self._findUserMethod(method_name)
         if not callback:
             self.print_error("Unable to find callback method to connect")
@@ -227,7 +231,7 @@ class BehaviorLegacy(qicore.Box):
                          + " from " + target.getName())
 
         method_name = output_name
-        connection_name = str(method_name + signal_name)
+        connection_name = str(method_name + target.getName() + signal_name)
         callback = self._findUserMethod(method_name)
         if not callback:
             self.print_error("Unable to find callback method to connect")
@@ -247,7 +251,7 @@ class BehaviorLegacy(qicore.Box):
                           + " from " + self.getName()
                           + " to " + signal_name + " from " + target.getName())
 
-        connection_name = str(parameter_name + signal_name)
+        connection_name = str(parameter_name + target.getName() + signal_name)
         callback = self._generate_parameter_callback(parameter_name,
                                                      self._parameter_map)
         if not callback:
@@ -255,7 +259,7 @@ class BehaviorLegacy(qicore.Box):
             return
         self._connect(target, connection_name, signal_name, callback)
 
-    def _disconnect(self, signal_name, connection_name):
+    def _disconnect(self, target, signal_name, connection_name):
         if (not (connection_name in self._connection_counter)):
             self.print_error("Unable to disconnect, this connection is unknown")
             return
@@ -263,8 +267,9 @@ class BehaviorLegacy(qicore.Box):
         self._connection_counter[connection_name] = self._connection_counter[connection_name] - 1
         if (self._connection_counter[connection_name] == 0):
             self.print_debug("Counter == zero : Disconnect")
+
+            ret = target.removeCallbackToSignal(signal_name, self._callback_id_map[connection_name])
             del self._connection_counter[connection_name]
-            self.removeCallbackToSignal(signal_name, self._callback_id_map[connection_name])
             del self._callback_id_map[connection_name]
 
     def disconnectInput(self, input_name, target, signal_name):
@@ -273,24 +278,24 @@ class BehaviorLegacy(qicore.Box):
                         + " from " + target.getName())
 
         method_name = "onInput_" + input_name + "__"
-        connection_name = str(method_name + signal_name)
-        self._disconnect(signal_name, connection_name)
+        connection_name = str(method_name + target.getName() + signal_name)
+        self._disconnect(target, signal_name, connection_name)
 
     def disconnectOutput(self, output_name, target, signal_name):
         self.print_debug("disconnectOutput " + output_name + " from "
                         + self.getName() + " to " + signal_name
                         + " from " + target.getName())
 
-        connection_name = str(output_name + signal_name)
-        self._disconnect(signal_name, connection_name)
+        connection_name = str(output_name + target.getName() + signal_name)
+        self._disconnect(target, signal_name, connection_name)
 
     def disconnectParameter(self, parameter_name, target, signal_name):
         self.print_debug("disconnectParameter " + parameter_name + " from "
                         + self.getName() + " to " + signal_name
                         + " from " + target.getName())
 
-        connection_name = str(parameter_name + signal_name)
-        self._disconnect(signal_name, connection_name)
+        connection_name = str(parameter_name + target.getName() + signal_name)
+        self._disconnect(target, signal_name, connection_name)
 
     def __onLoad__(self):
         # Load the box only once
