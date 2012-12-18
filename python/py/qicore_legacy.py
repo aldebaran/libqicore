@@ -204,6 +204,7 @@ class BehaviorLegacy(qicore.Box):
             self.print_debug("Already connected: increment connection counter")
             self._connection_counter[connection_name] = self._connection_counter[connection_name] + 1
         else:
+            self.print_debug("Counter == zero : Connect")
             signal_id = target.addCallbackToSignal(signal_name, callback)
             self._callback_id_map[connection_name] = signal_id
             self._connection_counter[connection_name] = 1
@@ -261,7 +262,7 @@ class BehaviorLegacy(qicore.Box):
 
         self._connection_counter[connection_name] = self._connection_counter[connection_name] - 1
         if (self._connection_counter[connection_name] == 0):
-            self.print_debug("Counter == zero : Unload")
+            self.print_debug("Counter == zero : Disconnect")
             del self._connection_counter[connection_name]
             self.removeCallbackToSignal(signal_name, self._callback_id_map[connection_name])
             del self._callback_id_map[connection_name]
@@ -293,24 +294,22 @@ class BehaviorLegacy(qicore.Box):
 
     def __onLoad__(self):
         # Load the box only once
-        self.print_debug("Load with count = " + str(self._load_count))
 
         self._load_count = self._load_count + 1
 
         if (self._load_count == 1):
+            self.print_debug("Load")
             self._safeCallOfUserMethod("onLoad", None)
 
     def __onUnload__(self):
-        self.print_debug("Unload with count = " + str(self._load_count))
-
         if (self._load_count > 0):
             self._load_count = self._load_count - 1
 
         if (self._load_count == 0):
             if (self.resource):
                 self.releaseResource()
-            self._safeCallOfUserMethod("onUnload", None)
             self.print_debug("Unload")
+            self._safeCallOfUserMethod("onUnload", None)
             self._previous_on_load = []
 
     def _safeCallOfUserMethod(self, function_name, function_arg):
@@ -382,16 +381,25 @@ class BehaviorLegacy(qicore.Box):
         if (self._parent_box.hasStateMachine()):
             self._parent_box.getStateMachine().run()
 
-    def gotoAndPlayParent(self, label):
-        if not self._parent_box:
-          return
-        self.stopTimelineParent()
+    def gotoParent(self, label):
         frame = label
         if (self._parent_box.hasStateMachine()):
             frame = self._parent_box.getStateMachine().goToLabel(label)
         if (self._parent_box.hasTimeline()):
             self._parent_box.getTimeline().goTo(frame)
+
+    def gotoAndPlayParent(self, label):
+        if not self._parent_box:
+            return
+        self.stopTimelineParent()
+        self.gotoParent(label)
         self.playTimelineParent()
+
+    def gotoAndStopParent(self, label):
+        if not self._parent_box:
+            return
+        self.stopTimelineParent()
+        self.gotoParent(label)
 
     # Compatibilty layer for FrameManager
     def getBehaviorPath(self, behavior_id):
