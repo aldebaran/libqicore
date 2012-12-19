@@ -30,7 +30,21 @@ def write_box_meta(f, node):
     for input in node.inputs:
         if (input.tooltip is None):
             input.tooltip = ""
-        f.write((u"\t<Input name=\"{}\" type=\"{}\" type_size=\"{}\""
+        if input.stm_value_name:
+            f.write((u"\t<Input name=\"{}\" type=\"{}\" type_size=\"{}\""
+                 + u" nature=\"{}\" stm_value_name=\"{}\" inner=\"{}\""
+                 + u" tooltip=\"{}\" id=\"{}\" />{}")
+                .format(input.name,
+                        input.type,
+                        input.type_size,
+                        input.nature,
+                        input.stm_value_name,
+                        input.inner,
+                        cgi.escape(input.tooltip, quote=True),
+                        input.id,
+                        os.linesep))
+        else:
+            f.write((u"\t<Input name=\"{}\" type=\"{}\" type_size=\"{}\""
                  + u" nature=\"{}\" inner=\"{}\" tooltip=\"{}\" id=\"{}\" />{}")
                 .format(input.name,
                         input.type,
@@ -201,5 +215,6 @@ def write_main(fmain):
             + u"waiter = factory.create_waiter_on_box(root, globals())" + os.linesep
             + u"root.__onLoad__()" + os.linesep
             + u"root.onInput_onStart__(None)" + os.linesep
-            + u"waiter.wait_for_completion()" + os.linesep)
+            + u"waiter.wait_for_completion()" + os.linesep
+            + u"root.dispose_memory_watcher()" + os.linesep)
 

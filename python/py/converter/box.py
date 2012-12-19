@@ -59,6 +59,7 @@ class Box(node.Node):
                                           attrs.getValue('type'),
                                           attrs.getValue('type_size'),
                                           attrs.getValue('nature'),
+                                          attrs.getValue('stm_value_name'),
                                           attrs.getValue('inner'),
                                           attrs.getValue('tooltip'),
                                           attrs.getValue('id')))
@@ -68,6 +69,7 @@ class Box(node.Node):
                                            attrs.getValue('type'),
                                            attrs.getValue('type_size'),
                                            attrs.getValue('nature'),
+                                           attrs.getValue('stm_value_name'),
                                            attrs.getValue('inner'),
                                            attrs.getValue('tooltip'),
                                            attrs.getValue('id')))

@@ -25,11 +25,12 @@ class script:
 # used for input and ouput
 class port:
 
-    def __init__(self, name, type, type_size, nature, inner, tooltip, id):
+    def __init__(self, name, type, type_size, nature, stm_value_name, inner, tooltip, id):
         self.name = name
         self.type = type
         self.type_size = type_size
         self.nature = nature
+        self.stm_value_name = stm_value_name
         self.inner = inner
         self.tooltip = tooltip
         self.id = id

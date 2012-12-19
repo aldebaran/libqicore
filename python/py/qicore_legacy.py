@@ -6,12 +6,62 @@
 
 import sys
 import logging
+import time
+import threading
+
+from naoqi import ALProxy
 
 import allog
 import qimessagingswig
 from converter.xar_types import InputType, OutputType
 
 import qicore
+
+class ALMemoryWatcher:
+    def __init__(self, memory_proxy):
+        self._must_stop = False
+        self._memory_proxy = memory_proxy
+        self._maps_mutex = threading.Lock()
+        self._value_map = {}
+        self._signal_map = {}
+        self._callback_id_map = {}
+        self._update_thread = threading.Thread(target = self.update, args=())
+        self._update_thread.start()
+
+    def watch_value(self, value_name, callback):
+        self._maps_mutex.acquire()
+        if value_name in self._value_map:
+            callback_id = self._signal_map[value_name].connect(callback)
+            self._callback_id_map[callback] = callback_id
+            return
+
+        value = self._memory_proxy.getData(value_name)
+        self._value_map[value_name] = value
+        self._signal_map[value_name] = qimessagingswig.qi_signal()
+        callback_id = self._signal_map[value_name].connect(callback)
+        self._callback_id_map[callback] = callback_id
+        self._maps_mutex.release()
+
+    def unwatch_value(self, value_name, callback):
+        self._maps_mutex.acquire()
+        if (value_name in self._value_map):
+            callback_id = self._callback_id_map[callback]
+            self._signal_map[value_name].disconnect(callback_id)
+        self._maps_mutex.release()
+
+    def update(self):
+        while not self._must_stop:
+            time.sleep(0.1)
+            self._maps_mutex.acquire()
+            for name, value in self._value_map.items():
+                new_value = self._memory_proxy.getData(name)
+                if new_value != value:
+                    self._value_map[name] = new_value
+                    self._signal_map[name].trigger(new_value)
+            self._maps_mutex.release()
+
+    def stop(self):
+        self._must_stop = True
 
 # This class just bind a Timeline and a StateMachine
 class TimelineLegacy:
@@ -47,6 +97,7 @@ class BehaviorLogHandler(logging.Handler):
                  record.lineno)
 
 class BehaviorLegacy(qicore.Box):
+    _memory_watcher = None
 
     def __init__(self, name, io_info = None):
         qicore.Box.__init__(self)
@@ -78,6 +129,9 @@ class BehaviorLegacy(qicore.Box):
         if io_info:
             io_info.add_io_to_box(self)
 
+    def dispose_memory_watcher(self):
+        if BehaviorLegacy._memory_watcher:
+            BehaviorLegacy._memory_watcher.stop()
 
     def print_debug(self, mystr):
         self.logger.debug(str(self.getName() + " : " + mystr))
@@ -124,8 +178,20 @@ class BehaviorLegacy(qicore.Box):
 
     def addInput(self, input_name, ctype = None):
         self.print_debug("addInput with name " + input_name)
+
         self._add_to_io_type_map(input_name, ctype)
         self._input_signal_map[input_name] = qimessagingswig.qi_signal()
+
+    def bindInputToSTMValue(self, callback_name, stm_value_name):
+        self.print_debug("bindInputToSTMValue with name " + callback_name
+                        + " and STMValue : " + stm_value_name)
+        meth = getattr(self, callback_name)
+        if not meth or not stm_value_name:
+            self.print_error("Unable to bind input to StmValue")
+            return
+        if not BehaviorLegacy._memory_watcher:
+            BehaviorLegacy._memory_watcher = ALMemoryWatcher(ALProxy("ALMemory"))
+        BehaviorLegacy._memory_watcher.watch_value(str(stm_value_name), meth)
 
     def addOutput(self, output_name, is_bang, ctype = None):
         self.print_debug("addOutput with name " + output_name + " is_bang : "

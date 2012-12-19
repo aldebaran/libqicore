@@ -222,9 +222,13 @@ class ObjectFactory(object):
         for inp in root.getElementsByTagName('Input'):
             inp_name = inp.attributes["name"].value
             inp_nature = int(inp.attributes["nature"].value)
+            try:
+                inp_stm_value_name = inp.attributes["stm_value_name"].value
+            except KeyError:
+                inp_stm_value_name = None
             connection_map[inp_name] = ConnectionType.INPUT
             meth = f_gen.generate_input_method(inp_nature, inp_name)
-            io_info.add_input(inp_name, inp_nature, meth)
+            io_info.add_input(inp_name, inp_nature, meth, inp_stm_value_name)
 
         for out in root.getElementsByTagName('Output'):
             out_name = out.attributes["name"].value

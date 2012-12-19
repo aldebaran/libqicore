@@ -26,11 +26,14 @@ def generate_input_method(method_type, name):
             return
         self.stimulateIO(name, param)
 
+    def on_stmvalue(self, value):
+        self.stimulateIO(name, value)
+
     input_mmap = { InputType.ONLOAD : None,
                    InputType.UNDEF : on_stop,
                    InputType.ONSTART : on_start,
                    InputType.ONSTOP : on_stop,
-                   InputType.STMVALUE: None}
+                   InputType.STMVALUE: on_stmvalue}
 
     return input_mmap[method_type]
 
@@ -128,8 +131,8 @@ class IOInfo:
         self._parameters = []
         self._resources = []
 
-    def add_input(self, name, nature, method):
-        self._inputs.append((name, nature, method))
+    def add_input(self, name, nature, method, stm_value_name = ""):
+        self._inputs.append((name, nature, method, stm_value_name))
 
     def add_output(self, name, is_bang, nature, method):
         self._outputs.append((name, is_bang, nature, method))
@@ -146,6 +149,8 @@ class IOInfo:
             if inp[2]:
                 setattr(box_object, "onInput_" + inp[0] + "__",
                         types.MethodType(inp[2], box_object))
+            if inp[1] == InputType.STMVALUE:
+                box_object.bindInputToSTMValue("onInput_" + inp[0] + "__", inp[3])
 
         for out in self._outputs:
             box_object.addOutput(out[0], out[1], out[2])
