@@ -3,7 +3,6 @@
  * Aldebaran Robotics (c) 2007-2012 All Rights Reserved
  */
 
-#include <qi/os.hpp>
 #include "asyncexecuter.hpp"
 
 namespace qi
@@ -12,7 +11,8 @@ namespace qi
 asyncExecuter::asyncExecuter(unsigned int interval)
   : _pauseRequest (false),
     _isPlaying (false),
-    _interval (interval)
+    _interval (interval),
+    _callback (0)
 {
 }
 
@@ -21,7 +21,7 @@ asyncExecuter::~asyncExecuter()
   stopExecuter();
 }
 
-void asyncExecuter::playExecuter()
+void asyncExecuter::playExecuter(boost::function<bool (void)> f)
 {
   {
     boost::mutex::scoped_lock lock(_pauseRequestMutex);
@@ -41,6 +41,7 @@ void asyncExecuter::playExecuter()
     _isPlaying = true;
   }
 
+  _callback = f;
   _executerThread = boost::thread(boost::bind(&asyncExecuter::executerLoop, this));
 }
 
@@ -69,26 +70,22 @@ void asyncExecuter::stopExecuter()
     _isPlaying = false;
   }
 
-  /* First force the thread to be in an interruptible point */
-  /* Avoid some race conditions */
-  waitUntilPauseExecuter();
-
   _executerThread.interrupt();
   _executerThread.join();
+
+  _callback = 0;
 
   _isPlayingCondition.notify_all();
 }
 
 void asyncExecuter::executerLoop()
 {
-  /* Prevent a deadlock if user stops the thread but
-     the thread is not yet created */
-  if (boost::this_thread::interruption_requested())
-    return;
-
   while (true)
   {
-    qi::os::msleep(_interval);
+    if (boost::this_thread::interruption_requested())
+      break;
+
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(_interval));
 
     /* Notify users that wait for pause */
     _pauseRequestCondition.notify_all();
@@ -98,9 +95,11 @@ void asyncExecuter::executerLoop()
         _pauseRequestCondition.wait(pauseLock);
     }
 
-    if (!update())
+    if (!_callback())
       break;
   }
+
+  _callback = 0;
 
   {
     boost::mutex::scoped_lock pauseLock(_isPlayingMutex);
@@ -119,7 +118,7 @@ void asyncExecuter::waitForExecuterCompletion()
   }
 }
 
-unsigned int asyncExecuter::getInterval()
+unsigned int asyncExecuter::getInterval() const
 {
   return _interval;
 }

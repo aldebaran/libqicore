@@ -19,7 +19,7 @@ namespace qi
 {
 
 TimelinePrivate::TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker)
-  : asyncExecuter(1000 / 25),
+  : _executer(new asyncExecuter(1000 / 25)),
     _fps(0),
     _enabled(false),
     _startFrame(0),
@@ -55,11 +55,11 @@ TimelinePrivate::~TimelinePrivate(void)
   {
   }
 
-  /* Outputs can be triggered here ? */
-
   for (std::vector<ActuatorCurve*>::iterator it = _actuatorCurves.begin();
         it != _actuatorCurves.end(); it++)
     delete (*it);
+
+  delete _executer;
 }
 
 void TimelinePrivate::loadFromXml(boost::shared_ptr<const AL::XmlElement> elt)
@@ -68,7 +68,7 @@ void TimelinePrivate::loadFromXml(boost::shared_ptr<const AL::XmlElement> elt)
   if(elt == NULL)
     return;
 
-  if (isPlaying())
+  if (_executer->isPlaying())
     stop();
 
   /* Remove previous ActuatorCurves if needed */
@@ -86,7 +86,7 @@ void TimelinePrivate::loadFromXml(boost::shared_ptr<const AL::XmlElement> elt)
   elt->getAttribute("start_frame", _startFrame, 0);
   elt->getAttribute("end_frame", _endFrame, -1);
   _currentFrame = _startFrame;
-  setInterval(1000 / _fps);
+  _executer->setInterval(1000 / _fps);
 
   // load actuator list
   {
@@ -145,20 +145,20 @@ void TimelinePrivate::play()
     return;
   }
 
-  playExecuter();
+  _executer->playExecuter(boost::bind(&TimelinePrivate::update, this));
 }
 
 void TimelinePrivate::pause()
 {
   qiLogDebug("qiCore.Timeline") << "Pause timeline";
-  waitUntilPauseExecuter();
+  _executer->waitUntilPauseExecuter();
   killMotionOrders();
 }
 
 void TimelinePrivate::stop()
 {
   qiLogDebug("qiCore.Timeline") << "Stopping timeline";
-  stopExecuter();
+  _executer->stopExecuter();
 
   {
     boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
@@ -192,7 +192,7 @@ void TimelinePrivate::setFPS(int pFps)
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
   _fps = pFps;
-  setInterval(1000 / _fps);
+  _executer->setInterval(1000 / _fps);
 }
 
 int TimelinePrivate::getFPS() const
@@ -228,7 +228,7 @@ bool TimelinePrivate::update(void)
   bool motionWorked = executeCurveMotionCommand();
 
   // move on to the next frame
-  if(motionWorked && isPlaying())
+  if(motionWorked && _executer->isPlaying())
     ++_currentFrame;
   return true;
 }
@@ -259,7 +259,7 @@ bool TimelinePrivate::executeCurveMotionCommand()
 
   // send new command to motion
   bool isprepared = false;
-  if (isPlaying())
+  if (_executer->isPlaying())
     isprepared = prepareInterpolationCommand(_currentFrame);
   else
     isprepared = singleInterpolationCommand(_currentFrame);
@@ -535,7 +535,7 @@ void Timeline::setFPS(const int fps)
 
 void Timeline::waitForTimelineCompletion()
 {
-  _p->waitForExecuterCompletion();
+  _p->_executer->waitForExecuterCompletion();
 }
 
 void Timeline::registerOnStoppedCallback(PyObject *p)

@@ -24,7 +24,7 @@ class Box;
 class StateMachine;
 class Transition;
 
-class StateMachinePrivate : public asyncExecuter
+class StateMachinePrivate
 {
   friend class StateMachine;
 
@@ -62,6 +62,7 @@ class StateMachinePrivate : public asyncExecuter
     int loadTransitions(Box* state);
     void unloadTransitions(Box* state);
 
+    asyncExecuter*                  _executer;
     std::string                     _name;
     bool                            _isPaused;
     std::set<Box*>                  _states;

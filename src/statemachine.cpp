@@ -19,7 +19,7 @@ namespace qi
 {
 
 StateMachinePrivate::StateMachinePrivate(StateMachine *s)
-  : asyncExecuter(0),
+  : _executer(new asyncExecuter(0)),
     _name ("Unnamed-StateMachine"),
     _isPaused (false),
     _initialState (0),
@@ -36,6 +36,7 @@ StateMachinePrivate::StateMachinePrivate(StateMachine *s)
 
 StateMachinePrivate::~StateMachinePrivate()
 {
+  delete _executer;
 }
 
 bool StateMachinePrivate::addState(Box* state)
@@ -313,12 +314,12 @@ void StateMachinePrivate::run()
     return;
   }
 
-  if (!isPlaying())
+  if (!_executer->isPlaying())
   {
     /* It is safe to call updateState only when executer is not running */
     _timeOut = updateState(_initialState);
-    setInterval(_executerInterval);
-    playExecuter();
+    _executer->setInterval(_executerInterval);
+    _executer->playExecuter(boost::bind(&StateMachinePrivate::update, this));
   }
 
   qiLogDebug("qiCore.StateMachine") << "StateMachine Started : " << _name;

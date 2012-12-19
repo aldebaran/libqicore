@@ -20,15 +20,15 @@ class asyncExecuter
 {
   public:
     asyncExecuter(unsigned int interval);
-    virtual ~asyncExecuter();
+    ~asyncExecuter();
 
-    unsigned int getInterval();
+    unsigned int getInterval() const;
     void setInterval(unsigned int interval);
 
     void waitForExecuterCompletion();
     bool isPlaying();
 
-    void playExecuter();
+    void playExecuter(boost::function<bool (void)>);
     /*
      * Send the message to executer to pause as soon as possible
      * Note that when exiting this function, the worker thread may
@@ -44,9 +44,6 @@ class asyncExecuter
     void waitUntilPauseExecuter();
     void stopExecuter();
 
-  protected:
-    virtual bool update() = 0;
-
   private:
     void executerLoop();
 
@@ -61,6 +58,9 @@ class asyncExecuter
     bool                                  _isPlaying;
 
     unsigned int                          _interval;
+    bool                                  _mustExit;
+
+    boost::function<bool (void)>          _callback;
 };
 
 };

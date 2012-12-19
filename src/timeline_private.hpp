@@ -31,9 +31,11 @@ namespace AL
 namespace qi
 {
 
-class TimelinePrivate : public asyncExecuter
+class TimelinePrivate
 {
 public:
+  friend class Timeline;
+
   enum MotionResourcesHandler
   {
     PASSIVE,
@@ -103,6 +105,7 @@ private:
   void killTimer();
   void TimerLoop(int interval);
 
+  asyncExecuter*                        _executer;
   boost::shared_ptr<AL::ALMemoryProxy>  _memoryProxy;
   boost::shared_ptr<AL::ALMotionProxy>  _motionProxy;
   int                                   _fps;
