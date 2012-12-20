@@ -27,11 +27,19 @@ class Interval:
 class State:
 
     def __init__(self):
+        self.name = ""
         self.begin = -1
         self.end = -1
         self.labels = []
         self.obj_nb = 0
         self.objects = []
+
+class Flag:
+
+    def __init__(self, state_name, begin_frame, labels):
+        self.state_name = state_name
+        self.begin_frame = begin_frame
+        self.labels = labels
 
 class NewFormatGenerator:
     """ Do a traversal of xar objects and write the new format after
@@ -60,10 +68,9 @@ class NewFormatGenerator:
         if (node.behavior_layers):
             self._convert_timelinelayers(node)
 
-        if (node.actuator_list):
-            with codecs.open(node.name + "_timeline.xml",
-                              encoding='utf-8', mode='w') as fti:
-                file_writer.write_timeline(fti, node)
+        with codecs.open(node.name + "_timeline.xml",
+                         encoding='utf-8', mode='w') as fti:
+            file_writer.write_timeline(fti, node)
 
     def _visit_box(self, node):
         with codecs.open(node.name + ".py",
@@ -124,8 +131,22 @@ class NewFormatGenerator:
 
         state_list = self._convert_to_statemachine(interval_list, last_frame)
 
-        if (node.fps == None):
+        # Create a name for each state and associate frames with state in timeline
+        for index,state in enumerate(state_list):
+
+            state.name = node.name + "_state_" + str(index)
+
+            # First state does not need a flag, just handled by the run
+            if state.begin == 1:
+                continue
+            node.flags.append(Flag(state.name, state.begin, state.labels))
+
+        # Create an empty timeline if needed
+        if not node.actuator_list:
             node.fps = 25
+            node.start_frame = str(1)
+            node.enable = str(1)
+            node.end_frame = str(-1)
 
         with codecs.open(node.name + "_state_machine.xml",
                          encoding='utf-8', mode='w') as fst:

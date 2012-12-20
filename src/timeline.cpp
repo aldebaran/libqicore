@@ -29,7 +29,9 @@ TimelinePrivate::TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker)
     _name("Timeline"),
     _resourcesAcquisition(PASSIVE),
     _methodMonitor(),
-    _onStoppedCallback(0)
+    _onStoppedCallback(0),
+    _framesFlagsMap(),
+    _stateMachine(0)
 {
   try
   {
@@ -204,6 +206,16 @@ int TimelinePrivate::getFPS() const
 bool TimelinePrivate::update(void)
 {
   boost::unique_lock<boost::recursive_mutex> _lock(_methodMonitor);
+
+  /* Send commands to the StateMachine if needed */
+  if (_stateMachine)
+  {
+    std::map<int, std::string>::const_iterator it = _framesFlagsMap.find(_currentFrame);
+
+    if (it != _framesFlagsMap.end())
+      _stateMachine->goToStateName(it->second);
+  }
+
   if (_enabled == false)
   {
     // update is not necessary
@@ -466,6 +478,11 @@ void TimelinePrivate::registerOnStoppedCallback(PyObject *p)
   _onStoppedCallback.assignCallback(p);
 }
 
+void TimelinePrivate::addFlag(int frame, std::string stateName)
+{
+  _framesFlagsMap[frame] = stateName;
+}
+
 /* -- Public -- */
 
 Timeline::Timeline(boost::shared_ptr<AL::ALBroker> broker)
@@ -541,6 +558,16 @@ void Timeline::waitForTimelineCompletion()
 void Timeline::registerOnStoppedCallback(PyObject *p)
 {
   _p->registerOnStoppedCallback(p);
+}
+
+void Timeline::addFlag(int frame, std::string stateName)
+{
+  _p->addFlag(frame, stateName);
+}
+
+void Timeline::setStateMachine(StateMachine *sm)
+{
+  _p->_stateMachine = sm;
 }
 
 };

@@ -18,6 +18,7 @@
 #include <alproxies/almotionproxy.h>
 
 #include <qicore/timeline.hpp>
+#include <qicore/statemachine.hpp>
 
 #include "actuatorcurve.hpp"
 #include "asyncexecuter.hpp"
@@ -75,8 +76,10 @@ public:
   /* Function that will be called when Timeline is finished */
   void registerOnStoppedCallback(PyObject*);
 
+  void addFlag(int frame, std::string stateName);
+
 private:
-  virtual bool update(void);
+  bool update(void);
 
   void killMotionOrders();
   void updateFrameInSTM(void);
@@ -131,6 +134,9 @@ private:
   MotionResourcesHandler                _resourcesAcquisition;
   mutable boost::recursive_mutex        _methodMonitor;
   PythonCallback                        _onStoppedCallback;
+
+  std::map<int, std::string>            _framesFlagsMap;
+  StateMachine*                         _stateMachine;
 };
 
 };

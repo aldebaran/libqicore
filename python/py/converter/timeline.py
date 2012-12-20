@@ -30,6 +30,7 @@ class Timeline(node.Node):
         self.watches = ''
         self.behavior_layers = []
         self.actuator_list = []
+        self.flags = []
         self._function_map = { 'watches' : Timeline.attach_watches,
                                'ActuatorCurve' : Timeline.attach_actuator_curve,
                                'Key' : Timeline.attach_key,

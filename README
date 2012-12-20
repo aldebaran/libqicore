@@ -176,8 +176,10 @@ To do:
 - The goTo in the stateMachine can be faster if we store labels in a map, instead
   of going though each box.
 
-- A better FPS handling, if a box change the FPS the stateMachine is not affected
-  at the moment but the timed transitions has to be changed
+- The goTo in StateMachine and Timeline is a bit messy, it is the StateMachine
+  that handles the goto, and then we handle the timeline. May be it will be
+  cleaner to let the Timeline handle the goTo and contact the StateMachine if
+  we need to change the state
 
 - To be able to control the StateMachine or the Timeline of a parent, each box
   have a pointer to its parent. But this pointer can be replaced by a signal.
@@ -213,6 +215,12 @@ To know:
 
 - Connections between boxes are done when loading the state associated and
   destroyed when leaving the state
+
+- The Timeline have flags to trigger each state of the StateMachine at the
+  right time. A flag is the association of a state name and the frame you want
+  to trigger the transition. The only exception is the first frame, there is
+  no flag for it, cause it is the initial state and the state is entered by
+  calling run on the stateMachine
 
 Hacks:
 ------

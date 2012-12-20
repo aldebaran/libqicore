@@ -48,19 +48,17 @@ class StateMachinePrivate
     int goToLabel(std::string label);
     int goToLabel(int label);
     bool goToState(Box* state);
+    bool goToStateName(std::string name);
     bool executeTransition(Transition* tr);
 
     /* Function will be called when StateMachine entre a new state */
     void registerNewStateCallback(PyObject*);
 
-  protected:
-    /* CallBack function for timed transitions */
-    virtual bool update();
-
   private:
-    int updateState(Box* state);
-    int loadTransitions(Box* state);
+    void updateState(Box* state);
+    void loadTransitions(Box* state);
     void unloadTransitions(Box* state);
+    bool update();
 
     asyncExecuter*                  _executer;
     std::string                     _name;
@@ -69,8 +67,6 @@ class StateMachinePrivate
     std::set<Box*>                  _finalStates;
     Box*                            _initialState;
     Box*                            _currentState;
-    int                             _timeOut;
-    Transition*                     _timedTransition;
     StateMachine*                   _parent;
     PythonCallback                  _newStateCallback;
     unsigned int                    _executerInterval;

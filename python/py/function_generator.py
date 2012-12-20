@@ -21,11 +21,13 @@ def generate_input_method(method_type, name):
     def on_start(self, param):
         if(not self._safeCallOfUserMethod("onInput_" + name, param)):
             self.releaseResource()
+        if (self.hasStateMachine()):
+            self.getStateMachine().run()
         if (self.hasTimeline()):
             self.getTimeline().play()
         if (self.hasStateMachine()):
-            self.getStateMachine().run()
             self.stimulateIO(name, param)
+
 
     def on_stop(self, param):
         if(not self._safeCallOfUserMethod("onInput_" + name, param)):

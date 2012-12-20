@@ -24,6 +24,7 @@ namespace qi
 {
 
 class TimelinePrivate;
+class StateMachine;
 
 class QICORE_API Timeline
 {
@@ -47,6 +48,9 @@ class QICORE_API Timeline
 
     /* Function that will be called when Timeline is finished */
     void registerOnStoppedCallback(PyObject*);
+
+    void addFlag(int frame, std::string stateName);
+    void setStateMachine(StateMachine* sm);
 
   private:
     TimelinePrivate* _p;

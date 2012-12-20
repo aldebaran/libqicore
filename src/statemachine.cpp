@@ -24,8 +24,6 @@ StateMachinePrivate::StateMachinePrivate(StateMachine *s)
     _isPaused (false),
     _initialState (0),
     _currentState (0),
-    _timeOut (0),
-    _timedTransition (0),
     _parent (s),
     _newStateCallback (0),
     _executerInterval(1),
@@ -124,18 +122,17 @@ bool StateMachinePrivate::goToState(Box *state)
   return true;
 }
 
-int StateMachinePrivate::updateState(Box* state)
+void StateMachinePrivate::updateState(Box* state)
 {
   /* Stop the timeOut timer if needed */
   Box* toLoad = state;
   Box* toUnload = 0;
-  int timeOut = -1;
 
   qiLogDebug("qiCore.StateMachine") << "Transition from state: " << (_currentState ? _currentState->getName() : "Null")
                                       << " to state: " <<  (state ? state->getName() : "Null") << std::endl;
   toUnload = _currentState;
   unloadTransitions(toUnload);
-  timeOut = loadTransitions(toLoad);
+  loadTransitions(toLoad);
   _currentState = state;
 
   if (toLoad)
@@ -146,7 +143,6 @@ int StateMachinePrivate::updateState(Box* state)
   _newStateCallback();
 
   qiLogDebug("qiCore.StateMachine") << "Transition Done";
-  return timeOut;
 }
 
 int StateMachinePrivate::goToLabel(std::string label)
@@ -167,6 +163,24 @@ int StateMachinePrivate::goToLabel(std::string label)
           return -1;
         return (*it)->getIntervalBegin();
       }
+    }
+  }
+
+  return -1;
+}
+
+bool StateMachinePrivate::goToStateName(std::string name)
+{
+  qiLogDebug("qiCore.StateMachine") << "goToStateName: " << name << std::endl;
+
+  for (std::set<Box*>::const_iterator it = _states.begin();
+        it != _states.end(); it++)
+  {
+    if ((*it)->getName() == name)
+    {
+      if (!goToState(*it))
+        return -1;
+      return (*it)->getIntervalBegin();
     }
   }
 
@@ -221,10 +235,6 @@ bool StateMachinePrivate::update()
 {
   Box* next = 0;
 
-  /* Update time left for timed transition */
-  if (_timedTransition)
-    _timeOut -= _executerInterval;
-
   /* Take the next state in locked queue */
   {
     boost::mutex::scoped_lock lock(_nextStateQueueMutex);
@@ -236,58 +246,24 @@ bool StateMachinePrivate::update()
   }
   /* If state is not null, go to this state */
   if (next)
-  {
-    /* This timed transition is not applicable anymore */
-    _timedTransition = 0;
-    _timeOut = updateState(next);
-  }
-  /* Else check that there is no timed transitions */
-  else
-  {
-    if (_timeOut <= 0 && _timedTransition && !_isPaused)
-    {
-      if (_timedTransition->getFromState() == _currentState)
-      {
-        next = _timedTransition->getToState();
-        _timedTransition = 0;
-        _timeOut = updateState(next);
-      }
-    }
-  }
+    updateState(next);
 
   return true;
 }
 
-int StateMachinePrivate::loadTransitions(Box* state)
+void StateMachinePrivate::loadTransitions(Box* state)
 {
   if (!state)
-    return -1;
+    return;
 
   std::list<Transition*>& trs = state->getTransitions();
-  int timeOut = -1;
 
   for (std::list<Transition*>::iterator it = trs.begin();
         it != trs.end(); it++)
   {
     /* Set State machine for Event Callback */
     (*it)->_p->load(_parent);
-
-    if ((*it)->hasTimeOut())
-    {
-      if (timeOut == -1)
-      {
-        timeOut = (*it)->getTimeOut();
-        _timedTransition = *it;
-      }
-      else if ((*it)->getTimeOut() < timeOut)
-      {
-        timeOut = (*it)->getTimeOut();
-        _timedTransition = *it;
-      }
-    }
   }
-
-  return timeOut;
 }
 
 void StateMachinePrivate::unloadTransitions(Box* state)
@@ -317,7 +293,7 @@ void StateMachinePrivate::run()
   if (!_executer->isPlaying())
   {
     /* It is safe to call updateState only when executer is not running */
-    _timeOut = updateState(_initialState);
+    updateState(_initialState);
     _executer->setInterval(_executerInterval);
     _executer->playExecuter(boost::bind(&StateMachinePrivate::update, this));
   }
@@ -337,8 +313,7 @@ void StateMachinePrivate::stop()
 
 void StateMachinePrivate::pause()
 {
-  _isPaused = true;
-  _timedTransition = 0;
+  /* Just do nothing for the moment */
 }
 
 void StateMachinePrivate::registerNewStateCallback(PyObject* p)
@@ -406,6 +381,11 @@ void StateMachine::pause()
 bool StateMachine::goToState(Box *state)
 {
   return _p->goToState(state);
+}
+
+bool StateMachine::goToStateName(std::string name)
+{
+  return _p->goToStateName(name);
 }
 
 void StateMachine::setName(std::string name)

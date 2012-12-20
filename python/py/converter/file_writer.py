@@ -123,6 +123,7 @@ def write_state_meta(f, state):
         f.write(u"\t<Label Name=\"{}\" />{}"
                 .format(label, os.linesep))
 
+
     for diag in state.objects:
         for link in diag.links:
             f.write((u"\t<Link InputObject=\"{}\" InputName=\"{}\""
@@ -153,6 +154,13 @@ def write_timeline(f, timeline):
                     timeline.scale,
                     os.linesep))
 
+    for flag in timeline.flags:
+        f.write(u"\t<Flag state_name=\"{}\" begin_frame=\"{}\" labels=\"{}\" />{}"
+                .format(flag.state_name,
+                        flag.begin_frame,
+                        ";".join(flag.labels),
+                        os.linesep))
+
     for actuator in timeline.actuator_list:
         f.write((u"\t<ActuatorCurve name=\"{}\" actuator=\"{}\""
                  + u" recordable=\"{}\" mute=\"{}\" alwaysVisible=\"{}\" >{}")
@@ -172,12 +180,6 @@ def write_timeline(f, timeline):
         f.write(u"\t</ActuatorCurve>{}".format(os.linesep))
     f.write(u"</Timeline>{}".format(os.linesep))
 
-def _compute_timeout(state, fps):
-    if (int(fps) == 0):
-        return -1
-    frames = state.end - state.begin
-    fpms = float(fps) / 1000
-    return int(frames / fpms)
 
 def write_state_machine(f, machine_name, state_list, fps):
     """ Write meta informations about a stateMachine
@@ -194,27 +196,18 @@ def write_state_machine(f, machine_name, state_list, fps):
 
     timeout_table = []
 
-    for i in range(l):
-        state_name = machine_name + "_state_" + str(i)
+    for state in state_list:
         f.write(u"\t<State Name=\"{}\" />{}"
-                .format(state_name,
+                .format(state.name,
                         os.linesep))
-        with codecs.open(state_name + ".xml",
+        with codecs.open(state.name + ".xml",
                          encoding='utf-8', mode='w') as sfile:
-            write_state_meta(sfile, state_list[i])
-        timeout_table.append(_compute_timeout(state_list[i], fps))
+            write_state_meta(sfile, state)
 
     f.write(u"\t<InitialState Name=\"{}\" />{}"
             .format(machine_name + "_state_0", os.linesep))
     f.write(u"\t<FinalState Name=\"{}\" />{}"
             .format(machine_name + "_state_" + str(l - 1), os.linesep))
-
-    for i in range(l - 1):
-        f.write(u"\t<Transition From=\"{}\" To=\"{}\" TimeOut=\"{}\" />{}"
-                .format(machine_name + "_state_" + str(i),
-                        machine_name + "_state_" + str(i + 1),
-                        timeout_table[i],
-                        os.linesep))
 
     f.write(u"</StateMachine>" + os.linesep)
 

@@ -102,29 +102,40 @@ class ObjectFactory(object):
         topdict[waiter.getName()] = waiter
         return waiter
 
-    def _parse_timeline(self, box_name, parent_name):
+    def _parse_timeline(self, box_name, parent_name, state_machine):
         if (box_name in self._declared_objects):
             return
 
         self._declared_objects.add(box_name)
         try:
-            t_file = codecs.open(self._folder_name + box_name + ".xml",
-                                 encoding="utf-8", mode='r')
+            dom = xml.dom.minidom.parse(self._folder_name + box_name + ".xml")
         except IOError:
             return None
-        t_file.close()
 
+        root = dom.getElementsByTagName("Timeline")[0]
         timeline_obj = qicore.Timeline(self._broker.getALBroker())
+
+        for flag in root.getElementsByTagName("Flag"):
+            state_name = flag.attributes["state_name"].value
+            begin_frame = flag.attributes["begin_frame"].value
+            labels = flag.attributes["labels"].value
+            label_list = labels.split(";")
+            timeline_obj.addFlag(int(begin_frame), str(state_name))
+
         timeline_obj.loadFromFile(str(self._folder_name + box_name + ".xml"))
         timeline_obj.registerOnStoppedCallback(self._box_dict[parent_name].__onTimelineStopped__)
         self._box_dict[parent_name].setTimeline(timeline_obj)
         self._timeline_dict[box_name] = timeline_obj
+
+        if state_machine:
+            timeline_obj.setStateMachine(state_machine)
 
 
     def _parse_state(self, state_name):
         state = StateClass(state_name)
         dom = xml.dom.minidom.parse(self._folder_name + state_name + ".xml")
         root = dom.getElementsByTagName('State')[0]
+        state.setName(str(state_name))
 
         for obj in root.getElementsByTagName("Object"):
             objname = obj.attributes["Name"].value
@@ -167,7 +178,7 @@ class ObjectFactory(object):
 
     def _parse_statemachine(self, box_name, parent_box_name):
         if (box_name in self._declared_objects):
-            return
+            return None
 
         self._declared_objects.add(box_name)
         sm_obj = qicore.StateMachine()
@@ -175,7 +186,7 @@ class ObjectFactory(object):
         try:
             dom = xml.dom.minidom.parse(self._folder_name + box_name + ".xml")
         except IOError:
-            return
+            return None
 
         root = dom.getElementsByTagName('StateMachine')[0]
         for state in root.getElementsByTagName('State'):
@@ -206,6 +217,7 @@ class ObjectFactory(object):
         sm_obj.registerNewStateCallback(self._box_dict[parent_box_name].__onNewState__)
 
         self._statemachine_dict[box_name] = sm_obj
+        return sm_obj
 
     def _parse_box(self, box_name):
         if (box_name in self._declared_objects):
@@ -270,7 +282,7 @@ class ObjectFactory(object):
             box_object.setParentBox(parent_box)
         self._box_stack.append(box_object)
 
-        self._parse_timeline(box_name + "_timeline", box_name)
-        self._parse_statemachine(box_name + "_state_machine", box_name)
+        state_machine = self._parse_statemachine(box_name + "_state_machine", box_name)
+        self._parse_timeline(box_name + "_timeline", box_name, state_machine)
         self._box_stack.pop()
 
