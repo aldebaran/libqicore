@@ -7,8 +7,8 @@
 
 #include <qicore/transition.hpp>
 #include <qicore/box.hpp>
-#include "box_private.hpp"
-#include "transition_private.hpp"
+#include "box_p.hpp"
+#include "transition_p.hpp"
 
 namespace qi
 {

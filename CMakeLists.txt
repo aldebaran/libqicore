@@ -18,14 +18,22 @@ qi_install_header(${PUBLIC_HEADERS})
 
 qi_create_lib(qicore SRC
   ${PUBLIC_HEADERS}
-  src/timeline_private.hpp src/timeline.cpp
-  src/xmlutils.hpp src/xmlutils.cpp
-  src/actuatorcurve.hpp src/actuatorcurve.cpp
-  src/statemachine_private.hpp src/statemachine.cpp
-  src/transition_private.hpp src/transition.cpp
-  src/asyncexecuter.hpp src/asyncexecuter.cpp
-  src/box_private.hpp src/box.cpp
-  src/pythoncallback.hpp src/pythoncallback.cpp)
+  src/timeline_p.hpp
+  src/timeline.cpp
+  src/xmlutils.hpp
+  src/xmlutils.cpp
+  src/actuatorcurve.hpp
+  src/actuatorcurve.cpp
+  src/statemachine_p.hpp
+  src/statemachine.cpp
+  src/transition_p.hpp
+  src/transition.cpp
+  src/asyncexecuter.hpp
+  src/asyncexecuter.cpp
+  src/box_p.hpp
+  src/box.cpp
+  src/pythoncallback.hpp
+  src/pythoncallback.cpp)
 
 qi_use_lib(qicore QI ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
 

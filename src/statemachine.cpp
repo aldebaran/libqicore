@@ -11,9 +11,9 @@
 #include <qicore/transition.hpp>
 #include <qicore/statemachine.hpp>
 
-#include "statemachine_private.hpp"
-#include "transition_private.hpp"
-#include "box_private.hpp"
+#include "statemachine_p.hpp"
+#include "transition_p.hpp"
+#include "box_p.hpp"
 
 namespace qi
 {

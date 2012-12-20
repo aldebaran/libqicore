@@ -9,10 +9,8 @@
 # define STATE_MACHINE_H_
 
 # include <string>
-
-# include <Python.h>
-
 # include <qicore/api.hpp>
+# include <Python.h>
 
 namespace qi
 {

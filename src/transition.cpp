@@ -6,7 +6,7 @@
 #include <qicore/statemachine.hpp>
 #include <qicore/transition.hpp>
 
-#include "transition_private.hpp"
+#include "transition_p.hpp"
 
 namespace qi
 {
