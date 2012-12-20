@@ -34,15 +34,22 @@ class State:
         self.objects = []
 
 class NewFormatGenerator:
+    """ Do a traversal of xar objects and write the new format after
+        converting the behaviorLayers in stateMachine
+    """
 
     def __init__(self, boxes):
         self._boxes = boxes
 
     def generate_main(self):
+        """ Generate the main.py file
+        """
         with codecs.open("main.py", encoding='utf-8', mode='w') as fmain:
             file_writer.write_main(fmain)
 
     def visit(self, node):
+        """ Visit a node, and choose the good method to apply
+        """
         if not node:
             return
         methname = "_visit_%s" % node.node_name.lower()
@@ -56,7 +63,7 @@ class NewFormatGenerator:
         if (node.actuator_list):
             with codecs.open(node.name + "_timeline.xml",
                               encoding='utf-8', mode='w') as fti:
-                file_writer.write_actuatorList(fti, node)
+                file_writer.write_timeline(fti, node)
 
     def _visit_box(self, node):
         with codecs.open(node.name + ".py",
@@ -75,6 +82,11 @@ class NewFormatGenerator:
             self.visit(child)
 
     def _convert_timelinelayers(self, node):
+        """ Convert the behaviorsLayers in a timeline into
+            a list of intervals
+
+            :param node: the timline
+        """
         last_frame = -1
         interval_list = []
         for layer in node.behavior_layers:
@@ -121,6 +133,12 @@ class NewFormatGenerator:
                                             state_list, node.fps)
 
     def _convert_to_statemachine(self, interval_list, end_frame):
+        """ Convert an interval list in a state list
+
+            :param interval_list: list of intervals to convert
+            :param end_frame: last frame of the timelime
+            :returns: a list of states
+        """
         if (len(interval_list) == 0):
             return []
 

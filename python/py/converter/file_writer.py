@@ -9,6 +9,11 @@ import os
 import cgi
 
 def write_box_meta(f, node):
+    """ Write meta informations about a box
+
+        :param f: open file to write informations
+        :param node: the box
+    """
     if (node.tooltip is None):
         node.tooltip = ""
 
@@ -27,32 +32,32 @@ def write_box_meta(f, node):
                     node.y_pos,
                     os.linesep))
 
-    for input in node.inputs:
-        if (input.tooltip is None):
-            input.tooltip = ""
-        if input.stm_value_name:
+    for inp in node.inputs:
+        if (inp.tooltip is None):
+            inp.tooltip = ""
+        if inp.stm_value_name:
             f.write((u"\t<Input name=\"{}\" type=\"{}\" type_size=\"{}\""
                  + u" nature=\"{}\" stm_value_name=\"{}\" inner=\"{}\""
                  + u" tooltip=\"{}\" id=\"{}\" />{}")
-                .format(input.name,
-                        input.type,
-                        input.type_size,
-                        input.nature,
-                        input.stm_value_name,
-                        input.inner,
-                        cgi.escape(input.tooltip, quote=True),
-                        input.id,
+                .format(inp.name,
+                        inp.type,
+                        inp.type_size,
+                        inp.nature,
+                        inp.stm_value_name,
+                        inp.inner,
+                        cgi.escape(inp.tooltip, quote=True),
+                        inp.id,
                         os.linesep))
         else:
             f.write((u"\t<Input name=\"{}\" type=\"{}\" type_size=\"{}\""
                  + u" nature=\"{}\" inner=\"{}\" tooltip=\"{}\" id=\"{}\" />{}")
-                .format(input.name,
-                        input.type,
-                        input.type_size,
-                        input.nature,
-                        input.inner,
-                        cgi.escape(input.tooltip, quote=True),
-                        input.id,
+                .format(inp.name,
+                        inp.type,
+                        inp.type_size,
+                        inp.nature,
+                        inp.inner,
+                        cgi.escape(inp.tooltip, quote=True),
+                        inp.id,
                         os.linesep))
 
     for output in node.outputs:
@@ -97,23 +102,28 @@ def write_box_meta(f, node):
 
     f.write(u"</Box>" + os.linesep)
 
-def write_state_meta(f, node):
+def write_state_meta(f, state):
+    """ Write meta informations about a state
+
+        :param f: open file to write informations
+        :param state: the state
+    """
     f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
     f.write(u"<State>{}".format(os.linesep))
 
-    for diag in node.objects:
+    for diag in state.objects:
         for box in diag.boxes:
             f.write(u"\t<Object Name=\"{}\" />{}"
                     .format(box.name, os.linesep))
 
     f.write(u"\t<Interval begin=\"{}\" end=\"{}\" />{}"
-            .format(node.begin, node.end, os.linesep))
+            .format(state.begin, state.end, os.linesep))
 
-    for label in node.labels:
+    for label in state.labels:
         f.write(u"\t<Label Name=\"{}\" />{}"
                 .format(label, os.linesep))
 
-    for diag in node.objects:
+    for diag in state.objects:
         for link in diag.links:
             f.write((u"\t<Link InputObject=\"{}\" InputName=\"{}\""
                      + u" OutputObject=\"{}\" OutputName=\"{}\" />{}")
@@ -124,21 +134,26 @@ def write_state_meta(f, node):
                             os.linesep))
     f.write(u"</State>" + os.linesep)
 
-def write_actuatorList(f, node):
+def write_timeline(f, timeline):
+    """ Write the timeline file
+
+        :param f: open file to write informations
+        :param timeline: the timeline
+    """
     f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
     f.write((u"<Timeline fps=\"{}\" resources_acquisition=\"{}\" size=\"{}\""
              + u" enable=\"{}\" start_frame=\"{}\" end_frame=\"{}\""
              + u" scale=\"{}\" >{}")
-            .format(node.fps,
-                    node.resources_acquisition,
-                    node.size,
-                    node.enable,
-                    node.start_frame,
-                    node.end_frame,
-                    node.scale,
+            .format(timeline.fps,
+                    timeline.resources_acquisition,
+                    timeline.size,
+                    timeline.enable,
+                    timeline.start_frame,
+                    timeline.end_frame,
+                    timeline.scale,
                     os.linesep))
 
-    for actuator in node.actuator_list:
+    for actuator in timeline.actuator_list:
         f.write((u"\t<ActuatorCurve name=\"{}\" actuator=\"{}\""
                  + u" recordable=\"{}\" mute=\"{}\" alwaysVisible=\"{}\" >{}")
                 .format(actuator.name,
@@ -165,6 +180,13 @@ def _compute_timeout(state, fps):
     return int(frames / fpms)
 
 def write_state_machine(f, machine_name, state_list, fps):
+    """ Write meta informations about a stateMachine
+
+        :param f: open file to write informations
+        :param machine_name: name of the state machine
+        :param state_list: list of the states in the state machine
+        :param fps: FPS of the timeline, useful to compute timeout
+    """
     f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
     f.write(u"<StateMachine>" + os.linesep)
 
@@ -198,6 +220,11 @@ def write_state_machine(f, machine_name, state_list, fps):
 
 
 def write_main(fmain):
+    """ Write the main file of the behavior
+
+        :param fmain: open file to write the main
+    """
+
     fmain.write(u"#!/usr/bin/env python" + os.linesep
             + u"# -*- coding: utf-8 -*-" + os.linesep + os.linesep
             + u"import os" + os.linesep

@@ -4,6 +4,10 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+""" This modules provides functions useful to patch code contained in a box
+.. module:: converter
+"""
+
 import os
 import re
 
@@ -45,6 +49,11 @@ def _replace_not_supported_code(box, code):
     return code
 
 def patch(box):
+    """ Patch the code in the box to be executed later with QiCore
+
+        :param box: the box that holds the code
+        :returns: the patched code as a string
+    """
     code = box.script.content
     code = code.lstrip()
     if not code:

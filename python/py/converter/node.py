@@ -4,7 +4,13 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+""" Contains a class that holds node informations
+.. module:: converter
+"""
+
 class Node(object):
+    """ Parent class of any object in the xar format
+    """
 
     def __init__(self, name):
         self.node_name = name

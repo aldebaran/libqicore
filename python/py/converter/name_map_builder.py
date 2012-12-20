@@ -10,6 +10,11 @@ import os
 import sys
 
 def format_name(name):
+    """ Format a name and erase not printable chars
+
+        :param name: name to format
+        :returns: formatted name
+    """
     if not name:
         return "unnamed_object"
 
@@ -23,18 +28,33 @@ def format_name(name):
     return pattern.sub('_', name)
 
 def find_port_name(box, port_id):
+    """ Find the name of the port designed by id in a box
+
+        :param box: box with ports
+        :param port_id: id of the port
+        :returns: name of the port as a string
+    """
     for port in box.inputs + box.outputs + box.parameters:
         if (port.id == port_id):
             return port.name
     return ""
 
 def find_input_nature(box, port_id):
+    """ Find the name of the input designed by id in a box
+
+        :param box: box with inputs
+        :param port_id: id of the port
+        :returns: name of the port as a string
+    """
     for port in box.inputs:
         if (port.id == port_id):
             return port.nature
     return ""
 
 class NameMapBuilder:
+    """ Do a traversal of xar objects and rename each objects
+        according to the new format convention
+    """
 
     def __init__(self):
         self._box_stack = []
@@ -66,9 +86,15 @@ class NameMapBuilder:
         return currentname
 
     def get_name_map(self):
+        """ Returns a map with names and associated objects
+
+            :returns: a map
+        """
         return self._boxes
 
     def visit(self, node):
+        """ Visit a node, and choose the good method to apply
+        """
         if not node:
             return
         methname = "_visit_%s" % node.node_name.lower()

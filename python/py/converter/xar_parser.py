@@ -15,6 +15,12 @@ import converter.behavior_layer as b_layer
 import converter.behavior_keyframe as b_keyframe
 
 def generate_tree_from_filename(filename):
+    """ Generates the reprenstation of the file designed by filename
+        in memory. Build a tree.
+
+        :param filename: name of the file to parse
+        :returns: the tree representing the file
+    """
     ofile = _check_open_file(filename)
     if not ofile:
         return None
@@ -33,6 +39,8 @@ def _check_open_file(filename):
         return True
 
 class XarHandler(xml.sax.handler.ContentHandler):
+    """ ContentHandler to parse the xar file
+    """
 
     def __init__(self):
         xml.sax.handler.ContentHandler.__init__(self)

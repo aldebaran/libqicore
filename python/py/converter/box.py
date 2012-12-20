@@ -4,10 +4,16 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+""" Contains a class that holds box informations
+.. module:: converter
+"""
+
 import converter.node as node
 import converter.xar_types as xar_types
 
 class Box(node.Node):
+    """ Stores informations about box in the xar format
+    """
 
     def __init__(self, attrs):
         super(Box, self).__init__("Box")

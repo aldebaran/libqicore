@@ -4,10 +4,16 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+""" Contains a class that holds diagram informations
+.. module:: converter
+"""
+
 import converter.node as node
 import converter.xar_types as xar_types
 
 class Diagram(node.Node):
+    """ Stores informations about diagram in the xar format
+    """
 
     def __init__(self, attrs):
         super(Diagram, self).__init__("Diagram")

@@ -4,8 +4,13 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
-# Helping class to handle optionnal values
+""" Contains types used in the xar format and meaning of some fields
+.. module:: converter
+"""
+
 class attributes:
+    """ Helping class to handle optionnal values
+    """
 
     def __init__(self, attrs):
         self._attrs = attrs
@@ -22,8 +27,9 @@ class script:
         self.language = None
         self.content = None
 
-# used for input and ouput
 class port:
+    """ Used to represent a input or output
+    """
 
     def __init__(self, name, type, type_size, nature, stm_value_name, inner, tooltip, id):
         self.name = name
