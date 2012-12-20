@@ -10,6 +10,13 @@ from converter.xar_types import ConnectionType, InputType
 from converter.xar_types import OutputType, ResourceMode
 
 def generate_input_method(method_type, name):
+    """ Generates an input method to bind to a box
+
+        :param method_type: type of the method to create
+        :param name: name of the method
+
+        :returns: the generated class method to bind
+    """
 
     def on_start(self, param):
         if(not self._safeCallOfUserMethod("onInput_" + name, param)):
@@ -38,6 +45,13 @@ def generate_input_method(method_type, name):
     return input_mmap[method_type]
 
 def generate_output_method(method_type, name):
+    """ Generates an output method to bind to a box
+
+        :param method_type: type of the method to create
+        :param name: name of the method
+
+        :returns: the generated class method to bind
+    """
 
     def stopped(self, param = None):
         if (self.hasTimeline()):
@@ -55,6 +69,12 @@ def generate_output_method(method_type, name):
     return output_mmap[method_type]
 
 def generate_resource_method(resource_type):
+    """ Generates a resource method to bind to a box
+
+        :param method_type: type of the method to create
+
+        :returns: the generated class method to bind
+    """
 
     def lock(self, resource_name):
         pass
@@ -107,6 +127,17 @@ def generate_resource_method(resource_type):
 
 def generate_connection_function(input_box, input_name, output_box,
                                  output_name, ctype):
+    """ Generates a connection function used to enable or disable
+        a enable a link between boxes
+
+        :param input_box: box with the input
+        :param input_name: name of the input in the box
+        :param output_box: box with the output
+        :param output_name: name of the output of the box
+        :param ctype: type
+
+        :returns: the generated function
+    """
     connect_fmap = { ConnectionType.INPUT : "connectInput",
                      ConnectionType.OUTPUT : "connectOutput",
                      ConnectionType.PARAMETER : "connectParameter"}
@@ -125,6 +156,9 @@ def generate_connection_function(input_box, input_name, output_box,
 
 
 class IOInfo:
+    """ Class that carry informations about input, outputs, parameters and
+        resources to assign to a box
+    """
     def __init__(self):
         self._inputs = []
         self._outputs = []
