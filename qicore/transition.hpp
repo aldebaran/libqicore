@@ -19,19 +19,25 @@ class TransitionPrivate;
 class StateMachine;
 class Box;
 
+/// A transition from one State to another
 class QICORE_API Transition
 {
   public:
+    /// Constructor, take the initial State as parameter
     Transition(Box* to);
     ~Transition();
 
+    /// Change the name of the transition
     void setName(std::string name);
+    /// Return the name of the transition
     std::string getName() const;
 
-
+    /// Trigger the transition, if that transition is loaded in a state machine
     void trigger();
 
+    /// Return the initial state
     Box* getFromState() const;
+    /// Return the targeted state
     Box* getToState() const;
 
     bool hasTimeOut() const;
