@@ -40,10 +40,6 @@ class QICORE_API Transition
     /// Return the targeted state
     Box* getToState() const;
 
-    bool hasTimeOut() const;
-    int getTimeOut() const;
-    void setTimeOut(int n);
-
     TransitionPrivate* _p;
 };
 

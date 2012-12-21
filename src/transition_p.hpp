@@ -36,8 +36,6 @@ class TransitionPrivate
     void setMachine(StateMachine* s);
 
     std::string   _name;
-    bool          _hasTimeOut;
-    int           _timeOut;
     StateMachine* _machine;
     Box*          _fromState;
     Box*          _toState;

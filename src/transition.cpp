@@ -13,8 +13,6 @@ namespace qi
 
 TransitionPrivate::TransitionPrivate(Transition* parent, Box* toState)
   : _name ("Unnamed-Transition"),
-    _hasTimeOut (false),
-    _timeOut (0),
     _machine (0),
     _toState (toState),
     _parent (parent)
@@ -86,22 +84,6 @@ Box* Transition::getFromState() const
 Box* Transition::getToState() const
 {
   return _p->getToState();
-}
-
-bool Transition::hasTimeOut() const
-{
-  return _p->_hasTimeOut;
-}
-
-int Transition::getTimeOut() const
-{
-  return _p->_timeOut;
-}
-
-void Transition::setTimeOut(int n)
-{
-  _p->_timeOut = n;
-  _p->_hasTimeOut = true;
 }
 
 void Transition::setName(std::string name)
