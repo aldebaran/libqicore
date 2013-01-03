@@ -103,7 +103,7 @@ TEST(QiStateMachine, TwentyLinearStates)
         break;
     }
 
-    if (i != 20)
+    if (i != 19)
       toSN[i]->trigger();
   }
 
