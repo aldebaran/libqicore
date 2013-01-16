@@ -10,11 +10,7 @@ set (_pyfiles
   "${CMAKE_CURRENT_SOURCE_DIR}/py/object_factory.py"
 )
 
-install( FILES
-  ${_pyfiles}
-  COMPONENT python
-  DESTINATION ${QI_SDK_LIB}
-)
+qi_install_python(${_pyfiles})
 
 # FIXME: maybe use a "configure" here?
 add_custom_target(copy-python-naoqi ALL
