@@ -47,3 +47,5 @@ qi_stage_lib(qicore)
 
 add_subdirectory("python")
 add_subdirectory("tests")
+
+add_subdirectory("services/logger")
