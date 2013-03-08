@@ -3,6 +3,7 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
+#include <queue>
 #include <almath/tools/altrigonometry.h>
 #include <alcommon/alproxy.h>
 #include <alcommon/albroker.h>

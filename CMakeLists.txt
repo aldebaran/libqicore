@@ -16,7 +16,7 @@ set(PUBLIC_HEADERS
 
 qi_install_header(${PUBLIC_HEADERS})
 
-qi_create_lib(qicore SRC
+qi_create_lib(qicore SHARED SRC
   ${PUBLIC_HEADERS}
   src/timeline_p.hpp
   src/timeline.cpp

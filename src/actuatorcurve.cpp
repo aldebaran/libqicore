@@ -259,13 +259,12 @@ float ActuatorCurve::getInterpolatedValue(const int indexKey, float valueIncreme
 
   if (keyIntervalSize > 1)
   {
-    // FIXME : startValue, minValue, maxValue
-    float startValue = 0.0f;
+    // FIXME : minValue, maxValue
     float minValue = -std::numeric_limits<float>::max();
     float maxValue = std::numeric_limits<float>::max();
 
     std::vector<float> actuatorValues = interpolator.interpolate(keyIntervalSize, leftKey, rightKey,
-      startValue, minValue, maxValue, valueIncrementLimit, 1);
+      minValue, maxValue, valueIncrementLimit, 1);
 
     return actuatorValues[indexKey - indexLeftKey];
   }
