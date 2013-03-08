@@ -43,6 +43,6 @@ class QICORE_API Transition
     TransitionPrivate* _p;
 };
 
-};
+}
 
 #endif /* !TRANSITION_H_ */

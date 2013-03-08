@@ -179,12 +179,12 @@ bool StateMachinePrivate::goToStateName(std::string name)
     if ((*it)->getName() == name)
     {
       if (!goToState(*it))
-        return -1;
+        return false;
       return (*it)->getIntervalBegin();
     }
   }
 
-  return -1;
+  return false;
 }
 
 int StateMachinePrivate::goToLabel(int label)

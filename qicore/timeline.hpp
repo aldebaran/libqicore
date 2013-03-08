@@ -69,6 +69,6 @@ class QICORE_API Timeline
     TimelinePrivate* _p;
 };
 
-};
+}
 
 #endif /* !TIMELINE_H_ */

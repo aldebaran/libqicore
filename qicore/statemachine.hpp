@@ -74,6 +74,6 @@ class QICORE_API StateMachine
     StateMachinePrivate        *_p;
 };
 
-};
+}
 
 #endif /* !STATE_MACHINE_H_ */

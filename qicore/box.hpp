@@ -85,6 +85,6 @@ class QICORE_API Box
     BoxPrivate*           _p;
 };
 
-};
+}
 
 #endif /* !BOX_H_ */
