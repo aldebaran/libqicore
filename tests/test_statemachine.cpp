@@ -196,7 +196,7 @@ TEST(QiStateMachine, RemoveFinal)
   {
     qi::os::msleep(1);
     timeOut--;
-    if (sm.getCurrentState() == s2)
+    if (sm.getCurrentState() == s3)
       break;
   }
 

@@ -5,6 +5,10 @@ project(LibQiCore)
 find_package(qibuild)
 qi_sanitize_compile_flags(HIDDEN_SYMBOLS)
 
+# Tests
+enable_testing()
+
+
 include_directories(".")
 
 set(PUBLIC_HEADERS
