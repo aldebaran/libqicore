@@ -8,6 +8,7 @@
 .. module:: converter
 """
 
+
 class attributes:
     """ Helping class to handle optionnal values
     """
@@ -21,13 +22,8 @@ class attributes:
         else:
             return None
 
-class script:
 
-    def __init__(self):
-        self.language = None
-        self.content = None
-
-class port:
+class IO:
     """ Used to represent a input or output
     """
 
@@ -41,90 +37,125 @@ class port:
         self.tooltip = tooltip
         self.id = id
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
 class resource:
 
-    def __init__(self, name, type, timeout):
+    def __init__(self, name, lock_type, timeout):
         self.name = name
-        self.type = type
+        self.lock_type = lock_type
         self.timeout = int(timeout)
 
-class parameter:
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
-    def __init__(self, name, inherits_from_parent, content_type, value,
-                 default_value, min, max, tooltip, id, custom_choice):
-        self.name = name
-        self.inherits_from_parent = inherits_from_parent
-        self.content_type = content_type
-        self.value = value
-        self.default_value = default_value
-        self.min = min
-        self.max = max
-        self.tooltip = tooltip
-        self.id = id
-        self.custom_choice = custom_choice
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
-class key:
 
-    def __init__(self, frame, value):
-        self.frame = frame
+class choice:
+
+    def __init__(self, value):
         self.value = value
 
-class actuatorCurve:
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
-    def __init__(self, name, actuator, recordable, mute, alwaysVisible):
-        self.name = name
-        self.actuator = actuator
-        self.recordable = recordable
-        self.mute = mute
-        self.alwaysVisible = alwaysVisible
-        self.keys = []
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+class tangent:
+
+    def __init__(self, side, interpType, abscissaParam, ordinateParam):
+        self.side = side
+        self.interpType = interpType
+        self.abscissaParam = abscissaParam
+        self.ordinateParam = ordinateParam
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class link:
 
-    def __init__(self, inputowner, indexofinput, outputowner, indexofoutput):
-        self.inputowner = inputowner
-        self.inputName = ""
+    def __init__(self, emitterID, indexofinput, receiverID, indexofoutput):
+        self.emitterID = emitterID
         self.indexofinput = indexofinput
-        self.outputowner = outputowner
-        self.outputName = ""
+        self.receiverID = receiverID
         self.indexofoutput = indexofoutput
+        self.emitterName = ""
+        self.signalName = ""
+        self.receiverName = ""
+        self.slotName = ""
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class IOType:
-    DYNAMIC = 0
-    BANG = 1
-    NUMBER = 2
-    STRING = 3
-    BITMAP = 4
-    SOUND = 5
+    DYNAMIC = u"0"
+    BANG = u"1"
+    NUMBER = u"2"
+    STRING = u"3"
+    BITMAP = u"4"
+    SOUND = u"5"
 
-class InputType:
-    ONLOAD = 0
-    UNDEF = 1
-    ONSTART = 2
-    ONSTOP = 3
-    STMVALUE = 4
 
-class OutputType:
-    UNDEF = 0
-    STOPPED = 1
-    PUNCTUAL = 2
-    RECURRENT = 3
+class InputNature:
+    ONLOAD = u"0"
+    UNDEF = u"1"
+    ONSTART = u"2"
+    ONSTOP = u"3"
+    STMVALUE = u"4"
+
+
+class OutputNature:
+    UNDEF = u"0"
+    STOPPED = u"1"
+    PUNCTUAL = u"2"
+    RECURRENT = u"3"
+
 
 class ParameterType:
-    BOOL = 0
-    INT = 1
-    DOUBLE = 2
-    STRING = 3
-    RESOURCE = 4
+    BOOL = u"0"
+    INT = u"1"
+    DOUBLE = u"2"
+    STRING = u"3"
+    RESOURCE = u"4"
+
 
 class ResourceMode:
-    LOCK = "Lock"
-    STOP_ON_DEMAND = "Stop on demand"
-    PAUSE_ON_DEMAND = "Pause on demand"
-    CALLBACK_ON_DEMAND = "Callback on demand"
+    LOCK = u"Lock"
+    STOP_ON_DEMAND = u"Stop on demand"
+    PAUSE_ON_DEMAND = u"Pause on demand"
+    CALLBACK_ON_DEMAND = u"Callback on demand"
 
-class ConnectionType:
-    INPUT = 0
-    OUTPUT = 1
-    PARAMETER = 2
 
+class ScriptLanguage:
+    CPLUSPLUS = u"0"
+    URBI = u"1"
+    RUBY = u"2"
+    DYNAMIC_LIBRARY = u"3"
+    PYTHON = u"4"
+    QICHAT = u"5"
+    NO_SCRIPT = u"6"
+
+
+class ContentType:
+    PYTHON_SCRIPT = u"0"
+    QICHAT_SCRIPT = u"1"
+    FLOW_DIAGRAM = u"2"
+    BEHAVIOR_SEQUENCE = u"3"
+    ANIMATION = u"4"

@@ -4,6 +4,6 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
-""" Contains all modules needed to convert a xar file
+""" Contains tests for qicore converter
 .. module:: converter
 """

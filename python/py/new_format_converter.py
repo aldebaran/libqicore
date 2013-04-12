@@ -12,9 +12,8 @@ import sys
 import os
 import distutils.dir_util
 
-import converter.xar_parser as xar_parser
-import converter.new_format_generator as nfgenerator
-import converter.name_map_builder as nmbuilder
+import converter.choregraphe_project_importer as crg_importer
+import converter.xar_format_generator as xar_format_generator
 
 
 def main():
@@ -33,22 +32,17 @@ def main():
     abspath = os.path.abspath(param[0])
     dest_dir = os.path.abspath(param[1])
 
-    root = xar_parser.generate_tree_from_filename(abspath)
+    root = crg_importer.import_behavior(abspath)
+
     if not root:
-        sys.stderr.write("Incorrect format, file must be in xar_version 3"
+        sys.stderr.write("Incorrect format, file must be in format_version 4"
                          + os.linesep)
         sys.exit(6)
 
-    nmb = nmbuilder.NameMapBuilder()
-    nmb.visit(root)
-
-    name_map = nmb.get_name_map()
-
-    nfg = nfgenerator.NewFormatGenerator(name_map)
+    xar_gen = xar_format_generator.XarFormatGenerator(root)
 
     distutils.dir_util.mkpath(dest_dir)
-    nfg.visit(root, dest_dir)
-    nfg.generate_entry_point(root, os.path.dirname(param[0]))
+    xar_gen.export_to_xar(dest_dir)
 
 if __name__ == "__main__":
     main()

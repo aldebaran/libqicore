@@ -5,11 +5,12 @@
 ## found in the COPYING file.
 
 """ Contains a class that holds diagram informations
-.. module:: converter
+.. module:: node
 """
 
 import converter.node as node
 import converter.xar_types as xar_types
+
 
 class Diagram(node.Node):
     """ Stores informations about diagram in the xar format
@@ -24,8 +25,8 @@ class Diagram(node.Node):
         self.links = []
         self.name = ""
 
-        self._function_map = { 'Box' : Diagram.attach_box,
-                               'Link' : Diagram.attach_link}
+        self._function_map = {'Box': Diagram.attach_box,
+                              'Link': Diagram.attach_link}
 
     def attach_box(self, box):
         self.boxes.append(box)
