@@ -50,3 +50,4 @@ add_subdirectory("tests")
 
 add_subdirectory("services/logger")
 add_subdirectory("services/behavior")
+add_subdirectory("services/tray")
