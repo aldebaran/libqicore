@@ -13,7 +13,7 @@
 
 #include <qicore-compat/timeline.hpp>
 #include "timeline_p.hpp"
-#include "xmlutils.hpp"
+#include "model/xmlutils.hpp"
 #include "actuatorcurve.hpp"
 
 namespace qi

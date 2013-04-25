@@ -4,9 +4,10 @@
  *
  */
 
+#include "serial.hpp"
+#include "model/xmlutils.hpp"
 #include "actuatorcurve.hpp"
-#include "xmlutils.hpp"
-#include <alserial/alserial.h>
+
 #include <alerror/alerror.h>
 #include <almath/tools/altrigonometry.h>
 #include <almathinternal/interpolations/alinterpolation.h>
