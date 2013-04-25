@@ -3,6 +3,7 @@
 #include <QThread>
 #include <qi/application.hpp>
 #include <qitype/genericobject.hpp>
+#include <qitype/objectfactory.hpp>
 #include <qimessaging/session.hpp>
 
 
@@ -72,6 +73,8 @@ public:
 QI_REGISTER_OBJECT(Tray, setIcon, setToolTip, showMessage, visible, setVisible);
 QI_TYPE_NOT_CLONABLE(Tray);
 
+QI_REGISTER_OBJECT_FACTORY_BUILDER(Tray);
+
 Tray::Tray()
 {
   visible.connect(boost::bind(&Tray::setVisible, this, _1));
@@ -110,12 +113,13 @@ int main(int argc, char** argv)
 {
   qi::Application app(argc, argv);
   QApplication a(argc, argv);
-  std::string name = "tray";
+  std::string name = "TrayService";
   if (argc > 2)
     name = argv[2];
   qi::Session s;
   s.listen("tcp://0.0.0.0:0");
   s.connect(argv[1]);
-  s.registerService(name, qi::GenericValuePtr(new Tray()).toObject());
+  s.registerService(name, qi::createObject("TrayService"));
+  //s.registerService(name, qi::GenericValuePtr(new Tray()).toObject());
   a.exec();
 }
