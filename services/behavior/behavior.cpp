@@ -66,24 +66,39 @@ public:
   ObjectPtr makeObject(const std::string& model, const std::string& factory);
   void loadObjects();
   void unloadObjects();
-  void setTransitions();
+  void setTransitions(bool debugmode);
   void removeTransitions();
   void loadFile(const std::string& path);
   void loadString(const std::string& data);
   void connect(const std::string& url);
   qi::GenericValue call(const std::string& objUid, const std::string& fun, std::vector<qi::GenericValue> args);
   qi::Session& session() { return *_session;};
+  /// Triggered when a transition occurrs, if transitions were set in debug mode.
+  qi::Signal<void (const std::string&, qi::GenericValue)> onTransition;
 private:
+  void transition(qi::GenericValue argument, const std::string& transitionId);
   BehaviorModel  _model;
   typedef std::map<std::string, ObjectPtr> ObjectMap;
   ObjectMap _objects;
-  typedef std::pair<ObjectPtr, Link> TransitionPtr;
+  /* Two transision modes:
+   * - Direct: link is a link to a connect(source, target, targetMethod)
+   * - Intercept: debug mode, link is a connect(source, &Behavior::transition)
+   */
+  struct TransitionPtr
+  {
+    ObjectPtr source;
+    ObjectPtr target;
+    Link      link;
+    std::string property; // target property name
+    unsigned int targetMethod; // or target method id
+    bool debug;
+  };
   typedef std::map<std::string, TransitionPtr> TransitionMap;
   TransitionMap _transitions;
   qi::Session* _session;
 };
 
-QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call);
+QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call, onTransition);
 QI_REGISTER_OBJECT_FACTORY_BUILDER(Behavior);
 
 
@@ -145,7 +160,7 @@ void Behavior::unloadObjects()
   _objects.clear();
 }
 
-void Behavior::setTransitions()
+void Behavior::setTransitions(bool debugmode)
 {
   qiLogDebug() << "setTransitions";
   if (!_transitions.empty())
@@ -161,20 +176,23 @@ void Behavior::setTransitions()
       throw std::runtime_error("No object " + t.dst.first);
     std::vector<qi::MetaSignal> srcSignals = src->metaObject().findSignal(t.src.second);
     std::vector<qi::MetaMethod> dstMethods = dst->metaObject().findMethod(t.dst.second);
-
+    // also lookup for a matching property
+    int propId = dst->metaObject().propertyId(t.dst.second);
+    const qi::MetaProperty* prop = dst->metaObject().property(propId);
     // fixme: handle properties as target
     if (srcSignals.empty())
       throw std::runtime_error("No signal " + t.src.second);
-    if (dstMethods.empty())
-      throw std::runtime_error("No method " + t.dst.second);
+    if (dstMethods.empty() && !prop)
+      throw std::runtime_error("No method or property " + t.dst.second);
     // find a compatible pair
     std::pair<unsigned, unsigned> best;
+    static const unsigned PROP_MATCH = 0xFFFFFFFF;
     float bestScore = 0;
     for (unsigned s=0; s<srcSignals.size(); ++s)
     {
+      std::string sigS = qi::signatureSplit(srcSignals[s].signature())[2];
       for (unsigned d=0; d<dstMethods.size(); ++d)
       {
-        std::string sigS = qi::signatureSplit(srcSignals[s].signature())[2];
         std::string sigD = dstMethods[d].parametersSignature();
         float score = Signature(sigS).isConvertibleTo(Signature(sigD));
         qiLogDebugF("scoring %s -> %s : %s", sigS, sigD, score);
@@ -184,11 +202,35 @@ void Behavior::setTransitions()
           best = std::make_pair(s, d);
         }
       }
+      if (prop)
+      {
+        std::string sigD = "(" + prop->signature() + ")";
+        float score = Signature(sigS).isConvertibleTo(Signature(sigD));
+        qiLogDebugF("scoring %s -> %s : %s", sigS, sigD, score);
+        if (score > bestScore)
+        {
+          bestScore = score;
+          best = std::make_pair(s, PROP_MATCH);
+        }
+      }
     }
     if (!bestScore)
       throw std::runtime_error("Could not match " + t.toString());
-    Link l = src->connect(srcSignals[best.first].uid(), qi::SignalSubscriber(dst, dstMethods[best.second].uid()));
-    _transitions[t.uid] = std::make_pair(src, l);
+    qiLogDebug() << "Best match " << best.second;
+    TransitionPtr& ptr = _transitions[t.uid];
+    ptr.debug = debugmode;
+    ptr.source = src;
+    ptr.target = dst;
+    if (best.second == PROP_MATCH)
+      ptr.property = t.dst.second;
+    else
+      ptr.targetMethod = dstMethods[best.second].uid();
+    // If target is a property, we need to use our bouncer to invoke setProperty
+    if (debugmode || best.second == PROP_MATCH)
+      ptr.link = src->connect(srcSignals[best.first].uid(),
+        qi::makeGenericFunction((boost::function<void(qi::GenericValue)>) boost::bind(&Behavior::transition, this, _1, t.uid)));
+    else
+      ptr.link = src->connect(srcSignals[best.first].uid(), qi::SignalSubscriber(dst, ptr.targetMethod));
   }
 }
 
@@ -196,7 +238,7 @@ void Behavior::removeTransitions()
 {
   foreach(TransitionMap::value_type& t, _transitions)
   {
-    t.second.first->disconnect(t.second.second);
+    t.second.source->disconnect(t.second.link);
   }
   _transitions.clear();
 }
@@ -263,6 +305,23 @@ void Behavior::loadString(const std::string& path)
   std::stringstream is;
   is.str(path);
   _model.load(is);
+}
+
+void Behavior::transition(qi::GenericValue arg, const std::string& transId)
+{
+  TransitionPtr t = _transitions[transId];
+  if (t.debug)
+    onTransition(transId, arg);
+
+  qiLogDebug() << "Intercepted transition " << transId << " to " << t.targetMethod;
+  if (!t.property.empty())
+    t.target->setProperty(t.property, arg);
+  else
+  {
+    qi::GenericFunctionParameters args;
+    args.push_back(qi::GenericValuePtr(arg.type, arg.value));
+    t.target->metaPost(t.targetMethod, args);
+  }
 }
 
 void BehaviorModel::clear()
