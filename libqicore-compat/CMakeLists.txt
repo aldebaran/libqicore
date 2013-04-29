@@ -16,7 +16,12 @@ set(PUBLIC_HEADERS
   qicore-compat/model/inputmodel.hpp
   qicore-compat/model/outputmodel.hpp
   qicore-compat/model/parametermodel.hpp
-  qicore-compat/model/resourcemodel.hpp)
+  qicore-compat/model/resourcemodel.hpp
+  qicore-compat/model/actuatorcurvemodel.hpp
+  qicore-compat/model/actuatorlistmodel.hpp
+  qicore-compat/model/animationmodel.hpp
+  qicore-compat/model/keymodel.hpp
+  qicore-compat/model/tangentmodel.hpp)
 
 qi_install_header(${PUBLIC_HEADERS})
 
@@ -57,7 +62,17 @@ qi_create_lib(qicore-compat SHARED SRC
   src/model/resourcemodel_p.hpp
   src/model/resourcemodel.cpp
   src/serial.hpp
-  src/serial.cpp)
+  src/serial.cpp
+  src/model/actuatorcurvemodel_p.hpp
+  src/model/actuatorcurvemodel.cpp
+  src/model/actuatorlistmodel_p.hpp
+  src/model/actuatorlistmodel.cpp
+  src/model/animationmodel_p.hpp
+  src/model/animationmodel.cpp
+  src/model/keymodel_p.hpp
+  src/model/keymodel.cpp
+  src/model/tangentmodel_p.hpp
+  src/model/tangentmodel.cpp)
 
 qi_use_lib(qicore-compat QI ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
 qi_stage_lib(qicore-compat)

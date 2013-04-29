@@ -4,6 +4,7 @@
 */
 
 #include <qicore-compat/model/contentmodel.hpp>
+#include <qicore-compat/model/animationmodel.hpp>
 
 #include "contentmodel_p.hpp"
 
@@ -62,6 +63,19 @@ namespace qi
   const std::string& ContentModel::getChecksum() const
   {
     return _p->_checksum;
+  }
+
+  AnimationModelPtr ContentModel::getAnimationModel()
+  {
+    if(_p->_type != ContentModel::ContentType_Animation)
+      return AnimationModelPtr();
+
+    AnimationModelPtr animation = AnimationModelPtr(new AnimationModel(_p->_dir + "/" + _p->_path));
+
+    if(!animation->loadFromFile())
+      return AnimationModelPtr();
+
+    return animation;
   }
 
   void ContentModel::setType(ContentType type)
