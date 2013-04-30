@@ -5,6 +5,7 @@
 
 #include <qicore-compat/model/contentmodel.hpp>
 #include <qicore-compat/model/animationmodel.hpp>
+#include <qicore-compat/model/behaviorsequencemodel.hpp>
 
 #include "contentmodel_p.hpp"
 
@@ -76,6 +77,19 @@ namespace qi
       return AnimationModelPtr();
 
     return animation;
+  }
+
+  BehaviorSequenceModelPtr ContentModel::getBehaviorSequenceModel()
+  {
+    if(_p->_type != ContentModel::ContentType_BehaviorSequence)
+      return BehaviorSequenceModelPtr();
+
+    BehaviorSequenceModelPtr behaviorSequence = BehaviorSequenceModelPtr(new BehaviorSequenceModel(_p->_dir + "/" + _p->_path));
+
+    if(!behaviorSequence->loadFromFile())
+      return BehaviorSequenceModelPtr();
+
+    return behaviorSequence;
   }
 
   void ContentModel::setType(ContentType type)
