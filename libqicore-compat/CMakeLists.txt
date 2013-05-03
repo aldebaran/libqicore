@@ -28,7 +28,8 @@ set(PUBLIC_HEADERS
   qicore-compat/model/flowdiagrammodel.hpp
   qicore-compat/model/linkmodel.hpp
   qicore-compat/model/boxinstancemodel.hpp
-  qicore-compat/model/parametervaluemodel.hpp)
+  qicore-compat/model/parametervaluemodel.hpp
+  qicore-compat/model/choregrapheprojectmodel.hpp)
 
 qi_install_header(${PUBLIC_HEADERS})
 
@@ -93,7 +94,9 @@ qi_create_lib(qicore-compat SHARED SRC
   src/model/boxinstancemodel_p.hpp
   src/model/boxinstancemodel.cpp
   src/model/parametervaluemodel_p.hpp
-  src/model/parametervaluemodel.cpp)
+  src/model/parametervaluemodel.cpp
+  src/model/choregrapheprojectmodel.cpp
+  src/model/choregrapheprojectmodel_p.hpp)
 
 qi_use_lib(qicore-compat QI ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
 qi_stage_lib(qicore-compat)
