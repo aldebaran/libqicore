@@ -3,6 +3,7 @@
 #include <qitype/objectfactory.hpp>
 #include <qimessaging/session.hpp>
 #include <boost/foreach.hpp>
+#include <qicore/behavior.hpp>
 
 #define foreach BOOST_FOREACH
 
@@ -24,25 +25,7 @@ template<typename T> inline T find0Ptr(std::map<std::string, T>& m, const std::s
 class Behavior
 {
 public:
-  Behavior(): _session(new qi::Session) {}
-  ~Behavior() { delete _session;}
-  ObjectPtr makeObject(const std::string& model, const std::string& factory, const BehaviorModel::ParameterMap& params);
-  void loadObjects();
-  void unloadObjects();
-  void setTransitions(bool debugmode);
-  void removeTransitions();
-  void loadFile(const std::string& path);
-  void loadString(const std::string& data);
-  void connect(const std::string& url);
-  qi::GenericValue call(const std::string& objUid, const std::string& fun, std::vector<qi::GenericValue> args);
-  qi::Session& session() { return *_session;};
-  /// Triggered when a transition occurrs, if transitions were set in debug mode.
-  qi::Signal<void (const std::string&, qi::GenericValue)> onTransition;
-private:
-  void transition(qi::GenericValue argument, const std::string& transitionId);
-  BehaviorModel  _model;
   typedef std::map<std::string, ObjectPtr> ObjectMap;
-  ObjectMap _objects;
   /* Two transision modes:
    * - Direct: link is a link to a connect(source, target, targetMethod)
    * - Intercept: debug mode, link is a connect(source, &Behavior::transition)
@@ -57,11 +40,45 @@ private:
     bool debug;
   };
   typedef std::map<std::string, TransitionPtr> TransitionMap;
-  TransitionMap _transitions;
-  qi::Session* _session;
+
+public:
+  Behavior(): _session(new qi::Session) {}
+  ~Behavior() { delete _session;}
+  ObjectPtr makeObject(const std::string& model, const std::string& factory, const qi::BehaviorModel::ParameterMap& params);
+  void loadObjects();
+  void unloadObjects();
+  void setTransitions(bool debugmode);
+  void removeTransitions();
+  void loadFile(const std::string& path);
+  void loadString(const std::string& data);
+  void connect(const std::string& url);
+  qi::GenericValue call(const std::string& objUid, const std::string& fun, std::vector<qi::GenericValue> args);
+
+  /// Triggered when a transition occurrs, if transitions were set in debug mode.
+  qi::Signal<void (const std::string&, qi::GenericValue)> onTransition;
+
+
+public:
+  qi::Session&       session()     { return *_session;};
+  qi::BehaviorModel& model()       { return _model; };
+  ObjectMap&         objects()     { return _objects; };
+  TransitionMap&     transitions() { return _transitions; };
+  //TODO: DOES NOT BUILD WITH BOTH const and non const
+  //const BehaviorModel&   model() const       { return _model; };
+  //const ObjectMap&       objects() const     { return _objects; };
+  //const TransitionMap&   transitions() const { return _transitions; };
+
+private:
+  void transition(qi::GenericValue argument, const std::string& transitionId);
+
+private:
+  qi::BehaviorModel _model;
+  ObjectMap         _objects;
+  TransitionMap     _transitions;
+  qi::Session*      _session;
 };
 
-QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call, onTransition);
+QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call, onTransition, model, objects, transitions);
 QI_REGISTER_OBJECT_FACTORY_BUILDER(Behavior);
 
 
@@ -107,7 +124,7 @@ void Behavior::loadObjects()
 {
   if (!_objects.empty())
     throw std::runtime_error("Objects already present");
-  foreach(BehaviorModel::NodeMap::value_type& n, _model.nodes)
+  foreach(qi::BehaviorModel::NodeMap::value_type& n, _model.nodes)
   {
     qiLogDebug() << "loading " << n.first << " from " <<n.second.factory;
     ObjectPtr o = makeObject(n.second.interface, n.second.factory, n.second.parameters);
@@ -128,9 +145,9 @@ void Behavior::setTransitions(bool debugmode)
   qiLogDebug() << "setTransitions";
   if (!_transitions.empty())
     throw std::runtime_error("Transitions already present");
-  foreach(BehaviorModel::TransitionMap::value_type& vt, _model.transitions)
+  foreach(qi::BehaviorModel::TransitionMap::value_type& vt, _model.transitions)
   {
-    BehaviorModel::Transition& t = vt.second;
+    qi::BehaviorModel::Transition& t = vt.second;
     ObjectPtr src = find0Ptr(_objects, t.src.first);
     ObjectPtr dst = find0Ptr(_objects, t.dst.first);
     if (!src)
@@ -207,7 +224,7 @@ void Behavior::removeTransitions()
 }
 
 ObjectPtr Behavior::makeObject(const std::string& model, const std::string& factory,
-  const BehaviorModel::ParameterMap& parameters)
+  const qi::BehaviorModel::ParameterMap& parameters)
 {
   size_t p = factory.find_first_of(':');
   if (p == factory.npos)
@@ -245,7 +262,7 @@ ObjectPtr Behavior::makeObject(const std::string& model, const std::string& fact
     {
       s = s->call<ObjectPtr>(method);
     }
-    for (BehaviorModel::ParameterMap::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
+    for (qi::BehaviorModel::ParameterMap::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
     {
       s->setProperty(it->first, it->second);
     }

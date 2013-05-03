@@ -16,6 +16,7 @@ namespace qi {
   {
     typedef std::pair<std::string, std::string> Slot; // objectUid.methodName
     typedef std::map<std::string, qi::GenericValue> ParameterMap;
+
     struct QICORE_API Node
     {
       std::string  uid;
@@ -23,6 +24,7 @@ namespace qi {
       std::string  factory;
       ParameterMap parameters;
     };
+
     struct QICORE_API Transition
     {
       std::string uid;
