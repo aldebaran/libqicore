@@ -3,5 +3,5 @@
   <depends names="libnaoqi libalmathinternal" buildtime="true" runtime='true' />
 
   <!-- Creepy, but tests need motion and resourcemanager, which are in naoqi -->
-  <depends names="naoqi" buildtime="false" runtime="true" />
+  <!-- <depends names="naoqi" buildtime="false" runtime="true" /> -->
 </project>
