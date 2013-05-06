@@ -52,12 +52,11 @@ def write_box_interface(f, node):
         f.write((u" localization=\"{}\"")
                 .format(node.localization))
 
-    f.write((u" tooltip=\"{}\" plugin=\"{}\""
-             + u"  format_version=\"{}\" >{}")
-            .format(saxutils.escape(node.tooltip, entities=ENTITIES),
-                    node.plugin,
-                    u"4",
-                    os.linesep))
+    f.write((u" tooltip=\"{}\"")
+            .format(saxutils.escape(node.tooltip, entities=ENTITIES)))
+    if node.plugin:
+        f.write((u" plugin=\"{}\"").format(node.plugin))
+    f.write((u"  format_version=\"{}\" >{}").format(u"4", os.linesep))
 
     # bitmap elements
     for bitmap in node.bitmaps:
@@ -238,11 +237,13 @@ def write_behavior_sequence(f, timeline):
 
 
 def _write_behavior_layer(f, layer, indent):
-    f.write((u"{}<BehaviorLayer name=\"{}\" mute=\"{}\" >{}")
+    f.write((u"{}<BehaviorLayer name=\"{}\"")
             .format(indent,
-                    layer.name,
-                    layer.mute,
-                    os.linesep))
+                    layer.name))
+    if layer.mute:
+        f.write((u" mute=\"{}\"")
+                .format(layer.mute))
+    f.write((u" >{}").format(os.linesep))
 
     for keyframe in layer.behavior_keyframes:
         _write_behavior_keyframe(f, keyframe, indent + "    ")

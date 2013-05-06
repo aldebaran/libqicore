@@ -61,7 +61,7 @@ def _write_box_instance(f, instance, indent):
             .format(saxutils.escape(instance.interface.tooltip,
                                     entities=ENTITIES)))
 
-    if instance.interface.plugin != "None":
+    if instance.interface.plugin:
         f.write((u" plugin=\"{}\"").format(instance.interface.plugin))
 
     f.write((u" x=\"{}\" y=\"{}\">{}")
@@ -421,7 +421,7 @@ def _write_behavior_layer(f, layer, indent):
     f.write((u"{}<BehaviorLayer name=\"{}\"")
             .format(indent,
                     layer.name))
-    if layer.mute == "1":
+    if layer.mute:
         f.write((u" mute=\"{}\">{}")
                 .format(layer.mute,
                         os.linesep))
