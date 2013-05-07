@@ -128,9 +128,9 @@ TEST(Behavior, testService)
   b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   std::string behavior = STRING(
-    a Whatever TestObjectService.create;
-    b Whatever TestObjectService.create;
-    c Whatever TestObject2;
+    a Whatever TestObjectService.create v=42;
+    b Whatever TestObjectService.create v=1;
+    c Whatever TestObject2              v=2;
     ab a.v -> b.add;
     bc b.onAdd -> c.add;
     );
@@ -140,12 +140,10 @@ TEST(Behavior, testService)
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
   b->call<void>("loadObjects");
-  b->call<void>("call", "a", "setv", arguments(42));
   ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
-  b->call<void>("call", "b", "setv", arguments(1));
-  b->call<void>("call", "c", "setv", arguments(2));
-  b->call<void>("setTransitions", false);
+  ASSERT_EQ(1, b->call<int>("call", "b", "getv", arguments()));
   ASSERT_EQ(2, b->call<int>("call", "c", "getv", arguments()));
+  b->call<void>("setTransitions", false);
   b->call<void>("call", "a", "setv", arguments(3));
   PERSIST(, 6 == b->call<int>("call", "c", "lastAdd", arguments()), 1000);
   ASSERT_EQ(6, b->call<int>("call", "c", "lastAdd", arguments()));

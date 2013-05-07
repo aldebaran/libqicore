@@ -32,11 +32,13 @@ inline std::pair<std::string, std::string> splitString2(const std::string& s, ch
 struct BehaviorModel
 {
   typedef std::pair<std::string, std::string> Slot; // objectUid.methodName
+  typedef std::map<std::string, qi::GenericValue> ParameterMap;
   struct Node
   {
     std::string uid;
     std::string interface;
     std::string factory;
+    ParameterMap parameters;
   };
   struct Transition
   {
@@ -63,7 +65,7 @@ class Behavior
 public:
   Behavior(): _session(new qi::Session) {}
   ~Behavior() { delete _session;}
-  ObjectPtr makeObject(const std::string& model, const std::string& factory);
+  ObjectPtr makeObject(const std::string& model, const std::string& factory, const BehaviorModel::ParameterMap& params);
   void loadObjects();
   void unloadObjects();
   void setTransitions(bool debugmode);
@@ -147,7 +149,7 @@ void Behavior::loadObjects()
   foreach(BehaviorModel::NodeMap::value_type& n, _model.nodes)
   {
     qiLogDebug() << "loading " << n.first << " from " <<n.second.factory;
-    ObjectPtr o = makeObject(n.second.interface, n.second.factory);
+    ObjectPtr o = makeObject(n.second.interface, n.second.factory, n.second.parameters);
     _objects[n.first] = o;
   }
   qiLogDebug() << "loadObjects finished";
@@ -243,7 +245,8 @@ void Behavior::removeTransitions()
   _transitions.clear();
 }
 
-ObjectPtr Behavior::makeObject(const std::string& model, const std::string& factory)
+ObjectPtr Behavior::makeObject(const std::string& model, const std::string& factory,
+  const BehaviorModel::ParameterMap& parameters)
 {
   size_t p = factory.find_first_of(':');
   if (p == factory.npos)
@@ -277,12 +280,15 @@ ObjectPtr Behavior::makeObject(const std::string& model, const std::string& fact
     // Do we realy want that?
     if (method.empty() && !s->metaObject().findMethod("create").empty())
       method = "create";
-    if (method.empty())
-      return s;
-
-    qi::Future<ObjectPtr> o = s->call<ObjectPtr>(method);
-    o.wait();
-    return o; // will throw with backend error on failure
+    if (!method.empty())
+    {
+      s = s->call<ObjectPtr>(method);
+    }
+    for (BehaviorModel::ParameterMap::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
+    {
+      s->setProperty(it->first, it->second);
+    }
+    return s;
   }
   else
     throw std::runtime_error("Not implemented");
@@ -332,7 +338,7 @@ void BehaviorModel::clear()
 void BehaviorModel::load(std::istream& is)
 {
   // uid a.b -> c.d
-  // uid model factory
+  // uid model factory prop=value
   char line[1024];
   while (is.good())
   {
@@ -354,11 +360,38 @@ void BehaviorModel::load(std::istream& is)
     }
     if (!t)
     {
-      BehaviorModel::Node state;
+      BehaviorModel::Node& state = nodes[uid];
       state.uid = uid;
       state.interface = p1;
       state.factory = p2;
-      nodes[state.uid] = state;
+      while (true)
+      {
+        std::string p;
+        st >> p;
+        if (p.empty())
+          break;
+        size_t sep = p.find_first_of('=');
+        if (sep == p.npos)
+          throw std::runtime_error("No '=' found in parameter " + p);
+        std::string key = p.substr(0, sep);
+        std::string val = p.substr(sep + 1);
+        // FIXME call parseText when someone will implement it
+        qi::GenericValue gValue;
+        char* lend;
+        long lval = strtol(val.c_str(), &lend, 0);
+        if (lend == val.c_str() + val.size())
+          gValue = qi::GenericValueRef(lval);
+        else
+        {
+          char* dend;
+          double dval = strtod(val.c_str(), &dend);
+          if (dend == val.c_str() + val.size())
+            gValue = qi::GenericValueRef(dval);
+          else
+            gValue = qi::GenericValueRef(val);
+        }
+        state.parameters[key] = gValue;
+      }
     }
     else
     {
