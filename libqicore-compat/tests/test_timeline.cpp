@@ -9,7 +9,9 @@
 #include <alcommon/albroker.h>
 #include <allauncher/launcher.h>
 
+#include <qi/application.hpp>
 #include <qicore-compat/timeline.hpp>
+#include <qicore-compat/model/animationmodel.hpp>
 
 std::string file;
 boost::shared_ptr<AL::ALBroker> broker;
@@ -22,13 +24,17 @@ TEST(QiTimeline, CreateTimeline)
 TEST(QiTimeline, OpenFile)
 {
   qi::Timeline t(broker);
-  t.loadFromFile(file);
+  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  anim->loadFromFile();
+  t.setAnimation(anim);
 }
 
 TEST(QiTimeline, OpenFileAndPlay)
 {
   qi::Timeline t(broker);
-  t.loadFromFile(file);
+  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  anim->loadFromFile();
+  t.setAnimation(anim);
   t.play();
 
   t.waitForTimelineCompletion();
@@ -37,7 +43,10 @@ TEST(QiTimeline, OpenFileAndPlay)
 TEST(QiTimeline, PlayAndPause)
 {
   qi::Timeline t(broker);
-  t.loadFromFile(file);
+  //t.loadFromFile(file);
+  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  anim->loadFromFile();
+  t.setAnimation(anim);
   t.play();
   qi::os::sleep(1);
   t.pause();
@@ -49,7 +58,10 @@ TEST(QiTimeline, PlayAndPause)
 TEST(QiTimeline, PlayAndStop)
 {
   qi::Timeline t(broker);
-  t.loadFromFile(file);
+  //t.loadFromFile(file);
+  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  anim->loadFromFile();
+  t.setAnimation(anim);
   t.play();
   t.stop();
 }
@@ -57,7 +69,10 @@ TEST(QiTimeline, PlayAndStop)
 TEST(QiTimeline, modifyFPSBeforeStart)
 {
   qi::Timeline t(broker);
-  t.loadFromFile(file);
+  //t.loadFromFile(file);
+  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  anim->loadFromFile();
+  t.setAnimation(anim);
 
   EXPECT_EQ(t.getFPS(), 25);
   t.setFPS(15);
@@ -70,7 +85,10 @@ TEST(QiTimeline, modifyFPSBeforeStart)
 TEST(QiTimeline, modifyFPSAfterStart)
 {
   qi::Timeline t(broker);
-  t.loadFromFile(file);
+  //t.loadFromFile(file);
+  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  anim->loadFromFile();
+  t.setAnimation(anim);
 
   t.play();
   t.setFPS(15);
@@ -82,7 +100,10 @@ TEST(QiTimeline, modifyFPSAfterStart)
 TEST(QiTimeline, goToBeforeStart)
 {
   qi::Timeline t(broker);
-  t.loadFromFile(file);
+  //t.loadFromFile(file);
+  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  anim->loadFromFile();
+  t.setAnimation(anim);
 
   t.goTo(44);
   t.play();
@@ -93,7 +114,10 @@ TEST(QiTimeline, goToBeforeStart)
 TEST(QiTimeline, goToAfterStart)
 {
   qi::Timeline t(broker);
-  t.loadFromFile(file);
+  //t.loadFromFile(file);
+  qi::AnimationModelPtr anim(new qi::AnimationModel (file));
+  anim->loadFromFile();
+  t.setAnimation(anim);
 
   t.play();
   t.goTo(44);
@@ -103,6 +127,7 @@ TEST(QiTimeline, goToAfterStart)
 
 int main(int argc, char** argv)
 {
+  qi::Application app(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
 
   if (argc < 2)
@@ -113,8 +138,6 @@ int main(int argc, char** argv)
   }
   file = std::string(argv[1]);
 
-  qi::init(argc, argv);
-  qi::log::init(qi::log::info, 1);
   try
   {
     broker = AL::ALBroker::createBroker(
@@ -137,7 +160,6 @@ int main(int argc, char** argv)
               << e.what() ;
     return 1;
   }
-
 
   return RUN_ALL_TESTS();
 }

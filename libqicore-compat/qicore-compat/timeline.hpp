@@ -25,6 +25,7 @@ namespace qi
 
 class TimelinePrivate;
 class StateMachine;
+class AnimationModel;
 
 /// Timeline class
 class QICORECOMPAT_API Timeline
@@ -33,9 +34,6 @@ class QICORECOMPAT_API Timeline
     /// Constructor, take a ALBroker to speak with the outside world
     Timeline(boost::shared_ptr<AL::ALBroker> broker);
     ~Timeline();
-
-    /// Load the timline stored in the file pointed to by filename
-    bool loadFromFile(std::string fileName);
 
     /// Play the timeline
     void play(void);
@@ -53,6 +51,8 @@ class QICORECOMPAT_API Timeline
     int getFPS() const;
     /// Change the FPS
     void setFPS(const int fps);
+    /// Change the animation
+    void setAnimation(boost::shared_ptr<AnimationModel> anim);
 
     /// Wait untile the timeline execution is completed
     void waitForTimelineCompletion();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Timeline fps="25" resources_acquisition="0" size="300" enable="1" start_frame="0" end_frame="-1" scale="10">
+<Animation fps="25" resources_acquisition="0" size="300" enable="1" start_frame="0" end_frame="-1" scale="10">
   <watches />
   <ActuatorList>
     <ActuatorCurve name="value" actuator="HeadYaw" recordable="1" mute="0" alwaysVisible="0">
@@ -88,4 +88,4 @@
       <Key frame="44" value="3.78175" />
     </ActuatorCurve>
   </ActuatorList>
-</Timeline>
+</Animation>

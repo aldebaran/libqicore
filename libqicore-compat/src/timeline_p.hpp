@@ -19,8 +19,10 @@
 
 #include <qicore-compat/timeline.hpp>
 #include <qicore-compat/statemachine.hpp>
+#include <qicore-compat/model/animationmodel.hpp>
+#include <qicore-compat/model/actuatorcurvemodel.hpp>
+#include <qicore-compat/model/keymodel.hpp>
 
-#include "actuatorcurve.hpp"
 #include "asyncexecuter.hpp"
 #include "pythoncallback.hpp"
 
@@ -36,13 +38,6 @@ class TimelinePrivate
 {
 public:
   friend class Timeline;
-
-  enum MotionResourcesHandler
-  {
-    PASSIVE,
-    WAITING,
-    AGGRESSIVE,
-  };
 
   TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker);
   virtual ~TimelinePrivate(void);
@@ -61,6 +56,7 @@ public:
   int getSize() const;
   int getFPS(void) const;
   void setFPS(int pFps);
+  void setAnimation(boost::shared_ptr<AnimationModel> anim);
 
   bool getEnabled() const;
   int getCurrentFrame() const;
@@ -108,11 +104,24 @@ private:
   void killTimer();
   void TimerLoop(int interval);
 
+  static void getNeighborKeysOf(const ActuatorCurveModel& curve,
+                                const int indexKey,
+                                int& indexLeftKey,
+                                KeyModelPtr& leftKey,
+                                int& indexRightKey,
+                                KeyModelPtr& rightKey);
+  static float getInterpolatedValue(const ActuatorCurveModel& curve,
+                                    const int& indexKey,
+                                    const float& valueIncrementLimit);
+  static float getMotionValue(const ActuatorCurveModel& curve, float value);
+  static void rebuildBezierAutoTangents(ActuatorCurveModelPtr curve);
+  static bool updateBezierAutoTangents(const int &currentIndex, KeyModelPtr key, const int& leftIndex, CKeyModelPtr& lNeighbor, const int& rightIndex, CKeyModelPtr& rNeighbor);
+
   asyncExecuter*                        _executer;
   boost::shared_ptr<AL::ALMemoryProxy>  _memoryProxy;
   boost::shared_ptr<AL::ALMotionProxy>  _motionProxy;
   int                                   _fps;
-  std::vector<ActuatorCurve*>           _actuatorCurves;
+  std::vector<ActuatorCurveModelPtr>  _actuatorCurves;
   bool                                  _enabled;
   int                                   _currentFrame;
   int                                   _startFrame;
@@ -131,12 +140,13 @@ private:
    * choregraphe which frame is currently playing.\n
    */
   std::string                           _name;
-  MotionResourcesHandler                _resourcesAcquisition;
+  AnimationModel::MotionResourcesHandler _resourcesAcquisition;
   mutable boost::recursive_mutex        _methodMonitor;
   PythonCallback                        _onStoppedCallback;
 
   std::map<int, std::string>            _framesFlagsMap;
   StateMachine*                         _stateMachine;
+  boost::shared_ptr<AnimationModel>          _animation;
 };
 
 };

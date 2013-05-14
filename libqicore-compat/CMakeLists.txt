@@ -38,9 +38,6 @@ qi_create_lib(qicore-compat SHARED SRC
   src/timeline_p.hpp
   src/timeline.cpp
   src/model/xmlutils.hpp
-  src/model/xmlutils.cpp
-  src/actuatorcurve.hpp
-  src/actuatorcurve.cpp
   src/statemachine_p.hpp
   src/statemachine.cpp
   src/transition_p.hpp
@@ -69,8 +66,6 @@ qi_create_lib(qicore-compat SHARED SRC
   src/model/parametermodel.cpp
   src/model/resourcemodel_p.hpp
   src/model/resourcemodel.cpp
-  src/serial.hpp
-  src/serial.cpp
   src/model/actuatorcurvemodel_p.hpp
   src/model/actuatorcurvemodel.cpp
   src/model/actuatorlistmodel_p.hpp

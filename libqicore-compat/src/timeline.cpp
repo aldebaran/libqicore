@@ -9,12 +9,18 @@
 #include <alcommon/albroker.h>
 
 #include <alserial/alserial.h>
+#include <alerror/alerror.h>
+#include <almath/tools/altrigonometry.h>
+#include <almathinternal/interpolations/alinterpolation.h>
 #include <qi/log.hpp>
 
+#include <qicore-compat/model/actuatorlistmodel.hpp>
+#include <qicore-compat/model/actuatorcurvemodel.hpp>
 #include <qicore-compat/timeline.hpp>
+#include <qicore-compat/model/keymodel.hpp>
+#include <qicore-compat/model/tangentmodel.hpp>
 #include "timeline_p.hpp"
 #include "model/xmlutils.hpp"
-#include "actuatorcurve.hpp"
 
 namespace qi
 {
@@ -28,7 +34,7 @@ TimelinePrivate::TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker)
     _lastFrame(-1),
     _currentDoInterpolationMoveOrderId(-1),
     _name("Timeline"),
-    _resourcesAcquisition(PASSIVE),
+    _resourcesAcquisition(AnimationModel::MotionResourcesHandler_Passive),
     _methodMonitor(),
     _onStoppedCallback(0),
     _framesFlagsMap(),
@@ -58,63 +64,7 @@ TimelinePrivate::~TimelinePrivate(void)
   {
   }
 
-  for (std::vector<ActuatorCurve*>::iterator it = _actuatorCurves.begin();
-        it != _actuatorCurves.end(); it++)
-    delete (*it);
-
   delete _executer;
-}
-
-void TimelinePrivate::loadFromXml(boost::shared_ptr<const AL::XmlElement> elt)
-{
-  boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
-  if(elt == NULL)
-    return;
-
-  if (_executer->isPlaying())
-    stop();
-
-  /* Remove previous ActuatorCurves if needed */
-  if (!_actuatorCurves.empty())
-    for (std::vector<ActuatorCurve*>::iterator it = _actuatorCurves.begin();
-          it != _actuatorCurves.end(); it++)
-      delete (*it);
-
-  int handler;
-  if(elt->getAttribute("resources_acquisition", handler))
-    _resourcesAcquisition = MotionResourcesHandler(handler);
-
-  elt->getAttribute("fps", _fps, 0);
-  elt->getAttribute("enable", _enabled);
-  elt->getAttribute("start_frame", _startFrame, 0);
-  elt->getAttribute("end_frame", _endFrame, -1);
-  _currentFrame = _startFrame;
-  _executer->setInterval(1000 / _fps);
-
-  // load actuator list
-  {
-    AL::XmlElement::CList list = elt->children(XmlUtils::fActuatorCurveBeacon, XmlUtils::fActuatorListBeacon);
-    _lastFrame = 0;
-    for (AL::XmlElement::CList::const_iterator it=list.begin(), itEnd=list.end(); it!=itEnd; ++it)
-    {
-      boost::shared_ptr<const AL::XmlElement> curve = *it;
-      bool mute = false;
-      // don't create muted curves
-      if (!curve->getAttribute("mute", mute) || !mute)
-      {
-        ActuatorCurve* newCurve = new ActuatorCurve();
-        int lastKeyframe = newCurve->loadFromXml(curve);
-        _actuatorCurves.push_back(newCurve);
-        if (lastKeyframe > _lastFrame)
-          _lastFrame = lastKeyframe;
-      }
-    }
-
-    // if _endFrame = -1, meaning end frame is "undefined" => attached to last motion keyframe
-    // then use last motion keyframe to stop timeline
-    if(_endFrame == -1)
-      _endFrame = _lastFrame;
-  }
 }
 
 void TimelinePrivate::killMotionOrders()
@@ -204,6 +154,53 @@ int TimelinePrivate::getFPS() const
   return _fps;
 }
 
+void TimelinePrivate::setAnimation(boost::shared_ptr<AnimationModel> anim)
+{
+  boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
+
+  if(!anim)
+    return;
+
+  if(_executer->isPlaying())
+    stop();
+
+  _actuatorCurves.clear();
+
+  _name       = anim->path();
+  _fps        = anim->fps();
+  _enabled    = true;
+  _startFrame = anim->startFrame();
+  _endFrame   = anim->endFrame();
+
+  _currentFrame = _startFrame;
+  _executer->setInterval(1000 / _fps);
+
+  _resourcesAcquisition = anim->resourcesAcquisition();
+
+  _lastFrame = 0;
+  std::list<ActuatorCurveModelPtr> list = anim->actuatorList()->actuatorsCurve();
+  std::list<ActuatorCurveModelPtr>::const_iterator it    = list.begin();
+  std::list<ActuatorCurveModelPtr>::const_iterator itEnd = list.end();
+  for(; it != itEnd; ++it)
+  {
+    ActuatorCurveModelPtr curve = *it;
+
+    if( !curve->mute() )
+    {
+      int lastKeyFrame = curve->lastKeyFrame();
+      _actuatorCurves.push_back(curve);
+      if( lastKeyFrame > _lastFrame )
+        _lastFrame = lastKeyFrame;
+    }
+    rebuildBezierAutoTangents(curve);
+  }
+
+  // if _endFrame = -1, meaning end frame is "undefined" => attached to last motion keyframe
+  // then use last motion keyframe to stop timeline
+  if(_endFrame == -1)
+    _endFrame = _lastFrame;
+}
+
 bool TimelinePrivate::update(void)
 {
   boost::unique_lock<boost::recursive_mutex> _lock(_methodMonitor);
@@ -287,16 +284,16 @@ bool TimelinePrivate::singleInterpolationCommand(int currentFrame)
 
   for (size_t i=0; i < _actuatorCurves.size(); ++i)
   {
-    ActuatorCurve* actuatorCurve = _actuatorCurves[i];
+    ActuatorCurveModelPtr actuatorCurve = _actuatorCurves[i];
 
     // FIXME : speedLimit
     float speedLimit = std::numeric_limits<float>::max();
     float valueIncrementLimit = speedLimit/_fps;
 
-    float interpolatedValue = actuatorCurve->getInterpolatedValue(currentFrame, valueIncrementLimit);
-    float actuatorValue = actuatorCurve->getMotionValue(interpolatedValue);
+    float interpolatedValue = getInterpolatedValue(*actuatorCurve, currentFrame, valueIncrementLimit);
+    float actuatorValue     = getMotionValue(*actuatorCurve, interpolatedValue);
 
-    actuatorNames.push_back(actuatorCurve->name());
+    actuatorNames.push_back(actuatorCurve->actuator());
     actuatorValues.push_back(actuatorValue);
   }
 
@@ -328,15 +325,16 @@ bool TimelinePrivate::prepareInterpolationCommand(int startFrame)
 
   for (size_t i=0; i<size; ++i)
   {
-    ActuatorCurve* curve = _actuatorCurves[i];
+    ActuatorCurveModelPtr curve = _actuatorCurves[i];
 
     AL::ALValue times_i;
     AL::ALValue keys_i;
 
     // filters keys after start frame
-    std::deque<std::pair<int, ActuatorCurve::Key> > filteredKeys;
-    remove_copy_if(curve->keys().begin(), curve->keys().end(), back_inserter(filteredKeys),
-        boost::bind(&std::map<int, ActuatorCurve::Key>::value_type::first, _1) < startFrame );
+    std::map<int, KeyModelPtr> noFiltredkeys = curve->keys();
+    std::deque<std::pair<int, KeyModelPtr> > filteredKeys;
+    remove_copy_if(noFiltredkeys.begin(), noFiltredkeys.end(), back_inserter(filteredKeys),
+        boost::bind(&std::map<int, KeyModelPtr>::value_type::first, _1) < startFrame );
 
     // for each key
     size_t size = filteredKeys.size();
@@ -346,23 +344,23 @@ bool TimelinePrivate::prepareInterpolationCommand(int startFrame)
     if(size == 0)
       continue;
 
-    names.push_back(curve->name());
+    names.push_back(curve->actuator());
 
     float scale;
-    switch(curve->curveUnit())
+    switch(curve->unit())
     {
-    case ActuatorCurve::DEGREE_UNIT:
+    case ActuatorCurveModel::UnitType_Degree:
       scale = AL::Math::TO_RAD;
       break;
 
-    case ActuatorCurve::PERCENT_UNIT:
+    case ActuatorCurveModel::UnitType_Percent:
       scale = 1.f;
       break;
 
     // backport compatibility
-    case ActuatorCurve::UNKNOWN_UNIT:
+    case ActuatorCurveModel::UnitType_Undefined:
     default:
-      if(curve->name()=="LHand" || curve->name()=="RHand")
+      if(curve->actuator() =="LHand" || curve->actuator()=="RHand")
         scale = 1.f;
       else
         scale = AL::Math::TO_RAD;
@@ -373,15 +371,19 @@ bool TimelinePrivate::prepareInterpolationCommand(int startFrame)
     for (size_t j=0; j<size; ++j)
     {
       int frame = filteredKeys[j].first;
-      ActuatorCurve::Key key = filteredKeys[j].second;
+      KeyModelPtr key = filteredKeys[j].second;
 
       // build command parameters for that key
       times_i[j] = float(frame - startFrame) / _fps;
       keys_i[j] = AL::ALValue::array(
-        key.fValue * scale,
-        AL::ALValue::array(key.fLeftTangent.fType, key.fLeftTangent.fOffset.x / _fps, key.fLeftTangent.fOffset.y * scale),
-        AL::ALValue::array(key.fRightTangent.fType, key.fRightTangent.fOffset.x / _fps, key.fRightTangent.fOffset.y * scale)
-      );
+            key->value() * scale,
+            AL::ALValue::array(key->leftTangent()->interpType(),
+                               key->leftTangent()->abscissaParam() / _fps,
+                               key->leftTangent()->ordinateParam() * scale),
+            AL::ALValue::array(key->rightTangent()->interpType(),
+                               key->rightTangent()->abscissaParam() / _fps,
+                               key->rightTangent()->ordinateParam() * scale)
+            );
     }
     times.arrayPush(times_i);
     keys.arrayPush(keys_i);
@@ -395,18 +397,18 @@ bool TimelinePrivate::prepareInterpolationCommand(int startFrame)
 
 bool TimelinePrivate::sendInterpolationCommand(const std::vector<std::string>& names, const AL::ALValue& times, const AL::ALValue& keys)
 {
-  if(_resourcesAcquisition != PASSIVE)
+  if(_resourcesAcquisition != AnimationModel::MotionResourcesHandler_Passive)
   {
     // Ask to know if the order prepared is possible.
     try
     {
       if(!_motionProxy->areResourcesAvailable(names))
       {
-        if(_resourcesAcquisition == WAITING)
+        if(_resourcesAcquisition == AnimationModel::MotionResourcesHandler_Waiting)
           return false; // we will not execute anything, and we just wait fot another turn.
 
         // If in aggressive mode, then kill all tasks using the same resources, mouahahahahah !
-        if(_resourcesAcquisition == AGGRESSIVE)
+        if(_resourcesAcquisition == AnimationModel::MotionResourcesHandler_Aggressive)
           _motionProxy->killTasksUsingResources(names);
       }
     }
@@ -484,8 +486,238 @@ void TimelinePrivate::addFlag(int frame, std::string stateName)
   _framesFlagsMap[frame] = stateName;
 }
 
-/* -- Public -- */
+// Returns the nearest neighbor (right and left) key frames in the timeline for a given key frame
+// if given key is before the first key, both neighbors are set to this first key
+// if after the last key, both neighbors are set to this last key
+void TimelinePrivate::getNeighborKeysOf(const ActuatorCurveModel& curve,
+                                        const int indexKey,
+                                        int& indexLeftKey,
+                                        KeyModelPtr& leftKey,
+                                        int& indexRightKey,
+                                        KeyModelPtr& rightKey)
+{
+  const std::map<int, KeyModelPtr>& keys = curve.keys();
 
+  if (keys.empty())
+  {
+    indexLeftKey = -1;
+    indexRightKey = -1;
+    return;
+  }
+
+  std::map<int, KeyModelPtr>::const_iterator it = keys.begin();
+
+  indexLeftKey = it->first;
+  leftKey = it->second;
+
+  if (indexKey > indexLeftKey)
+  {
+    while (it != keys.end())
+    {
+      indexRightKey = it->first;
+      rightKey = it->second;
+      if (indexKey < indexRightKey)
+      {
+        return;
+      }
+      indexLeftKey = indexRightKey;
+      leftKey = rightKey;
+      it++;
+    }
+  }
+  else
+  {
+    // given key before first key => neighbors are both this first key
+    indexRightKey = indexLeftKey;
+    rightKey = leftKey;
+  }
+}
+
+// Returns the value for a given frame based on interpolation on the two nearest frames
+float TimelinePrivate::getInterpolatedValue(const ActuatorCurveModel& curve,
+                                            const int& indexKey,
+                                            const float& valueIncrementLimit)
+{
+  AL::Math::Interpolation::ALInterpolationBezier interpolator;
+
+  int indexLeftKey;
+  KeyModelPtr lKey;
+  int indexRightKey;
+  KeyModelPtr rKey;
+
+
+  getNeighborKeysOf(curve, indexKey, indexLeftKey, lKey, indexRightKey, rKey);
+
+  AL::Math::Interpolation::Key leftKey(lKey->value(),
+                                       AL::Math::Interpolation::Tangent(static_cast<AL::Math::Interpolation::InterpolationType>(lKey->leftTangent()->interpType()),
+                                                                        AL::Math::Position2D(lKey->leftTangent()->abscissaParam(),
+                                                                                             lKey->leftTangent()->ordinateParam())),
+                                       AL::Math::Interpolation::Tangent(static_cast<AL::Math::Interpolation::InterpolationType>(lKey->rightTangent()->interpType()),
+                                                                        AL::Math::Position2D(lKey->rightTangent()->abscissaParam(),
+                                                                                             lKey->rightTangent()->ordinateParam())));
+  AL::Math::Interpolation::Key rightKey(rKey->value(),
+                                        AL::Math::Interpolation::Tangent(static_cast<AL::Math::Interpolation::InterpolationType>(rKey->leftTangent()->interpType()),
+                                                                         AL::Math::Position2D(rKey->leftTangent()->abscissaParam(),
+                                                                                              rKey->leftTangent()->ordinateParam())),
+                                        AL::Math::Interpolation::Tangent(static_cast<AL::Math::Interpolation::InterpolationType>(rKey->rightTangent()->interpType()),
+                                                                         AL::Math::Position2D(rKey->rightTangent()->abscissaParam(),
+                                                                                              rKey->rightTangent()->ordinateParam())));
+
+  int keyIntervalSize = indexRightKey - indexLeftKey + 1;
+
+  if (keyIntervalSize > 1)
+  {
+    // FIXME : minValue, maxValue
+    float minValue = -std::numeric_limits<float>::max();
+    float maxValue = std::numeric_limits<float>::max();
+
+    std::vector<float> actuatorValues = interpolator.interpolate(keyIntervalSize, leftKey, rightKey,
+                                                                 minValue, maxValue, valueIncrementLimit, 1);
+
+    return actuatorValues[indexKey - indexLeftKey];
+  }
+  else
+  {
+    return leftKey.fValue;
+  }
+}
+
+float TimelinePrivate::getMotionValue(const ActuatorCurveModel& curve, float value)
+{
+  ActuatorCurveModel::UnitType curveUnit = curve.unit();
+  float result = value;
+  switch(curveUnit)
+  {
+  case ActuatorCurveModel::UnitType_Degree:
+    result *= AL::Math::TO_RAD;
+    break;
+
+  case ActuatorCurveModel::UnitType_Percent:
+    break;
+
+  case ActuatorCurveModel::UnitType_Undefined:
+  default:
+    if(curve.actuator() != "LHand" && curve.actuator() != "RHand")
+    {
+      result *= AL::Math::TO_RAD;
+      break;
+    }
+  }
+
+  return result;
+}
+
+bool TimelinePrivate::updateBezierAutoTangents(const int& currentIndex, KeyModelPtr key, const int &leftIndex, CKeyModelPtr &lNeighbor, const int &rightIndex, CKeyModelPtr &rNeighbor)
+{
+  using AL::Math::Position2D;
+
+  // :TODO: jvuarand 20100406: merge that function with the one in Choregraphe
+
+  //Note JB Desmottes 19-05-09 : we now consider that whenever the method is
+  //  called, tangent params will change, and thus we do not need to inform the
+  //  caller whether they really changed or not. In some cases, this will lead to
+  //  unecessary updates.
+  //  Example : current key is a minimum of the curve, and neighbor value (not the
+  //  index) has changed. In that case, params of current key do not change.
+
+  if (key->leftTangent()->interpType()==TangentModel::InterpolationType_BezierAuto || key->rightTangent()->interpType()==TangentModel::InterpolationType_BezierAuto)
+  {
+    float alpha = 1.0f/3.0f;
+    float beta = 0.0f;
+
+    if (lNeighbor && rNeighbor)
+    {
+      float value = key->value();
+      float lvalue = lNeighbor->value();
+      float rvalue = rNeighbor->value();
+      if ((value < rvalue || value < lvalue)
+        && (value > rvalue || value > lvalue))
+      {
+        if (currentIndex>=0 && leftIndex>=0 && rightIndex>=0)
+        {
+          beta = (rvalue - lvalue) / (rightIndex-leftIndex);
+
+          // anti overshooting
+          float tgtHeight = alpha * (rightIndex - currentIndex) * beta;
+          if (fabs(tgtHeight) > fabs(rvalue - value))
+          {
+            beta *= (rvalue - value) / tgtHeight;
+          }
+          tgtHeight = alpha * (currentIndex - leftIndex) * beta;
+          if (fabs(tgtHeight) > fabs(value - lvalue))
+          {
+            beta *= (value - lvalue) / tgtHeight;
+          }
+        }
+      }
+    }
+
+    // set parameters into model
+    if (key->leftTangent()->interpType()==TangentModel::InterpolationType_BezierAuto)
+    {
+      Position2D offset = Position2D(-alpha, -alpha*beta) * float(currentIndex - leftIndex);
+      // :NOTE: for test purposes, you can force serialization of BEZIER_AUTO in Choregraphe, and enable assert below
+      //assert(AL::Math::distanceSquared(key->fLeftTangent.fOffset, offset) < 0.01f);
+      //key->fLeftTangent.fOffset = offset;
+
+      key->leftTangent()->setAbscissaParam(offset.x);
+      key->leftTangent()->setOrdinateParam(offset.y);
+    }
+    if (key->rightTangent()->interpType()==TangentModel::InterpolationType_BezierAuto)
+    {
+      Position2D offset = Position2D(alpha, alpha*beta) * float(rightIndex - currentIndex);
+      // :NOTE: for test purposes, you can force serialization of BEZIER_AUTO in Choregraphe, and enable assert below
+      //assert(AL::Math::distanceSquared(key->fRightTangent.fOffset, offset) < 0.01f);
+      //key->fRightTangent.fOffset = offset;
+
+      key->rightTangent()->setAbscissaParam(offset.x);
+      key->rightTangent()->setOrdinateParam(offset.y);
+    }
+
+    return true;
+  }
+  else
+    return false;
+}
+
+void TimelinePrivate::rebuildBezierAutoTangents(ActuatorCurveModelPtr curve)
+{
+
+  std::map<int, KeyModelPtr> keys = curve->keys();
+  for (std::map<int, KeyModelPtr>::iterator it=keys.begin(), itEnd=keys.end(); it!=itEnd; ++it)
+  {
+    if (it->second->leftTangent()->interpType()==TangentModel::InterpolationType_BezierAuto
+      || it->second->rightTangent()->interpType()==TangentModel::InterpolationType_BezierAuto)
+    {
+      int currentIndex = it->first;
+      KeyModelPtr key = it->second;
+      // get left neighbor, if any
+      int leftIndex = currentIndex;
+      CKeyModelPtr lNeighbor = CKeyModelPtr();
+      if (it!=keys.begin())
+      {
+        std::map<int, KeyModelPtr>::iterator left = it;
+        --left;
+        leftIndex = left->first;
+        lNeighbor = left->second;
+      }
+      // get right neighbor, if any
+      int rightIndex = currentIndex;
+      CKeyModelPtr rNeighbor = CKeyModelPtr();
+      std::map<int, KeyModelPtr>::iterator right = it;
+      ++right;
+      if (right!=keys.end())
+      {
+        rightIndex = right->first;
+        rNeighbor  = right->second;
+      }
+      // adjust this key
+      updateBezierAutoTangents(currentIndex, key, leftIndex, lNeighbor, rightIndex, rNeighbor);
+    }
+  }
+}
+
+/* -- Public -- */
 Timeline::Timeline(boost::shared_ptr<AL::ALBroker> broker)
   : _p (new TimelinePrivate(broker))
 {
@@ -495,25 +727,6 @@ Timeline::~Timeline()
 {
   _p->stop();
   delete _p;
-}
-
-bool Timeline::loadFromFile(std::string fileName)
-{
-  std::string errorMsg;
-  boost::shared_ptr<AL::XmlDocument> xmlFile = AL::XmlDocument::loadFromXmlFile(fileName, NULL, &errorMsg);
-
-  if(!xmlFile)
-  {
-    qiLogError("Timeline") << "Failed to open the given file : " << fileName << std::endl << errorMsg << std::endl;
-
-    return false;
-  }
-
-  boost::shared_ptr<const AL::XmlElement> elt = xmlFile->root();
-  _p->loadFromXml(elt);
-  _p->setName(fileName);
-
-  return true;
 }
 
 void Timeline::play(void)
@@ -551,6 +764,11 @@ void Timeline::setFPS(const int fps)
   _p->setFPS(fps);
 }
 
+void Timeline::setAnimation(AnimationModelPtr anim)
+{
+  _p->setAnimation(anim);
+}
+
 void Timeline::waitForTimelineCompletion()
 {
   _p->_executer->waitForExecuterCompletion();
@@ -571,4 +789,4 @@ void Timeline::setStateMachine(StateMachine *sm)
   _p->_stateMachine = sm;
 }
 
-};
+}
