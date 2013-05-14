@@ -13,18 +13,17 @@
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/bind.hpp>
+
 #include <alvalue/alvalue.h>
 #include <alproxies/almemoryproxy.h>
 #include <alproxies/almotionproxy.h>
 
 #include <qicore-compat/timeline.hpp>
-#include <qicore-compat/statemachine.hpp>
 #include <qicore-compat/model/animationmodel.hpp>
 #include <qicore-compat/model/actuatorcurvemodel.hpp>
 #include <qicore-compat/model/keymodel.hpp>
 
 #include "asyncexecuter.hpp"
-#include "pythoncallback.hpp"
 
 namespace AL
 {
@@ -68,11 +67,6 @@ public:
    */
   void setName(const std::string& var);
   std::string getName() const;
-
-  /* Function that will be called when Timeline is finished */
-  void registerOnStoppedCallback(PyObject*);
-
-  void addFlag(int frame, std::string stateName);
 
 private:
   bool update(void);
@@ -142,13 +136,11 @@ private:
   std::string                           _name;
   AnimationModel::MotionResourcesHandler _resourcesAcquisition;
   mutable boost::recursive_mutex        _methodMonitor;
-  PythonCallback                        _onStoppedCallback;
 
   std::map<int, std::string>            _framesFlagsMap;
-  StateMachine*                         _stateMachine;
   boost::shared_ptr<AnimationModel>          _animation;
 };
 
-};
+}
 
 #endif /* !TIMELINEPRIVATE_H */

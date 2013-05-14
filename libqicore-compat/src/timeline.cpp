@@ -4,23 +4,22 @@
 */
 
 #include <queue>
-#include <almath/tools/altrigonometry.h>
+
 #include <alcommon/alproxy.h>
 #include <alcommon/albroker.h>
 
-#include <alserial/alserial.h>
 #include <alerror/alerror.h>
 #include <almath/tools/altrigonometry.h>
 #include <almathinternal/interpolations/alinterpolation.h>
+
 #include <qi/log.hpp>
 
+#include "timeline_p.hpp"
+#include <qicore-compat/timeline.hpp>
 #include <qicore-compat/model/actuatorlistmodel.hpp>
 #include <qicore-compat/model/actuatorcurvemodel.hpp>
-#include <qicore-compat/timeline.hpp>
 #include <qicore-compat/model/keymodel.hpp>
 #include <qicore-compat/model/tangentmodel.hpp>
-#include "timeline_p.hpp"
-#include "model/xmlutils.hpp"
 
 namespace qi
 {
@@ -36,9 +35,7 @@ TimelinePrivate::TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker)
     _name("Timeline"),
     _resourcesAcquisition(AnimationModel::MotionResourcesHandler_Passive),
     _methodMonitor(),
-    _onStoppedCallback(0),
-    _framesFlagsMap(),
-    _stateMachine(0)
+    _framesFlagsMap()
 {
   try
   {
@@ -206,13 +203,13 @@ bool TimelinePrivate::update(void)
   boost::unique_lock<boost::recursive_mutex> _lock(_methodMonitor);
 
   /* Send commands to the StateMachine if needed */
-  if (_stateMachine)
+  /*if (_stateMachine)
   {
     std::map<int, std::string>::const_iterator it = _framesFlagsMap.find(_currentFrame);
 
     if (it != _framesFlagsMap.end())
       _stateMachine->goToStateName(it->second);
-  }
+  }*/
 
   if (_enabled == false)
   {
@@ -229,7 +226,6 @@ bool TimelinePrivate::update(void)
     killMotionOrders();
 
     qiLogDebug("qiCore.Timeline") << "Timeline is done, invoking callback";
-    _onStoppedCallback();
 
     return false;
   }
@@ -474,16 +470,6 @@ std::string TimelinePrivate::getName() const
 {
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
   return _name;
-}
-
-void TimelinePrivate::registerOnStoppedCallback(PyObject *p)
-{
-  _onStoppedCallback.assignCallback(p);
-}
-
-void TimelinePrivate::addFlag(int frame, std::string stateName)
-{
-  _framesFlagsMap[frame] = stateName;
 }
 
 // Returns the nearest neighbor (right and left) key frames in the timeline for a given key frame
@@ -772,21 +758,6 @@ void Timeline::setAnimation(AnimationModelPtr anim)
 void Timeline::waitForTimelineCompletion()
 {
   _p->_executer->waitForExecuterCompletion();
-}
-
-void Timeline::registerOnStoppedCallback(PyObject *p)
-{
-  _p->registerOnStoppedCallback(p);
-}
-
-void Timeline::addFlag(int frame, std::string stateName)
-{
-  _p->addFlag(frame, stateName);
-}
-
-void Timeline::setStateMachine(StateMachine *sm)
-{
-  _p->_stateMachine = sm;
 }
 
 }

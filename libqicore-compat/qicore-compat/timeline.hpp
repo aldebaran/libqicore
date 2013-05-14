@@ -8,12 +8,11 @@
 #ifndef TIMELINE_H_
 # define TIMELINE_H_
 
-# include <string>
+#include <string>
 
-# include <boost/shared_ptr.hpp>
-# include <Python.h>
+#include <boost/shared_ptr.hpp>
 
-# include <qicore-compat/api.hpp>
+#include <qicore-compat/api.hpp>
 
 namespace AL
 {
@@ -24,7 +23,6 @@ namespace qi
 {
 
 class TimelinePrivate;
-class StateMachine;
 class AnimationModel;
 
 /// Timeline class
@@ -56,14 +54,6 @@ class QICORECOMPAT_API Timeline
 
     /// Wait untile the timeline execution is completed
     void waitForTimelineCompletion();
-
-    /// Register a python callable that will be called when timeline is done
-    void registerOnStoppedCallback(PyObject*);
-
-    /// Add a flag to the timeline, to drive the stateMachine
-    void addFlag(int frame, std::string stateName);
-    /// Set the stateMachine to drive
-    void setStateMachine(StateMachine* sm);
 
   private:
     TimelinePrivate* _p;
