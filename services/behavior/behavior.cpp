@@ -192,7 +192,7 @@ void Behavior::setTransitions(bool debugmode)
     float bestScore = 0;
     for (unsigned s=0; s<srcSignals.size(); ++s)
     {
-      std::string sigS = qi::signatureSplit(srcSignals[s].signature())[2];
+      std::string sigS = srcSignals[s].parametersSignature();
       for (unsigned d=0; d<dstMethods.size(); ++d)
       {
         std::string sigD = dstMethods[d].parametersSignature();
