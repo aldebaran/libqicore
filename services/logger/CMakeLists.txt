@@ -62,7 +62,7 @@ qi_create_lib(logger
 
 qi_create_lib(loggerclient
   STATIC
-  SRC src/logprovider.cpp ${_loglistener_proxy}
+  SRC src/logprovider.cpp ${_loglistener_proxy}  ${_logprovider_bind}
   DEPENDS QI QITYPE
  )
 
