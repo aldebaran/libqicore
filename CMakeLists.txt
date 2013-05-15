@@ -16,6 +16,7 @@ set(PUBLIC_HEADERS
     qicore/timeline.hpp
     qicore/statemachine.hpp
     qicore/box.hpp
+    qicore/behavior.hpp
     qicore/transition.hpp)
 
 qi_install_header(${PUBLIC_HEADERS})
@@ -32,6 +33,7 @@ qi_create_lib(qicore SHARED SRC
   src/statemachine.cpp
   src/transition_p.hpp
   src/transition.cpp
+  src/behavior.cpp
   src/asyncexecuter.hpp
   src/asyncexecuter.cpp
   src/box_p.hpp
