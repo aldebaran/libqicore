@@ -17,3 +17,5 @@ endfunction()
 
 qi_create_session_test(test_behavior           SRC test_behavior.cpp DEPENDS QI QIMESSAGING GTEST TESTSESSION TIMEOUT 10)
 
+
+qi_create_bin(qitestbehavior SRC qitestbehavior.cpp DEPENDS QIMESSAGING)
