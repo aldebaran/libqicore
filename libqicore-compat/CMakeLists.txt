@@ -24,7 +24,11 @@ set(PUBLIC_HEADERS
   qicore-compat/model/tangentmodel.hpp
   qicore-compat/model/behaviorkeyframemodel.hpp
   qicore-compat/model/behaviorlayermodel.hpp
-  qicore-compat/model/behaviorsequencemodel.hpp)
+  qicore-compat/model/behaviorsequencemodel.hpp
+  qicore-compat/model/flowdiagrammodel.hpp
+  qicore-compat/model/linkmodel.hpp
+  qicore-compat/model/boxinstancemodel.hpp
+  qicore-compat/model/parametervaluemodel.hpp)
 
 qi_install_header(${PUBLIC_HEADERS})
 
@@ -81,7 +85,15 @@ qi_create_lib(qicore-compat SHARED SRC
   src/model/behaviorlayermodel_p.hpp
   src/model/behaviorlayermodel.cpp
   src/model/behaviorsequencemodel_p.hpp
-  src/model/behaviorsequencemodel.cpp)
+  src/model/behaviorsequencemodel.cpp
+  src/model/flowdiagrammodel_p.hpp
+  src/model/flowdiagrammodel.cpp
+  src/model/linkmodel_p.hpp
+  src/model/linkmodel.cpp
+  src/model/boxinstancemodel_p.hpp
+  src/model/boxinstancemodel.cpp
+  src/model/parametervaluemodel_p.hpp
+  src/model/parametervaluemodel.cpp)
 
 qi_use_lib(qicore-compat QI ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
 qi_stage_lib(qicore-compat)

@@ -6,6 +6,7 @@
 #include <qicore-compat/model/contentmodel.hpp>
 #include <qicore-compat/model/animationmodel.hpp>
 #include <qicore-compat/model/behaviorsequencemodel.hpp>
+#include <qicore-compat/model/flowdiagrammodel.hpp>
 
 #include "contentmodel_p.hpp"
 
@@ -88,6 +89,19 @@ namespace qi
 
     if(!behaviorSequence->loadFromFile())
       return BehaviorSequenceModelPtr();
+
+    return behaviorSequence;
+  }
+
+  FlowDiagramModelPtr ContentModel::getFlowDiagramModel()
+  {
+    if(_p->_type != ContentModel::ContentType_FlowDiagram)
+      return FlowDiagramModelPtr();
+
+    FlowDiagramModelPtr behaviorSequence = FlowDiagramModelPtr(new FlowDiagramModel(_p->_dir + "/" + _p->_path));
+
+    if(!behaviorSequence->loadFromFile())
+      return FlowDiagramModelPtr();
 
     return behaviorSequence;
   }

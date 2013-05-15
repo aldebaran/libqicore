@@ -16,6 +16,7 @@ namespace qi
   class ContentModelPrivate;
   class AnimationModel;
   class BehaviorSequenceModel;
+  class FlowDiagramModel;
 
   class QICORECOMPAT_API ContentModel
   {
@@ -39,6 +40,7 @@ namespace qi
 
     boost::shared_ptr<AnimationModel> getAnimationModel();
     boost::shared_ptr<BehaviorSequenceModel> getBehaviorSequenceModel();
+    boost::shared_ptr<FlowDiagramModel> getFlowDiagramModel();
 
     void setType(ContentType type);
     void setPath(const std::string& path);

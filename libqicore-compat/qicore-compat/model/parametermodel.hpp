@@ -15,6 +15,7 @@ namespace qi
 {
   class ParameterModelPrivate;
   class ChoiceModel;
+  class ParameterValueModel;
 
   class QICORECOMPAT_API ParameterModel
   {
@@ -67,6 +68,8 @@ namespace qi
 
     bool addChoice(boost::shared_ptr<ChoiceModel> choice);
     const std::list<boost::shared_ptr<ChoiceModel> >& getChoices() const;
+
+    bool checkInterval(boost::shared_ptr<ParameterValueModel> value) const;
 
   private:
     QI_DISALLOW_COPY_AND_ASSIGN(ParameterModel);

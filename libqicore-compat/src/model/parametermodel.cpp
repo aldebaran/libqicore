@@ -6,6 +6,7 @@
 #include <sstream>
 #include <qicore-compat/model/choicemodel.hpp>
 #include <qicore-compat/model/parametermodel.hpp>
+#include <qicore-compat/model/parametervaluemodel.hpp>
 
 #include "xmlutils.hpp"
 #include "parametermodel_p.hpp"
@@ -415,5 +416,32 @@ namespace qi
   const std::list<ChoiceModelPtr>& ParameterModel::getChoices() const
   {
     return _p->_choices;
+  }
+
+  bool ParameterModel::checkInterval(ParameterValueModelPtr value) const
+  {
+    switch(_p->_contentType)
+    {
+    case ParameterModel::ContentType_Bool:
+    case ParameterModel::ContentType_Ressource:
+    case ParameterModel::ContentType_String:
+      return true;
+      break;
+
+    case ParameterModel::ContentType_Double:
+      return _p->inInterval<double>(value->getValueDouble(),
+                                    _p->_min.toDouble(),
+                                    _p->_max.toDouble());
+      break;
+    case ParameterModel::ContentType_Int:
+      return _p->inInterval<int>(value->getValueInt(),
+                                 _p->_min.toInt(),
+                                 _p->_max.toInt());
+      break;
+
+    default:
+      return false;
+      break;
+    }
   }
 }

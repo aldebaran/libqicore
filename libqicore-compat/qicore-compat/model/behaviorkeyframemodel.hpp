@@ -28,6 +28,8 @@ namespace qi {
     const std::string& getBitmap() const;
     std::string getPath() const;
 
+    boost::shared_ptr<FlowDiagramModel> getDiagram() const;
+
     void setName(const std::string& name);
     void setIndex(int index);
     void setBitmap(const std::string& bitmap);

@@ -5,8 +5,10 @@
 
 #include <boost/filesystem.hpp>
 
+#include <qicore-compat/model/flowdiagrammodel.hpp>
 #include <qicore-compat/model/behaviorkeyframemodel.hpp>
 #include "behaviorkeyframemodel_p.hpp"
+
 
 namespace qi {
   BehaviorKeyFrameModelPrivate::BehaviorKeyFrameModelPrivate() :
@@ -68,6 +70,16 @@ namespace qi {
   {
     boost::filesystem::path path(_p->_path);
     return path.filename().string();
+  }
+
+  FlowDiagramModelPtr BehaviorKeyFrameModel::getDiagram() const
+  {
+    FlowDiagramModelPtr flowDiagram = FlowDiagramModelPtr(new FlowDiagramModel(_p->_path));
+
+    if(!flowDiagram->loadFromFile())
+      return FlowDiagramModelPtr();
+
+    return flowDiagram;
   }
 
   void BehaviorKeyFrameModel::setName(const std::string& name)
