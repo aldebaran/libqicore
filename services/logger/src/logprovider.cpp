@@ -73,12 +73,12 @@ void LogProvider::log(qi::log::LogLevel level, qi::os::timeval tv, const char* f
   msg.location = qi::os::getMachineId() + ":" + boost::lexical_cast<std::string>(qi::os::getpid());
   msg.message = message;
   _logger->log(msg, qi::MetaCallType_Queued).async();
-  std::cerr << "LogProvider log done" << std::endl;
+  DEBUG("LogProvider log done");
 }
 
 void LogProvider::setVerbosity(qi::log::LogLevel level)
 {
-  std::cerr << "LogProvider verb " << level << std::endl;
+  DEBUG("LogProvider verb " << level);
   ::qi::log::setVerbosity(_subscriber, level);
 }
 
