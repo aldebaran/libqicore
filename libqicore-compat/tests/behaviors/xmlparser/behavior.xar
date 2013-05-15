@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ChoregrapheProject name="behavior/xar/tests" format_version="4" >
+    <BoxInstance name="root" id="-1" x="0" y="0" path="test_boxinterface.xml" />
+</ChoregrapheProject>

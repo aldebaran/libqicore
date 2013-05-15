@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<BoxInterface uuid="" box_version="1.0.0.0" name="Comment" localization="8" tooltip="To comment your behavior. Enter the text here and move the box where you like&#x0A;to add the comment.&#x0A;&#x0A;Note: This box is not functional and has no effect on the behavior." plugin="textedit_plugin"  format_version="4" >
+    <Bitmap path="media/images/box/box-script.png" />
+    <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" />
+    <Contents>
+        <Content type="0" path="B_0_0_Comment17.py" checksum="" />
+    </Contents>
+</BoxInterface>

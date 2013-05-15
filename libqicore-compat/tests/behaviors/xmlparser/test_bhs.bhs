@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<BehaviorSequence fps="25" start_frame="0" end_frame="-1" size="300" resources_acquisition="0" format_version="4" >
+    <BehaviorLayer name="behavior_layer1" mute="0" >
+        <BehaviorKeyframe name="FaceLeds" index="1" path="B2_0_FaceLeds0.fld" />
+    </BehaviorLayer>
+    <BehaviorLayer name="behavior_layer2" mute="0" >
+        <BehaviorKeyframe name="Say : Pssst" index="76" path="B2_1_Say_Pssst0.fld" />
+    </BehaviorLayer>
+</BehaviorSequence>
