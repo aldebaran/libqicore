@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 qi_create_gtest(test_timeline SRC test_timeline.cpp
-                DEPENDS QICORE ALCOMMON ALLAUNCHER
+                DEPENDS QICORE-COMPAT ALCOMMON ALLAUNCHER
                 ARGUMENTS "${CMAKE_CURRENT_SOURCE_DIR}/behaviors/timeline/behavior.xar")
 
-qi_create_gtest(test_statemachine test_statemachine.cpp DEPENDS qicore)
+qi_create_gtest(test_statemachine test_statemachine.cpp DEPENDS qicore-compat)

@@ -7,9 +7,9 @@
 
 #include <qi/os.hpp>
 
-#include <qicore/statemachine.hpp>
-#include <qicore/box.hpp>
-#include <qicore/transition.hpp>
+#include <qicore-compat/statemachine.hpp>
+#include <qicore-compat/box.hpp>
+#include <qicore-compat/transition.hpp>
 
 TEST(QiStateMachine, CreateQiStateMachine)
 {

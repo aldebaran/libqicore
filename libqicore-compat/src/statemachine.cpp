@@ -8,8 +8,8 @@
 
 #include <qi/log.hpp>
 
-#include <qicore/transition.hpp>
-#include <qicore/statemachine.hpp>
+#include <qicore-compat/transition.hpp>
+#include <qicore-compat/statemachine.hpp>
 
 #include "statemachine_p.hpp"
 #include "transition_p.hpp"

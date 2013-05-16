@@ -3,8 +3,8 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
-#include <qicore/statemachine.hpp>
-#include <qicore/transition.hpp>
+#include <qicore-compat/statemachine.hpp>
+#include <qicore-compat/transition.hpp>
 
 #include "transition_p.hpp"
 

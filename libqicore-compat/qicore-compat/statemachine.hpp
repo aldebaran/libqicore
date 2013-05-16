@@ -9,7 +9,7 @@
 # define STATE_MACHINE_H_
 
 # include <string>
-# include <qicore/api.hpp>
+# include <qicore-compat/api.hpp>
 # include <Python.h>
 
 namespace qi
@@ -20,7 +20,7 @@ class Transition;
 class Box;
 
 /// StateMachine class
-class QICORE_API StateMachine
+class QICORECOMPAT_API StateMachine
 {
   public:
     StateMachine();

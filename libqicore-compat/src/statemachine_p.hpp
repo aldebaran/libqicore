@@ -13,7 +13,7 @@
 
 # include <boost/thread/mutex.hpp>
 
-# include <qicore/statemachine.hpp>
+# include <qicore-compat/statemachine.hpp>
 # include "asyncexecuter.hpp"
 # include "pythoncallback.hpp"
 

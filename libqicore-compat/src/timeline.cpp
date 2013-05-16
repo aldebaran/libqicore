@@ -11,7 +11,7 @@
 #include <alserial/alserial.h>
 #include <qi/log.hpp>
 
-#include <qicore/timeline.hpp>
+#include <qicore-compat/timeline.hpp>
 #include "timeline_p.hpp"
 #include "xmlutils.hpp"
 #include "actuatorcurve.hpp"

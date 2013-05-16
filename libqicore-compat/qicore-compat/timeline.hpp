@@ -13,7 +13,7 @@
 # include <boost/shared_ptr.hpp>
 # include <Python.h>
 
-# include <qicore/api.hpp>
+# include <qicore-compat/api.hpp>
 
 namespace AL
 {
@@ -27,7 +27,7 @@ class TimelinePrivate;
 class StateMachine;
 
 /// Timeline class
-class QICORE_API Timeline
+class QICORECOMPAT_API Timeline
 {
   public:
     /// Constructor, take a ALBroker to speak with the outside world

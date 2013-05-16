@@ -8,9 +8,9 @@
 #ifndef BOX_PRIVATE_H_
 # define BOX_PRIVATE_H_
 
-# include <qicore/box.hpp>
-# include <qicore/statemachine.hpp>
-# include <qicore/timeline.hpp>
+# include <qicore-compat/box.hpp>
+# include <qicore-compat/statemachine.hpp>
+# include <qicore-compat/timeline.hpp>
 
 # include "pythoncallback.hpp"
 

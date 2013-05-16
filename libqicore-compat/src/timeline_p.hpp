@@ -17,8 +17,8 @@
 #include <alproxies/almemoryproxy.h>
 #include <alproxies/almotionproxy.h>
 
-#include <qicore/timeline.hpp>
-#include <qicore/statemachine.hpp>
+#include <qicore-compat/timeline.hpp>
+#include <qicore-compat/statemachine.hpp>
 
 #include "actuatorcurve.hpp"
 #include "asyncexecuter.hpp"

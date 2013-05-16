@@ -8,48 +8,10 @@ qi_sanitize_compile_flags(HIDDEN_SYMBOLS)
 # Tests
 enable_testing()
 
-
 include_directories(".")
 
-set(PUBLIC_HEADERS
-    qicore/api.hpp
-    qicore/timeline.hpp
-    qicore/statemachine.hpp
-    qicore/box.hpp
-    qicore/behavior.hpp
-    qicore/transition.hpp)
-
-qi_install_header(${PUBLIC_HEADERS})
-
-qi_create_lib(qicore SHARED SRC
-  ${PUBLIC_HEADERS}
-  src/timeline_p.hpp
-  src/timeline.cpp
-  src/xmlutils.hpp
-  src/xmlutils.cpp
-  src/actuatorcurve.hpp
-  src/actuatorcurve.cpp
-  src/statemachine_p.hpp
-  src/statemachine.cpp
-  src/transition_p.hpp
-  src/transition.cpp
-  src/behavior.cpp
-  src/asyncexecuter.hpp
-  src/asyncexecuter.cpp
-  src/box_p.hpp
-  src/box.cpp
-  src/pythoncallback.hpp
-  src/pythoncallback.cpp)
-
-qi_use_lib(qicore QI ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
-
-qi_install(tests/test_statemachine.cpp DESTINATION ".")
-
-qi_stage_lib(qicore)
-
-add_subdirectory("python")
-add_subdirectory("tests")
-
+add_subdirectory("libqicore")
+add_subdirectory("libqicore-compat")
 add_subdirectory("services/logger")
 add_subdirectory("services/behavior")
 add_subdirectory("services/tray")

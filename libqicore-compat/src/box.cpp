@@ -5,8 +5,8 @@
 
 #include <qi/log.hpp>
 
-#include <qicore/transition.hpp>
-#include <qicore/box.hpp>
+#include <qicore-compat/transition.hpp>
+#include <qicore-compat/box.hpp>
 #include "box_p.hpp"
 #include "transition_p.hpp"
 

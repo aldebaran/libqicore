@@ -10,7 +10,7 @@
 
 # include <string>
 
-# include <qicore/api.hpp>
+# include <qicore-compat/api.hpp>
 
 namespace qi
 {
@@ -20,7 +20,7 @@ class StateMachine;
 class Box;
 
 /// A transition from one State to another
-class QICORE_API Transition
+class QICORECOMPAT_API Transition
 {
   public:
     /// Constructor, take the initial State as parameter

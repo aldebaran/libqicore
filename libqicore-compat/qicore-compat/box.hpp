@@ -12,7 +12,7 @@
 
 # include <alcommon/albroker.h>
 
-# include <qicore/api.hpp>
+# include <qicore-compat/api.hpp>
 
 namespace qi
 {
@@ -23,7 +23,7 @@ class StateMachine;
 class Transition;
 
 /// Legacy Box, can be a State in StateMachine
-class QICORE_API Box
+class QICORECOMPAT_API Box
 {
   public:
     Box();
