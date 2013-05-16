@@ -8,10 +8,6 @@ qi_sanitize_compile_flags(HIDDEN_SYMBOLS)
 # Tests
 enable_testing()
 
-include_directories(".")
-
 add_subdirectory("libqicore")
 add_subdirectory("libqicore-compat")
-add_subdirectory("services/logger")
-add_subdirectory("services/behavior")
-add_subdirectory("services/tray")
+add_subdirectory("services")
