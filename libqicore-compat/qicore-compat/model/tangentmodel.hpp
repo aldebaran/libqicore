@@ -25,11 +25,16 @@ namespace qi {
     };
 
     enum InterpolationType {
-      InterpolationType_Bezier   = 0,
-      InterpolationType_Linear   = 1,
-      InterpolationType_Constant = 3
+      InterpolationType_Constant = 0,
+      InterpolationType_Linear = 1,
+      InterpolationType_Bezier = 2,
+      InterpolationType_BezierAuto = 3
     };
-    TangentModel(Side side, InterpolationType interp, float abscissa, float ordinate);
+
+    TangentModel(Side side,
+                 InterpolationType interp = InterpolationType_BezierAuto,
+                 float abscissa = 0.0f,
+                 float ordinate = 0.0f);
     TangentModel(boost::shared_ptr<const AL::XmlElement> elt);
     virtual ~TangentModel();
 

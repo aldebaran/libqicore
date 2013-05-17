@@ -25,7 +25,8 @@ namespace qi
     float _value;
     bool _smooth;
     bool _symmetrical;
-    std::list<TangentModelPtr> _tangents;
+    TangentModelPtr _tangentLeft;
+    TangentModelPtr _tangentRight;
     bool _isValid;
   };
 }

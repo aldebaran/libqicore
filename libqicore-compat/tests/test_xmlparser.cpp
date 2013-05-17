@@ -139,6 +139,7 @@ TEST(XmlParser, LoadXARFile)
   EXPECT_EQ(anim->fps(), 25);
   EXPECT_EQ(anim->startFrame(), 0);
   EXPECT_EQ(anim->endFrame(), -1);
+  EXPECT_EQ(anim->resourcesAcquisition(), qi::AnimationModel::MotionResourcesHandler_Passive);
   EXPECT_EQ(anim->size(), 300);
   EXPECT_EQ(anim->formatVersion(), "4");
 
@@ -155,20 +156,22 @@ TEST(XmlParser, LoadXARFile)
   EXPECT_EQ(actuatorCurve->recordable(), true);
   EXPECT_EQ(actuatorCurve->mute(), false);
   EXPECT_EQ(actuatorCurve->unit(), qi::ActuatorCurveModel::UnitType_Undefined);
+  EXPECT_EQ(actuatorCurve->lastKeyFrame(), 28);
 
-  std::list<qi::KeyModelPtr> keys = actuatorCurve->keys();
+  std::map<int, qi::KeyModelPtr> keys = actuatorCurve->keys();
   ASSERT_EQ(keys.size(), 2);
-  qi::KeyModelPtr key = keys.front();
+  qi::KeyModelPtr key = keys.begin()->second;
   ASSERT_TRUE(key);
   EXPECT_EQ(key->frame(), 23);
   EXPECT_EQ(key->value(), -1.4f);
   EXPECT_EQ(key->smooth(), false);
   EXPECT_EQ(key->symmetrical(), false);
 
-  std::list<qi::TangentModelPtr> tangents = key->tangents();
-  ASSERT_EQ(tangents.size(), 2);
-  qi::TangentModelPtr tangent = tangents.front();
-  ASSERT_TRUE(tangent);
+  qi::TangentModelPtr tangentLeft = key->leftTangent();
+  qi::TangentModelPtr tangentRight = key->rightTangent();
+  ASSERT_TRUE(tangentLeft);
+  ASSERT_TRUE(tangentRight);
+  qi::TangentModelPtr tangent = tangentRight;
   EXPECT_EQ(tangent->side(), qi::TangentModel::Side_Right);
   EXPECT_EQ(tangent->interpType(), qi::TangentModel::InterpolationType_Bezier);
   EXPECT_EQ(tangent->ordinateParam(), 7.0f);
@@ -460,7 +463,7 @@ TEST(XmlParser, Output)
 
 }
 
-TEST(XmlParse, Content)
+TEST(XmlParser, Content)
 {
   qi::ContentModel content(qi::ContentModel::ContentType_PythonScript, "main.py", "");
   EXPECT_EQ(content.type(), qi::ContentModel::ContentType_PythonScript);
@@ -567,7 +570,7 @@ TEST(XmlParse, Contents)
 TEST(XmlParse, Animation)
 {
 
-  qi::AnimationModel anim("anim.anim", 25, 0, -1, 0, "4");
+  qi::AnimationModel anim("anim.anim");
 
   EXPECT_EQ(anim.path(), "anim.anim");
   EXPECT_EQ(anim.fps(), 25);
@@ -575,6 +578,7 @@ TEST(XmlParse, Animation)
   EXPECT_EQ(anim.endFrame(), -1);
   EXPECT_EQ(anim.size(), 0);
   EXPECT_EQ(anim.formatVersion(), "4");
+  EXPECT_EQ(anim.resourcesAcquisition(), qi::AnimationModel::MotionResourcesHandler_Passive);
   EXPECT_FALSE(anim.actuatorList());
 
   anim.setPath("anim.a");
@@ -588,6 +592,9 @@ TEST(XmlParse, Animation)
 
   anim.setEndFrame(2);
   EXPECT_EQ(anim.endFrame(), 2);
+
+  anim.setResourcesAcquisition(qi::AnimationModel::MotionResourcesHandler_Aggressive);
+  EXPECT_EQ(anim.resourcesAcquisition(), qi::AnimationModel::MotionResourcesHandler_Aggressive);
 
   anim.setSize(24);
   EXPECT_EQ(anim.size(), 24);
@@ -622,6 +629,7 @@ TEST(XmlParser, ActuatorCurve)
   ASSERT_EQ(curve.recordable(), true);
   ASSERT_EQ(curve.mute(), false);
   ASSERT_EQ(curve.keys().size(), 0);
+  ASSERT_EQ(curve.lastKeyFrame(), -1);
 
   curve.setName("Grab2");
   ASSERT_EQ(curve.name(), "Grab2");
@@ -635,8 +643,9 @@ TEST(XmlParser, ActuatorCurve)
   curve.setMute(true);
   ASSERT_EQ(curve.mute(), true);
 
-  curve.addKey(qi::KeyModelPtr(new qi::KeyModel(1, 3.14159f, true, true)));
+  curve.addKey(qi::KeyModelPtr(new qi::KeyModel(12, 3.14159f, true, true)));
   ASSERT_EQ(curve.keys().size(), 1);
+  ASSERT_EQ(curve.lastKeyFrame(), 12);
 
 }
 
@@ -648,7 +657,8 @@ TEST(XmlParser, Key)
   ASSERT_EQ(key.value(), 3.14159f);
   ASSERT_EQ(key.smooth(), true);
   ASSERT_EQ(key.symmetrical(), true);
-  ASSERT_EQ(key.tangents().size(), 0);
+  ASSERT_TRUE(key.rightTangent());
+  ASSERT_TRUE(key.leftTangent());
 
   key.setFrame(2);
   ASSERT_EQ(key.frame(), 2);
@@ -663,10 +673,12 @@ TEST(XmlParser, Key)
   ASSERT_EQ(key.symmetrical(), false);
 
   qi::TangentModelPtr t1(new qi::TangentModel(qi::TangentModel::Side_Left, qi::TangentModel::InterpolationType_Bezier, 3.0, 1.0));
-  qi::TangentModelPtr t2(new qi::TangentModel(qi::TangentModel::Side_Right, qi::TangentModel::InterpolationType_Bezier, 3.0, 1.0));
+  qi::TangentModelPtr t2(new qi::TangentModel(qi::TangentModel::Side_Left, qi::TangentModel::InterpolationType_Bezier, 3.0, 1.0));
 
-  key.setTangents(t1, t2);
-  ASSERT_EQ(key.tangents().size(), 2);
+  ASSERT_FALSE(key.setTangents(t1, t2));
+  t2->setSide(qi::TangentModel::Side_Right);
+  ASSERT_TRUE(key.setTangents(t1, t2));
+
 }
 
 TEST(XmlParser, Tangent)
@@ -891,7 +903,6 @@ TEST(XmlParser, ParameterValue)
 int main(int argc, char **argv)
 {
   qi::Application(argc, argv);
-  qi::log::init(qi::log::info, 6);
   ::testing::InitGoogleTest(&argc, argv);
 
   if(argc < 2)
@@ -903,6 +914,5 @@ int main(int argc, char **argv)
   }
 
   valid_boxinterface = std::string(argv[1]);
-
   return RUN_ALL_TESTS();
 }

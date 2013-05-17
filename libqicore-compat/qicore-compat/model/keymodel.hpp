@@ -28,7 +28,8 @@ namespace qi
     bool  smooth()      const;
     bool  symmetrical() const;
 
-    const std::list<boost::shared_ptr<TangentModel> > &tangents() const;
+    boost::shared_ptr<TangentModel>& leftTangent() const;
+    boost::shared_ptr<TangentModel>& rightTangent() const;
 
     bool isValid() const;
 
@@ -37,13 +38,14 @@ namespace qi
     void setSmooth(bool smooth);
     void setSymmetrical(bool symmetrical);
 
-    void setTangents(boost::shared_ptr<TangentModel> tangent1, boost::shared_ptr<TangentModel> tangent2);
+    bool setTangents(boost::shared_ptr<TangentModel> left, boost::shared_ptr<TangentModel> right);
 
   private:
     QI_DISALLOW_COPY_AND_ASSIGN(KeyModel);
     KeyModelPrivate* _p;
   };
   typedef boost::shared_ptr<KeyModel> KeyModelPtr;
+  typedef boost::shared_ptr<const KeyModel> CKeyModelPtr;
 }
 
 #endif /* !KEY_H_ */

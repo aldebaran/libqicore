@@ -18,9 +18,10 @@ namespace qi
     _value(value),
     _smooth(smooth),
     _symmetrical(symmetrical),
-    _tangents()
+    _tangentLeft(new TangentModel(TangentModel::Side_Left)),
+    _tangentRight(new TangentModel(TangentModel::Side_Right)),
+    _isValid(true)
   {
-
   }
 
   KeyModelPrivate::KeyModelPrivate(boost::shared_ptr<const AL::XmlElement> elt)
@@ -32,22 +33,37 @@ namespace qi
 
     AL::XmlElement::CList tangents = elt->children("Tangent", "");
 
-    _tangents = XmlUtils::constructObjects<TangentModel>(tangents);
-
     _isValid = true;
+    if(tangents.size() == 2)
+    {
+      for(AL::XmlElement::CList::const_iterator it = tangents.begin(), itEnd = tangents.end(); it != itEnd; ++it)
+      {
+        boost::shared_ptr<const AL::XmlElement> elt = *it;
+        TangentModelPtr tan = TangentModelPtr(new TangentModel(elt));
 
-    //Quantity tangents is 0 or 2
-    qiLogDebug("QICore") << "Tangents size : "
-                         << _tangents.size()
-                         << std::endl;
-    if(_tangents.size() != 2 && _tangents.size() != 0)
+        if(tan->side() == TangentModel::Side_Left)
+          _tangentLeft = tan;
+
+        if(tan->side() == TangentModel::Side_Right)
+          _tangentRight = tan;
+      }
+
+      if(!_tangentLeft || !_tangentRight)
+        _isValid = false;
+    }
+    else if(tangents.size() == 0)
+    {
+      _tangentLeft = TangentModelPtr(new TangentModel(TangentModel::Side_Left));
+      _tangentRight = TangentModelPtr(new TangentModel(TangentModel::Side_Right));
+    }
+    else
     {
       qiLogError() << "Invalid number of tag Tangent"
                            << std::endl;
       _isValid = false;
     }
 
-    _isValid = _isValid && XmlUtils::verifyObjects<TangentModel>(_tangents);
+
   }
 
   KeyModel::KeyModel(int frame, float value, bool smooth, bool symmetrical) :
@@ -86,9 +102,14 @@ namespace qi
     return _p->_symmetrical;
   }
 
-  const std::list<TangentModelPtr>& KeyModel::tangents() const
+  boost::shared_ptr<TangentModel>& KeyModel::leftTangent() const
   {
-    return _p->_tangents;
+    return _p->_tangentLeft;
+  }
+
+  boost::shared_ptr<TangentModel> &KeyModel::rightTangent() const
+  {
+    return _p->_tangentRight;
   }
 
   bool KeyModel::isValid() const
@@ -116,10 +137,13 @@ namespace qi
     _p->_symmetrical = symmetrical;
   }
 
-  void KeyModel::setTangents(TangentModelPtr tangent1, TangentModelPtr tangent2)
+  bool KeyModel::setTangents(TangentModelPtr left, TangentModelPtr right)
   {
-    _p->_tangents.clear();
-    _p->_tangents.push_front(tangent1);
-    _p->_tangents.push_front(tangent2);
+    if(!(left->side() == TangentModel::Side_Left && right->side() == TangentModel::Side_Right))
+       return false;
+
+    _p->_tangentLeft = left;
+    _p->_tangentRight = right;
+    return true;
   }
 }

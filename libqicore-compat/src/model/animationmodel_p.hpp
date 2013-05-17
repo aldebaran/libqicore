@@ -13,6 +13,7 @@
 #include <boost/filesystem.hpp>
 
 #include <qicore-compat/model/actuatorlistmodel.hpp>
+#include <qicore-compat/model/animationmodel.hpp>
 
 namespace qi
 {
@@ -24,6 +25,7 @@ namespace qi
                           int fps,
                           int startFrame,
                           int endFrame,
+                          AnimationModel::MotionResourcesHandler resources,
                           int size,
                           const std::string &formatVersion,
                           ActuatorListModelPtr actuatorList);
@@ -35,6 +37,7 @@ namespace qi
     int _fps;
     int _startFrame;
     int _endFrame;
+    AnimationModel::MotionResourcesHandler _resourcesAcuqisition;
     int _size;
     std::string _formatVersion;
     ActuatorListModelPtr _actuatorList;

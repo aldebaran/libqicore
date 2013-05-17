@@ -8,6 +8,8 @@
 #ifndef ACTUATORCURVE_H_
 #define ACTUATORCURVE_H_
 
+#include <map>
+
 #include <alserial/alserial.h>
 #include <qicore-compat/api.hpp>
 
@@ -30,7 +32,7 @@ namespace qi
                        bool recordable,
                        bool mute,
                        UnitType unit,
-                       const std::list<boost::shared_ptr<KeyModel> > &keys = std::list<boost::shared_ptr<KeyModel> >());
+                       const std::map<int, boost::shared_ptr<KeyModel> > &keys = std::map<int, boost::shared_ptr<KeyModel> >());
     ActuatorCurveModel(boost::shared_ptr<const AL::XmlElement> elt);
     virtual ~ActuatorCurveModel();
 
@@ -39,7 +41,8 @@ namespace qi
     bool recordable() const;
     bool mute() const;
     UnitType unit() const;
-    const std::list<boost::shared_ptr<KeyModel> >& keys() const;
+    const std::map<int, boost::shared_ptr<KeyModel> >& keys() const;
+    int lastKeyFrame() const;
 
     bool isValid() const;
 

@@ -20,6 +20,7 @@ namespace qi
                                                int fps,
                                                int startFrame,
                                                int endFrame,
+                                               AnimationModel::MotionResourcesHandler resources,
                                                int size,
                                                const std::string &formatVersion,
                                                ActuatorListModelPtr actuatorList) :
@@ -27,6 +28,7 @@ namespace qi
     _fps(fps),
     _startFrame(startFrame),
     _endFrame(endFrame),
+    _resourcesAcuqisition(resources),
     _size(size),
     _formatVersion(formatVersion),
     _actuatorList(actuatorList)
@@ -60,9 +62,11 @@ namespace qi
       return false;
     }
 
+    int resourcesAcquisition;
     root->getAttribute("fps",            _fps);
     root->getAttribute("start_frame",    _startFrame);
     root->getAttribute("end_frame",      _endFrame);
+    root->getAttribute("resources_acquisition", resourcesAcquisition);
     root->getAttribute("size",           _size);
     root->getAttribute("format_version", _formatVersion);
 
@@ -85,10 +89,11 @@ namespace qi
                                  int fps,
                                  int startFrame,
                                  int endFrame,
+                                 AnimationModel::MotionResourcesHandler resources,
                                  int size,
                                  const std::string &formatVersion,
                                  ActuatorListModelPtr actuatorList) :
-    _p(new AnimationModelPrivate(path, fps, startFrame, endFrame, size, formatVersion, actuatorList))
+    _p(new AnimationModelPrivate(path, fps, startFrame, endFrame, resources, size, formatVersion, actuatorList))
   {
   }
 
@@ -116,6 +121,11 @@ namespace qi
   int AnimationModel::endFrame() const
   {
     return _p->_endFrame;
+  }
+
+  AnimationModel::MotionResourcesHandler AnimationModel::resourcesAcquisition() const
+  {
+    return _p->_resourcesAcuqisition;
   }
 
   int AnimationModel::size() const
@@ -151,6 +161,11 @@ namespace qi
   void AnimationModel::setEndFrame(int end_frame)
   {
     _p->_endFrame = end_frame;
+  }
+
+  void AnimationModel::setResourcesAcquisition(MotionResourcesHandler resources)
+  {
+    _p->_resourcesAcuqisition = resources;
   }
 
   void AnimationModel::setSize(int size)

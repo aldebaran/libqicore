@@ -8,6 +8,8 @@
 #ifndef ACTUATORCURVE_P_H_
 #define ACTUATORCURVE_P_H_
 
+#include <map>
+
 #include <alserial/alserial.h>
 #include <qicore-compat/model/keymodel.hpp>
 
@@ -22,7 +24,7 @@ namespace qi
                               bool recordable,
                               bool mute,
                               int unit,
-                              const std::list<KeyModelPtr> &keys);
+                              const std::map<int, KeyModelPtr> &keys);
     ActuatorCurveModelPrivate(boost::shared_ptr<const AL::XmlElement> elt);
 
   private:
@@ -31,8 +33,9 @@ namespace qi
     bool _recordable;
     bool _mute;
     int _unit;
-    std::list<KeyModelPtr> _keys;
+    std::map<int, KeyModelPtr> _keys;
     bool _isValid;
+    int _lastKeyFrame;
   };
 }
 

@@ -19,10 +19,18 @@ namespace qi {
 
   class QICORECOMPAT_API AnimationModel {
   public:
+    enum MotionResourcesHandler
+    {
+      MotionResourcesHandler_Passive,
+      MotionResourcesHandler_Waiting,
+      MotionResourcesHandler_Aggressive
+    };
+
     AnimationModel(const std::string &path,
                    int fps = 25,
                    int startFrame = 0,
                    int endFrame = -1,
+                   MotionResourcesHandler resources = MotionResourcesHandler_Passive,
                    int size = 0,
                    const std::string &formatVersion = "4",
                    boost::shared_ptr<ActuatorListModel> actuatorList = boost::shared_ptr<ActuatorListModel>());
@@ -33,6 +41,7 @@ namespace qi {
     int startFrame() const;
     int endFrame() const;
     int size() const;
+    MotionResourcesHandler resourcesAcquisition() const;
     const std::string& formatVersion() const;
     boost::shared_ptr<ActuatorListModel> actuatorList() const;
 
@@ -40,6 +49,7 @@ namespace qi {
     void setFPS(int fps);
     void setStartFrame(int start_frame);
     void setEndFrame(int end_frame);
+    void setResourcesAcquisition(MotionResourcesHandler resources);
     void setSize(int size);
     void setFormatVersion(const std::string &format_version);
     void setActuatorList(boost::shared_ptr<ActuatorListModel> actuator_list);

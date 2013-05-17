@@ -7,16 +7,12 @@
 #include "xmlutils.hpp"
 #include "actuatorcurvemodel_p.hpp"
 
-#include <alerror/alerror.h>
-#include <almath/tools/altrigonometry.h>
-#include <almathinternal/interpolations/alinterpolation.h>
-
 #include "math.h"
 #include <limits>
 
 namespace qi
 {
-  ActuatorCurveModelPrivate::ActuatorCurveModelPrivate(const std::string &name, const std::string &actuator, bool recordable, bool mute, int unit, const std::list<KeyModelPtr> &keys) :
+  ActuatorCurveModelPrivate::ActuatorCurveModelPrivate(const std::string &name, const std::string &actuator, bool recordable, bool mute, int unit, const std::map<int, KeyModelPtr> &keys) :
     _name(name),
     _actuator(actuator),
     _recordable(recordable),
@@ -25,7 +21,12 @@ namespace qi
     _keys(keys),
     _isValid(true)
   {
-
+    _lastKeyFrame = -1;
+    for(std::map<int, KeyModelPtr>::const_iterator it = _keys.begin(), itEnd = _keys.end(); it != itEnd; ++it)
+    {
+      if(it->first > _lastKeyFrame)
+        _lastKeyFrame = it->first;
+    }
   }
 
   ActuatorCurveModelPrivate::ActuatorCurveModelPrivate(boost::shared_ptr<const AL::XmlElement> elt)
@@ -48,12 +49,25 @@ namespace qi
 
     AL::XmlElement::CList keys = elt->children("Key", "");
 
-    _keys = XmlUtils::constructObjects<KeyModel>(keys);
-    _isValid = XmlUtils::verifyObjects<KeyModel>(_keys);
+    _isValid = true;
+    _lastKeyFrame = -1;
+    for(AL::XmlElement::CList::const_iterator it = keys.begin(), itEnd = keys.end(); it != itEnd; ++it)
+    {
+      KeyModelPtr key = KeyModelPtr(new KeyModel(*it));
 
+      _isValid = key->isValid();
+      if(!_isValid)
+        break;
+
+      int keyFrame = key->frame();
+      _keys.insert(std::pair<int, KeyModelPtr>(keyFrame, key));
+
+      if(keyFrame > _lastKeyFrame)
+        _lastKeyFrame = keyFrame;
+    }
   }
 
-  ActuatorCurveModel::ActuatorCurveModel(const std::string &name, const std::string &actuator, bool recordable, bool mute, UnitType unit, const std::list<boost::shared_ptr<KeyModel> > &keys) :
+  ActuatorCurveModel::ActuatorCurveModel(const std::string &name, const std::string &actuator, bool recordable, bool mute, UnitType unit, const std::map<int, KeyModelPtr> &keys) :
     _p(new ActuatorCurveModelPrivate(name, actuator, recordable, mute, unit, keys))
   {
 
@@ -94,9 +108,14 @@ namespace qi
     return static_cast<ActuatorCurveModel::UnitType>( _p->_unit );
   }
 
-  const std::list<KeyModelPtr>& ActuatorCurveModel::keys() const
+  const std::map<int, KeyModelPtr>& ActuatorCurveModel::keys() const
   {
     return _p->_keys;
+  }
+
+  int ActuatorCurveModel::lastKeyFrame() const
+  {
+    return _p->_lastKeyFrame;
   }
 
   bool ActuatorCurveModel::isValid() const
@@ -131,6 +150,12 @@ namespace qi
 
   void ActuatorCurveModel::addKey(KeyModelPtr key)
   {
-    _p->_keys.push_front(key);
+    if(!key->isValid())
+      return;
+
+    _p->_keys.insert(std::pair<int, KeyModelPtr>(key->frame(), key));
+
+    if(key->frame() > _p->_lastKeyFrame)
+      _p->_lastKeyFrame = key->frame();
   }
 }
