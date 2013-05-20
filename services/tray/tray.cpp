@@ -17,7 +17,7 @@ class Poster: public QObject
 public:
   bool event(QEvent* e)
   {
-   qiLogDebug() << "event " << e->type();
+    qiLogDebug() << "event " << e->type();
     if (e->type() != QEvent::User + 42)
       return false;
     std::vector<boost::function<void()> > queue2;
@@ -30,6 +30,7 @@ public:
       queue2[i]();
     return true;
   }
+
   static QObject* poster()
   {
     static Poster* inst = 0;
@@ -40,6 +41,7 @@ public:
     }
     return inst;
   };
+
   static void post(boost::function<void()> f)
   {
     qiLogDebug() << "post";
@@ -62,12 +64,11 @@ public:
   Tray();
   void setIcon(const std::string& path);
   void setToolTip(const std::string& path);
-  void showMessage(const std::string& title, const std::string& message,
-    int icon, int msTimeout);
+  void showMessage(const std::string& title, const std::string& message, int icon, int msTimeout);
   qi::Property<bool> visible;
   void setVisible(bool);
-  private:
-    QSystemTrayIcon _tray;
+private:
+  QSystemTrayIcon _tray;
 };
 
 QI_REGISTER_OBJECT(Tray, setIcon, setToolTip, showMessage, visible, setVisible);
@@ -100,8 +101,7 @@ void Tray::setToolTip(const std::string& path)
   _tray.setToolTip(QString(path.c_str()));
 }
 
-void Tray::showMessage(const std::string& title, const std::string& message,
-  int icon, int msTimeout)
+void Tray::showMessage(const std::string& title, const std::string& message, int icon, int msTimeout)
 {
   if (QApplication::instance()->thread()  != QThread::currentThread())
     return Poster::post(boost::bind(&Tray::showMessage, this, title, message, icon, msTimeout));
