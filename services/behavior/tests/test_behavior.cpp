@@ -63,7 +63,7 @@ public:
   int add(int i) { int res =  i+v.get(); lastRes = res; onAdd(res); return res;}
   int lastAdd() { return lastRes;}
   qi::Property<int> v;
-  qi::Signal<void(int)> onAdd;
+  qi::Signal<int> onAdd;
   int lastRes;
 };
 QI_REGISTER_OBJECT(TestObject, add, getv, setv, v, onAdd, lastAdd);
@@ -77,7 +77,7 @@ public:
   int add(int i) { int res =  i+v.get(); lastRes = res; onAdd(res); return res;}
   int lastAdd() { return lastRes;}
   qi::Property<int> v;
-  qi::Signal<void(int)> onAdd;
+  qi::Signal<int> onAdd;
   int lastRes;
 };
 QI_REGISTER_OBJECT(TestObject2, add, getv, setv, v, onAdd, lastAdd);

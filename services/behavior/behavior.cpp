@@ -55,7 +55,7 @@ public:
   qi::GenericValue call(const std::string& objUid, const std::string& fun, std::vector<qi::GenericValue> args);
 
   /// Triggered when a transition occurrs, if transitions were set in debug mode.
-  qi::Signal<void (const std::string&, qi::GenericValue)> onTransition;
+  qi::Signal<const std::string&, qi::GenericValue> onTransition;
 
 
 public:

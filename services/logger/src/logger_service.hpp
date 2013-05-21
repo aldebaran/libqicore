@@ -43,7 +43,7 @@ public:
   void setCategory(const std::string& cat, qi::log::LogLevel level);
   /// Remove all filters set by setCategory
   void clearFilters();
-  qi::Signal<void (Message)> onMessage;
+  qi::Signal<Message> onMessage;
   qi::Property<qi::log::LogLevel> verbosity;
 private:
   void log(const Message& m);
