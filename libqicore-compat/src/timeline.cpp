@@ -5,12 +5,10 @@
 
 #include <queue>
 
-#include <alcommon/alproxy.h>
-#include <alcommon/albroker.h>
-
 #include <alerror/alerror.h>
 #include <almath/tools/altrigonometry.h>
 #include <almathinternal/interpolations/alinterpolation.h>
+#include <alcommon/alproxy.h>
 
 #include <qi/log.hpp>
 
@@ -24,7 +22,7 @@
 namespace qi
 {
 
-TimelinePrivate::TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker)
+TimelinePrivate::TimelinePrivate(ObjectPtr memory, ObjectPtr motion)
   : _executer(new asyncExecuter(1000 / 25)),
     _fps(0),
     _enabled(false),
@@ -39,8 +37,10 @@ TimelinePrivate::TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker)
 {
   try
   {
-    _memoryProxy = broker->getMemoryProxy();
-    _motionProxy = broker->getMotionProxy();
+    boost::shared_ptr<AL::ALProxy> proxyMemory(new AL::ALProxy(memory, "ALMemory"));
+    boost::shared_ptr<AL::ALProxy> proxyMotion(new AL::ALProxy(motion, "ALMotion"));
+    _memoryProxy = boost::shared_ptr<AL::ALMemoryProxy>(new AL::ALMemoryProxy(proxyMemory));
+    _motionProxy = boost::shared_ptr<AL::ALMotionProxy>(new AL::ALMotionProxy(proxyMotion));
   }
   catch (AL::ALError& e)
   {
@@ -704,8 +704,8 @@ void TimelinePrivate::rebuildBezierAutoTangents(ActuatorCurveModelPtr curve)
 }
 
 /* -- Public -- */
-Timeline::Timeline(boost::shared_ptr<AL::ALBroker> broker)
-  : _p (new TimelinePrivate(broker))
+Timeline::Timeline(ObjectPtr memory, ObjectPtr motion)
+  : _p (new TimelinePrivate(memory, motion))
 {
 }
 

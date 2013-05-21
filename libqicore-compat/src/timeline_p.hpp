@@ -18,6 +18,7 @@
 #include <alproxies/almemoryproxy.h>
 #include <alproxies/almotionproxy.h>
 
+#include <qitype/genericobject.hpp>
 #include <qicore-compat/timeline.hpp>
 #include <qicore-compat/model/animationmodel.hpp>
 #include <qicore-compat/model/actuatorcurvemodel.hpp>
@@ -38,7 +39,7 @@ class TimelinePrivate
 public:
   friend class Timeline;
 
-  TimelinePrivate(boost::shared_ptr<AL::ALBroker> broker);
+  TimelinePrivate(ObjectPtr memory, ObjectPtr motion);
   virtual ~TimelinePrivate(void);
 
   /**

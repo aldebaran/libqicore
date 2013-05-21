@@ -14,16 +14,17 @@
 #include <qicore-compat/model/animationmodel.hpp>
 
 std::string file;
-boost::shared_ptr<AL::ALBroker> broker;
+qi::ObjectPtr motion;
+qi::ObjectPtr memory;
 
 TEST(QiTimeline, CreateTimeline)
 {
-  qi::Timeline t(broker);
+  qi::Timeline t(memory, motion);
 }
 
 TEST(QiTimeline, OpenFile)
 {
-  qi::Timeline t(broker);
+  qi::Timeline t(memory, motion);
   qi::AnimationModelPtr anim(new qi::AnimationModel(file));
   anim->loadFromFile();
   t.setAnimation(anim);
@@ -31,7 +32,7 @@ TEST(QiTimeline, OpenFile)
 
 TEST(QiTimeline, OpenFileAndPlay)
 {
-  qi::Timeline t(broker);
+  qi::Timeline t(memory, motion);
   qi::AnimationModelPtr anim(new qi::AnimationModel(file));
   anim->loadFromFile();
   t.setAnimation(anim);
@@ -42,7 +43,7 @@ TEST(QiTimeline, OpenFileAndPlay)
 
 TEST(QiTimeline, PlayAndPause)
 {
-  qi::Timeline t(broker);
+  qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
   qi::AnimationModelPtr anim(new qi::AnimationModel(file));
   anim->loadFromFile();
@@ -57,7 +58,7 @@ TEST(QiTimeline, PlayAndPause)
 
 TEST(QiTimeline, PlayAndStop)
 {
-  qi::Timeline t(broker);
+  qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
   qi::AnimationModelPtr anim(new qi::AnimationModel(file));
   anim->loadFromFile();
@@ -68,7 +69,7 @@ TEST(QiTimeline, PlayAndStop)
 
 TEST(QiTimeline, modifyFPSBeforeStart)
 {
-  qi::Timeline t(broker);
+  qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
   qi::AnimationModelPtr anim(new qi::AnimationModel(file));
   anim->loadFromFile();
@@ -84,7 +85,7 @@ TEST(QiTimeline, modifyFPSBeforeStart)
 
 TEST(QiTimeline, modifyFPSAfterStart)
 {
-  qi::Timeline t(broker);
+  qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
   qi::AnimationModelPtr anim(new qi::AnimationModel(file));
   anim->loadFromFile();
@@ -99,7 +100,7 @@ TEST(QiTimeline, modifyFPSAfterStart)
 
 TEST(QiTimeline, goToBeforeStart)
 {
-  qi::Timeline t(broker);
+  qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
   qi::AnimationModelPtr anim(new qi::AnimationModel(file));
   anim->loadFromFile();
@@ -113,7 +114,7 @@ TEST(QiTimeline, goToBeforeStart)
 
 TEST(QiTimeline, goToAfterStart)
 {
-  qi::Timeline t(broker);
+  qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
   qi::AnimationModelPtr anim(new qi::AnimationModel (file));
   anim->loadFromFile();
@@ -137,7 +138,7 @@ int main(int argc, char** argv)
     return 2;
   }
   file = std::string(argv[1]);
-
+  boost::shared_ptr<AL::ALBroker> broker;
   try
   {
     broker = AL::ALBroker::createBroker(
@@ -152,6 +153,9 @@ int main(int argc, char** argv)
     launcher.loadLibrary("albase");
     launcher.loadLibrary("alresourcemanager");
     launcher.loadLibrary("motion");
+    qi::Session &session = broker->session();
+    memory = session.service("ALMemory");
+    motion = session.service("ALMotion");
   }
   catch(const std::exception &e)
   {

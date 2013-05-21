@@ -13,6 +13,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <qicore-compat/api.hpp>
+#include <qitype/genericobject.hpp>
 
 namespace AL
 {
@@ -30,7 +31,7 @@ class QICORECOMPAT_API Timeline
 {
   public:
     /// Constructor, take a ALBroker to speak with the outside world
-    Timeline(boost::shared_ptr<AL::ALBroker> broker);
+    Timeline(ObjectPtr memory, ObjectPtr motion);
     ~Timeline();
 
     /// Play the timeline
