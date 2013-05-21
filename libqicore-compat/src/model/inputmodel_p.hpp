@@ -9,6 +9,7 @@
 #define INPUT_P_H_
 
 #include <alserial/alserial.h>
+#include <qitype/metamethod.hpp>
 #include <qicore-compat/model/inputmodel.hpp>
 
 namespace qi
@@ -16,26 +17,20 @@ namespace qi
   class InputModelPrivate {
     friend class InputModel;
   public:
-    InputModelPrivate();
     InputModelPrivate(boost::shared_ptr<const AL::XmlElement> elt);
     InputModelPrivate(const std::string &name,
-                      InputModel::InputType type,
-                      int type_size,
+                      const Signature &signature,
                       InputModel::InputNature nature,
                       const std::string &STMValueName,
                       bool inner,
                       const std::string &tooltip,
-                      int id);
+                      unsigned int id);
 
   private:
-    std::string _name;
-    InputModel::InputType _type;
-    int _typeSize;
+    MetaMethod _metaMethod;
     InputModel::InputNature _nature;
     std::string _stmValueName;
     bool _inner;
-    std::string _tooltip;
-    int _id;
   };
 }
 

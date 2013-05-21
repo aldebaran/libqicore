@@ -83,34 +83,31 @@ TEST(XmlParser, LoadXARFile)
   EXPECT_EQ(resource->getTimeout(), 0);
 
   std::list<qi::ParameterModelPtr> parameters = rootBoxInterface->getParameters();
-  ASSERT_EQ(parameters.size(), 2);
+  ASSERT_EQ(parameters.size(), 4);
 
   qi::ParameterModelPtr parameter = parameters.front();
   ASSERT_TRUE(parameter);
-  EXPECT_EQ(parameter->getName(), "Begin position (s)");
-  EXPECT_EQ(parameter->getInheritsFromParent(), false);
-  EXPECT_EQ(parameter->getContentType(), qi::ParameterModel::ContentType_Double);
-  EXPECT_EQ(parameter->getDefaultValueDouble(), 0);
-  EXPECT_EQ(parameter->getMinDouble(), 0);
-  EXPECT_EQ(parameter->getMaxDouble(), 600);
+  EXPECT_EQ(parameter->metaProperty().name(), "File path");
+  EXPECT_EQ(parameter->getInheritsFromParent(), true);
+  EXPECT_EQ(qi::Signature(parameter->metaProperty().signature()).isConvertibleTo(qi::ParameterModel::Resource), 1.0f);
+  EXPECT_EQ(parameter->getDefaultValue().toString().empty(), true);
   EXPECT_EQ(parameter->getCustomChoice(), false);
   EXPECT_EQ(parameter->getPassword(), false);
-  EXPECT_EQ(parameter->getTooltip(),  "Position in seconds where the playing must start.");
-  EXPECT_EQ(parameter->getId(), 6);
+  EXPECT_EQ(parameter->getTooltip(),  "Path of the file (including its name) which is going to be sent on the box output.");
+  EXPECT_EQ(parameter->metaProperty().uid(), 4);
 
   std::list<qi::InputModelPtr> inputs = rootBoxInterface->getInputs();
   ASSERT_EQ(inputs.size(), 3);
 
   qi::InputModelPtr input = inputs.front();
   ASSERT_TRUE(input);
-  EXPECT_EQ(input->getName(), "onStop");
-  EXPECT_EQ(input->getType(), qi::InputModel::InputType_Bang);
-  EXPECT_EQ(input->getTypeSize(), 1);
+  EXPECT_EQ(input->metaMethod().name(), "onStop");
+  EXPECT_EQ(qi::Signature(input->metaMethod().parametersSignature()).isConvertibleTo(qi::Signature("_")), 0.95f);
   EXPECT_EQ(input->getNature(), qi::InputModel::InputNature_OnStop);
   EXPECT_EQ(input->getSTMValueName(), "");
   EXPECT_EQ(input->getInner(), false);
-  EXPECT_EQ(input->getTooltip(), "Box behavior stops when a signal is received on this input.");
-  EXPECT_EQ(input->getId(), 3);
+  EXPECT_EQ(input->metaMethod().description(), "Box behavior stops when a signal is received on this input.");
+  EXPECT_EQ(input->metaMethod().uid(), 3);
 
 
   std::list<qi::OutputModelPtr> outputs = rootBoxInterface->getOutputs();
@@ -118,13 +115,12 @@ TEST(XmlParser, LoadXARFile)
 
   qi::OutputModelPtr output = outputs.front();
   ASSERT_TRUE(output);
-  EXPECT_EQ(output->getName(), "onStopped");
-  EXPECT_EQ(output->getType(), qi::OutputModel::OutputType_Bang);
-  EXPECT_EQ(output->getTypeSize(), 1);
+  EXPECT_EQ(output->metaSignal().name(), "onStopped");
+  EXPECT_EQ(qi::Signature(output->metaSignal().parametersSignature()).isConvertibleTo(qi::Signature("_")), 0.95f);
   EXPECT_EQ(output->getNature(), qi::OutputModel::OutputNature_Stopped);
   EXPECT_EQ(output->getInner(), false);
   EXPECT_EQ(output->getTooltip(), "Signal sent when box behavior is finished.");
-  EXPECT_EQ(output->getId(), 4);
+  EXPECT_EQ(output->metaSignal().uid(), 4);
 
   qi::ContentsModelPtr contents = rootBoxInterface->getContents();
   ASSERT_TRUE(contents);
@@ -271,82 +267,74 @@ TEST(XmlParser, Ressource)
 
 TEST(XmlParser, Parameter)
 {
+  qi::ParameterModel parameter("Test", 0.0, 0.0, 600.0, false, false, false, "tooltip", 1);
+  EXPECT_TRUE(parameter.isValid());
 
-  qi::ParameterModel parameter;
-  parameter.setDefaultValueDouble(0.0);
-  parameter.setMinDouble(0.0);
-  parameter.setMaxDouble(600.0);
-  parameter.setName("Test");
-  parameter.setInheritsFromParent(false);
-  parameter.setCustomChoice(false);
-  parameter.setPassword(false);
-  parameter.setTooltip("tooltip");
-  parameter.setId(1);
-
-  ASSERT_EQ(parameter.getChoices().size(), 0);
-
-  ASSERT_TRUE(parameter.addChoice(qi::ChoiceModelPtr(new qi::ChoiceModel(1.0))));
-  ASSERT_FALSE(parameter.addChoice(qi::ChoiceModelPtr(new qi::ChoiceModel(false))));
-
-  ASSERT_EQ(parameter.getChoices().size(), 1);
+  EXPECT_EQ(parameter.getChoices().size(), 0);
+  EXPECT_TRUE(parameter.addChoice(qi::ChoiceModelPtr(new qi::ChoiceModel(1.0))));
+  EXPECT_FALSE(parameter.addChoice(qi::ChoiceModelPtr(new qi::ChoiceModel(false))));
+  EXPECT_EQ(parameter.getChoices().size(), 1);
 
   qi::ChoiceModelPtr choice = parameter.getChoices().front();
-  ASSERT_EQ(choice->getValueDouble(), 1.0);
+  EXPECT_EQ(choice->getValue().toDouble(), 1.0);
 
   //Test double value
-  ASSERT_EQ(parameter.getContentType(), qi::ParameterModel::ContentType_Double);
-  ASSERT_EQ(parameter.getDefaultValueDouble(), 0.0);
-  ASSERT_EQ(parameter.getMinDouble(), 0.0);
-  ASSERT_EQ(parameter.getMaxDouble(), 600.0);
+  ASSERT_EQ(qi::Signature(parameter.metaProperty().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Double)), 1.0f);
+  EXPECT_EQ(parameter.getDefaultValue().toDouble(), 0.0);
+  EXPECT_EQ(parameter.getMin().toDouble(), 0.0);
+  EXPECT_EQ(parameter.getMax().toDouble(), 600.0);
 
-  ASSERT_FALSE(parameter.setMinDouble(1.0));
-  ASSERT_EQ(parameter.getMinDouble(), 0.0);
-
-  ASSERT_FALSE(parameter.setMaxDouble(-100.0));
-  ASSERT_EQ(parameter.getMaxDouble(), 600.0);
-
-  ASSERT_FALSE(parameter.setDefaultValueDouble(-0.4));
-  ASSERT_EQ(parameter.getDefaultValueDouble(), 0.0);
-  ASSERT_TRUE( parameter.setDefaultValueDouble(45.0));
-  ASSERT_EQ(   parameter.getDefaultValueDouble(), 45.0);
-
+  EXPECT_FALSE(parameter.setValue(-0.4));
+  EXPECT_EQ(parameter.getDefaultValue().toDouble(), 0.0);
+  EXPECT_TRUE(parameter.setValue(45.0));
+  EXPECT_EQ(parameter.getDefaultValue().toDouble(), 45.0);
 
   //Test integer value
-  ASSERT_TRUE(parameter.setDefaultValueInt(42));
-  ASSERT_EQ(parameter.getContentType(), qi::ParameterModel::ContentType_Int);
-  ASSERT_EQ(  parameter.getDefaultValueInt(), 42);
-  ASSERT_EQ(  parameter.getMinInt(),          42);
-  ASSERT_EQ(  parameter.getMaxInt(),          42);
+  parameter.setMetaProperty(1, "Test", "i");
+  ASSERT_FALSE(parameter.isValid());
+  ASSERT_TRUE(parameter.setValue(42, 3, 42));
+  ASSERT_TRUE(parameter.isValid());
+  ASSERT_EQ(qi::Signature(parameter.metaProperty().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Int32)), 1.0f);
+  ASSERT_EQ(parameter.getDefaultValue().toInt(), 42);
+  ASSERT_EQ(parameter.getMin().toInt(),          3);
+  ASSERT_EQ(parameter.getMax().toInt(),          42);
 
   //Test string value
-  parameter.setDefaultValueString("Foo");
-  ASSERT_EQ(parameter.getContentType(), qi::ParameterModel::ContentType_String);
-  ASSERT_EQ(parameter.getDefaultValueString(), "Foo");
+  parameter.setMetaProperty(1, "Test", "s");
+  ASSERT_TRUE(parameter.setValue("Foo"));
+  EXPECT_EQ(qi::Signature(parameter.metaProperty().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_String)), 1.0f);
+  EXPECT_EQ(parameter.getDefaultValue().toString(), "Foo");
 
   //Test bool value
-  parameter.setDefaultValueBool(true);
-  ASSERT_EQ(parameter.getContentType(), qi::ParameterModel::ContentType_Bool);
-  ASSERT_TRUE(parameter.getDefaultValueBool());
+  parameter.setMetaProperty(1, "Test", "b");
+  parameter.setValue(true);
+  ASSERT_EQ(qi::Signature(parameter.metaProperty().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Bool)), 1.0f);
+  EXPECT_TRUE(parameter.getDefaultValue().to<bool>());
+
+  //Test resource
+  parameter.setMetaProperty(1, "Test", "s<Resource>");
+  parameter.setValue("file.ext");
+  EXPECT_EQ(qi::Signature(parameter.metaProperty().signature()).toString(), qi::ParameterModel::Resource.toString());
+  EXPECT_EQ(parameter.getDefaultValue().toString(), "file.ext");
 
   //Test other attribute
-  ASSERT_EQ(parameter.getName(),"Test");
-  ASSERT_FALSE(parameter.getInheritsFromParent());
-  ASSERT_FALSE(parameter.getCustomChoice());
-  ASSERT_FALSE(parameter.getPassword());
-  ASSERT_EQ(parameter.getTooltip(),"tooltip");
-  ASSERT_EQ(parameter.getId(), 1);
-  parameter.setName("Test1");
+  EXPECT_EQ(parameter.metaProperty().name(),"Test");
+  EXPECT_FALSE(parameter.getInheritsFromParent());
+  EXPECT_FALSE(parameter.getCustomChoice());
+  EXPECT_FALSE(parameter.getPassword());
+  EXPECT_EQ(parameter.getTooltip(),"tooltip");
+  EXPECT_EQ(parameter.metaProperty().uid(), 1);
+  parameter.setMetaProperty(2, "Test1", "s");
   parameter.setInheritsFromParent(true);
   parameter.setCustomChoice(true);
   parameter.setPassword(true);
   parameter.setTooltip("tooltip1");
-  parameter.setId(2);
-  ASSERT_EQ(parameter.getName(),"Test1");
-  ASSERT_TRUE(parameter.getInheritsFromParent());
-  ASSERT_TRUE(parameter.getCustomChoice());
-  ASSERT_TRUE(parameter.getPassword());
-  ASSERT_EQ(parameter.getTooltip(),"tooltip1");
-  ASSERT_EQ(parameter.getId(), 2);
+  EXPECT_EQ(parameter.metaProperty().name(),"Test1");
+  EXPECT_TRUE(parameter.getInheritsFromParent());
+  EXPECT_TRUE(parameter.getCustomChoice());
+  EXPECT_TRUE(parameter.getPassword());
+  EXPECT_EQ(parameter.getTooltip(),"tooltip1");
+  EXPECT_EQ(parameter.metaProperty().uid(), 2);
 }
 
 
@@ -357,79 +345,77 @@ TEST(XmlParser, Choice)
   qi::ChoiceModel doubleChoice(42.42);
   qi::ChoiceModel stringChoice(std::string("str"));
 
-  EXPECT_EQ(boolChoice.getType(), qi::ParameterModel::ContentType_Bool);
-  EXPECT_TRUE(boolChoice.getValueBool());
+  EXPECT_EQ(qi::Signature(boolChoice.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Bool)), 1.0f);
+  EXPECT_TRUE(boolChoice.getValue().to<bool>());
 
-  EXPECT_EQ(intChoice.getType(), qi::ParameterModel::ContentType_Int);
-  EXPECT_EQ(intChoice.getValueInt(), 42);
+  EXPECT_EQ(qi::Signature(intChoice.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Int32)), 1.0f);
+  EXPECT_EQ(intChoice.getValue().toInt(), 42);
 
-  EXPECT_EQ(doubleChoice.getType(), qi::ParameterModel::ContentType_Double);
-  EXPECT_EQ(doubleChoice.getValueDouble(), 42.42);
+  EXPECT_EQ(qi::Signature(doubleChoice.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Double)), 1.0f);
+  EXPECT_EQ(doubleChoice.getValue().toDouble(), 42.42);
 
-  EXPECT_EQ(stringChoice.getType(), qi::ParameterModel::ContentType_String);
-  EXPECT_EQ(stringChoice.getValueString(), "str");
+  EXPECT_EQ(qi::Signature(stringChoice.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_String)), 1.0f);
+  EXPECT_EQ(stringChoice.getValue().toString(), "str");
 
-  boolChoice.setValueInt(42);
-  EXPECT_EQ(boolChoice.getType(), qi::ParameterModel::ContentType_Int);
-  EXPECT_EQ(boolChoice.getValueDouble(), 42);
+  boolChoice.setValue(42);
+  EXPECT_EQ(qi::Signature(boolChoice.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Int32)), 1.0f);
+  EXPECT_EQ(boolChoice.getValue().toInt(), 42);
 
-  boolChoice.setValueDouble(42.42);
-  EXPECT_EQ(boolChoice.getType(), qi::ParameterModel::ContentType_Double);
-  EXPECT_EQ(boolChoice.getValueDouble(), 42.42);
+  boolChoice.setValue(42.42);
+  EXPECT_EQ(qi::Signature(boolChoice.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Double)), 1.0f);
+  EXPECT_EQ(boolChoice.getValue().toDouble(), 42.42);
 
-  boolChoice.setValueString("42.42");
-  EXPECT_EQ(boolChoice.getType(), qi::ParameterModel::ContentType_String);
-  EXPECT_EQ(boolChoice.getValueString(), "42.42");
+  boolChoice.setValue("42.42");
+  EXPECT_EQ(qi::Signature(boolChoice.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_String)), 1.0f);
+  EXPECT_EQ(boolChoice.getValue().toString(), "42.42");
 
-  boolChoice.setValueBool(false);
-  EXPECT_EQ(boolChoice.getType(), qi::ParameterModel::ContentType_Bool);
-  EXPECT_FALSE(boolChoice.getValueBool());
+  boolChoice.setValue(false);
+  EXPECT_EQ(qi::Signature(boolChoice.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Bool)), 1.0f);
+  EXPECT_FALSE(boolChoice.getValue().to<bool>());
+
+  boolChoice.setValue("file.ext");
+  EXPECT_EQ(qi::Signature(boolChoice.getValue().signature()).isConvertibleTo(qi::ParameterModel::Resource), 1.0f);
+  EXPECT_EQ(boolChoice.getValue().toString(), "file.ext");
+
 }
 
 TEST(XmlParser, Input)
 {
   qi::InputModel input("Foo",
-                  qi::InputModel::InputType_Number,
-                  1,
-                  qi::InputModel::InputNature_OnLoad,
-                  false,
-                  "tooltip",
-                  42);
+                       "i",
+                       qi::InputModel::InputNature_OnLoad,
+                       false,
+                       "tooltip",
+                       42);
 
   qi::InputModel inputstm("Foo2",
-                     qi::InputModel::InputType_Bang,
-                     1,
-                     "stm_value_name",
-                     false,
-                     "tooltip",
-                     42);
+                          "(s)",
+                          "stm_value_name",
+                          false,
+                          "tooltip",
+                          42);
 
-  EXPECT_EQ(input.getName(), "Foo");
-  EXPECT_EQ(input.getType(), qi::InputModel::InputType_Number);
-  EXPECT_EQ(input.getTypeSize(), 1);
+  EXPECT_EQ(input.metaMethod().name(), "Foo");
+  EXPECT_EQ(qi::Signature(input.metaMethod().parametersSignature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Int32)), 1.0f);
   EXPECT_EQ(input.getNature(), qi::InputModel::InputNature_OnLoad);
   EXPECT_EQ(input.getSTMValueName(), "");
   EXPECT_EQ(input.getInner(), false);
-  EXPECT_EQ(input.getTooltip(), "tooltip");
-  EXPECT_EQ(input.getId(), 42);
+  EXPECT_EQ(input.metaMethod().description(), "tooltip");
+  EXPECT_EQ(input.metaMethod().uid(), 42);
 
-  EXPECT_EQ(inputstm.getName(), "Foo2");
-  EXPECT_EQ(inputstm.getType(), qi::InputModel::InputType_Bang);
-  EXPECT_EQ(inputstm.getTypeSize(), 1);
+  EXPECT_EQ(inputstm.metaMethod().name(), "Foo2");
+  EXPECT_GT(qi::Signature(inputstm.metaMethod().parametersSignature()).isConvertibleTo(qi::Signature("(s)")), 1.0f);
   EXPECT_EQ(inputstm.getNature(), qi::InputModel::InputNature_STMValue);
   EXPECT_EQ(inputstm.getSTMValueName(), "stm_value_name");
   EXPECT_EQ(inputstm.getInner(), false);
-  EXPECT_EQ(inputstm.getTooltip(), "tooltip");
-  EXPECT_EQ(inputstm.getId(), 42);
+  EXPECT_EQ(inputstm.metaMethod().description(), "tooltip");
+  EXPECT_EQ(inputstm.metaMethod().uid(), 42);
 
-  input.setName("Fa");
-  EXPECT_EQ(input.getName(), "Fa");
-
-  input.setType(qi::InputModel::InputType_Dynamic);
-  EXPECT_EQ(input.getType(), qi::InputModel::InputType_Dynamic);
-
-  input.setTypeSize(2);
-  EXPECT_EQ(input.getTypeSize(), 2);
+  input.setMetaMethod("Fa", "s", "Tooltip2", 314159);
+  EXPECT_EQ(input.metaMethod().name(), "Fa");
+  EXPECT_EQ(qi::Signature(input.metaMethod().parametersSignature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_String)), 1.0f);
+  EXPECT_EQ(input.metaMethod().description(), "Tooltip2");
+  EXPECT_EQ(input.metaMethod().uid(), 314159);
 
   input.setNature(qi::InputModel::InputNature_Event);
   EXPECT_EQ(input.getNature(), qi::InputModel::InputNature_Event);
@@ -440,40 +426,28 @@ TEST(XmlParser, Input)
 
   input.setInner(true);
   EXPECT_EQ(input.getInner(), true);
-
-  input.setTooltip("Tooltip2");
-  EXPECT_EQ(input.getTooltip(), "Tooltip2");
-
-  input.setId(314159);
-  EXPECT_EQ(input.getId(), 314159);
 }
 
 TEST(XmlParser, Output)
 {
   qi::OutputModel output("Foo",
-                  qi::OutputModel::OutputType_Number,
-                  1,
-                  qi::OutputModel::OutputNature_Punctual,
-                  false,
-                  "tooltip",
-                  42);
+                         "i",
+                         qi::OutputModel::OutputNature_Punctual,
+                         false,
+                         "tooltip",
+                         42);
 
-  EXPECT_EQ(output.getName(), "Foo");
-  EXPECT_EQ(output.getType(), qi::OutputModel::OutputType_Number);
-  EXPECT_EQ(output.getTypeSize(), 1);
+  EXPECT_EQ(output.metaSignal().name(), "Foo");
+  EXPECT_EQ(qi::Signature(output.metaSignal().parametersSignature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Int32)), 1.0f);
   EXPECT_EQ(output.getNature(), qi::OutputModel::OutputNature_Punctual);
   EXPECT_EQ(output.getInner(), false);
   EXPECT_EQ(output.getTooltip(), "tooltip");
-  EXPECT_EQ(output.getId(), 42);
+  EXPECT_EQ(output.metaSignal().uid(), 42);
 
-  output.setName("Fa");
-  EXPECT_EQ(output.getName(), "Fa");
-
-  output.setType(qi::OutputModel::OutputType_Dynamic);
-  EXPECT_EQ(output.getType(), qi::OutputModel::OutputType_Dynamic);
-
-  output.setTypeSize(2);
-  EXPECT_EQ(output.getTypeSize(), 2);
+  output.setMetaSignal("Fa", "s", 314159);
+  EXPECT_EQ(output.metaSignal().name(), "Fa");
+  EXPECT_EQ(qi::Signature(output.metaSignal().parametersSignature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_String)), 1.0f);
+  EXPECT_EQ(output.metaSignal().uid(), 314159);
 
   output.setNature(qi::OutputModel::OutputNature_Stopped);
   EXPECT_EQ(output.getNature(), qi::OutputModel::OutputNature_Stopped);
@@ -484,8 +458,6 @@ TEST(XmlParser, Output)
   output.setTooltip("Tooltip2");
   EXPECT_EQ(output.getTooltip(), "Tooltip2");
 
-  output.setId(314159);
-  EXPECT_EQ(output.getId(), 314159);
 }
 
 TEST(XmlParse, Content)
@@ -556,36 +528,25 @@ TEST(XmlParse, BoxInterface)
   interface.addResource(qi::ResourceModelPtr(new qi::ResourceModel("toto", qi::ResourceModel::LockType_CallbackOnDemand, 0)));
   EXPECT_EQ(interface.getResources().size(), 1);
 
-  qi::ParameterModelPtr parameter(new qi::ParameterModel());
-  parameter->setDefaultValueDouble(0.0);
-  parameter->setMinDouble(0.0);
-  parameter->setMaxDouble(600.0);
-  parameter->setName("Test");
-  parameter->setInheritsFromParent(false);
-  parameter->setCustomChoice(false);
-  parameter->setPassword(false);
-  parameter->setTooltip("tooltip");
-  parameter->setId(1);
+  qi::ParameterModelPtr parameter(new qi::ParameterModel("Test", 0.0, 0.0, 600.0, false, false, false, "tooltip", 1));
 
-  interface.addParameter(parameter);
+  EXPECT_TRUE(interface.addParameter(parameter));
   EXPECT_EQ(interface.getParameters().size(), 1);
 
   interface.addInput(qi::InputModelPtr(new qi::InputModel("Foo",
-                                                   qi::InputModel::InputType_Number,
-                                                   1,
-                                                   qi::InputModel::InputNature_OnLoad,
-                                                   false,
-                                                   "tooltip",
-                                                   42)));
+                                                          "s",
+                                                          qi::InputModel::InputNature_OnLoad,
+                                                          false,
+                                                          "tooltip",
+                                                          42)));
   EXPECT_EQ(interface.getInputs().size(), 1);
 
   interface.addOutput(qi::OutputModelPtr(new qi::OutputModel("Foo",
-                                           qi::OutputModel::OutputType_Number,
-                                           1,
-                                           qi::OutputModel::OutputNature_Punctual,
-                                           false,
-                                           "tooltip",
-                                           42)));
+                                                             "s",
+                                                             qi::OutputModel::OutputNature_Punctual,
+                                                             false,
+                                                             "tooltip",
+                                                             42)));
   EXPECT_EQ(interface.getOutputs().size(), 1);
 
   interface.addContent(qi::ContentModelPtr(new qi::ContentModel(qi::ContentModel::ContentType_PythonScript, "main.py", "")));
@@ -859,21 +820,12 @@ TEST(XmlParser, Link)
 TEST(XmlParser, BoxInstance)
 {
   qi::BoxInterfaceModelPtr interface(new qi::BoxInterfaceModel("box.xml", "1", "1","box", "tooltip", "45"));
-  qi::ParameterModelPtr parameter(new qi::ParameterModel());
-  parameter->setDefaultValueDouble(0.0);
-  parameter->setMinDouble(0.0);
-  parameter->setMaxDouble(600.0);
-  parameter->setName("Test");
-  parameter->setInheritsFromParent(false);
-  parameter->setCustomChoice(false);
-  parameter->setPassword(false);
-  parameter->setTooltip("tooltip");
-  parameter->setId(0);
+  qi::ParameterModelPtr parameter(new qi::ParameterModel("Test", 0.0, 0.0, 600.0, false, false, false, "tooltip", 0));
 
   interface->addParameter(parameter);
 
   qi::BoxInstanceModel box("root", 1, 2, 3, interface);
-
+  EXPECT_TRUE(box.isValid());
   EXPECT_EQ(box.getName(), "root");
   EXPECT_EQ(box.getId(), 1);
   EXPECT_EQ(box.getX(), 2);
@@ -881,7 +833,6 @@ TEST(XmlParser, BoxInstance)
   EXPECT_EQ(box.getParametersValue().size(), 0);
   EXPECT_EQ(box.getPath(), "box.xml");
   EXPECT_EQ(box.getInterface(), interface);
-
 
   box.setName("ra");
   EXPECT_EQ(box.getName(), "ra");
@@ -895,11 +846,10 @@ TEST(XmlParser, BoxInstance)
   box.setY(4);
   EXPECT_EQ(box.getY(), 4);
 
-  qi::ParameterValueModelPtr param(new qi::ParameterValueModel());
+  qi::ParameterValueModelPtr param(new qi::ParameterValueModel(0, "Toto"));
   EXPECT_FALSE(box.addParameterValue(param));
 
-  param->setValueDouble(12.5);
-  param->setId(0);
+  param->setValueDefault(12.5);
   EXPECT_TRUE(box.addParameterValue(param));
   EXPECT_EQ(box.getParametersValue().size(), 1);
 
@@ -912,28 +862,30 @@ TEST(XmlParser, BoxInstance)
 
 TEST(XmlParser, ParameterValue)
 {
-  qi::ParameterValueModel value;
-  value.setValueDouble(12.5);
-  value.setId(0);
+  qi::ParameterValueModel value(0, 12.5);
 
   EXPECT_EQ(value.getId(), 0);
   value.setId(1);
   EXPECT_EQ(value.getId(), 1);
 
-  EXPECT_EQ(value.getType(), qi::ParameterModel::ContentType_Double);
-  EXPECT_EQ(value.getValueDouble(), 12.5);
+  EXPECT_EQ(qi::Signature(value.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Double)), 1.0f);
+  EXPECT_EQ(value.getValue().toDouble(), 12.5);
 
-  value.setValueBool(true);
-  EXPECT_EQ(value.getType(), qi::ParameterModel::ContentType_Bool);
-  EXPECT_EQ(value.getValueInt(), true);
+  value.setValueDefault(true);
+  EXPECT_EQ(qi::Signature(value.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Bool)), 1.0f);
+  EXPECT_EQ(value.getValue().to<bool>(), true);
 
-  value.setValueInt(1);
-  EXPECT_EQ(value.getType(), qi::ParameterModel::ContentType_Int);
-  EXPECT_EQ(value.getValueInt(), 1);
+  value.setValueDefault(1);
+  EXPECT_EQ(qi::Signature(value.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_Int32)), 1.0f);
+  EXPECT_EQ(value.getValue().toInt(), 1);
 
-  value.setValueString("test");
-  EXPECT_EQ(value.getType(), qi::ParameterModel::ContentType_String);
-  EXPECT_EQ(value.getValueString(), "test");
+  value.setValueDefault("test");
+  EXPECT_EQ(qi::Signature(value.getValue().signature()).isConvertibleTo(qi::Signature::fromType(qi::Signature::Type_String)), 1.0f);
+  EXPECT_EQ(value.getValue().toString(), "test");
+
+  value.setValueDefault("file.ext");
+  EXPECT_EQ(qi::Signature(value.getValue().signature()).isConvertibleTo(qi::ParameterModel::Resource), 1.0f);
+  EXPECT_EQ(value.getValue().toString(), "file.ext");
 }
 
 int main(int argc, char **argv)

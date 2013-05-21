@@ -18,13 +18,13 @@ namespace qi {
   class ParameterValueModelPrivate {
     friend class ParameterValueModel;
   public:
-    ParameterValueModelPrivate();
+    ParameterValueModelPrivate(int id, AutoGenericValuePtr value);
     ParameterValueModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, BoxInterfaceModelPtr interface);
 
   private:
     int _id;
-    ParameterModel::ContentType _type;
-    GenericValue _value;
+    GenericValuePtr _value;
+    bool _isValid;
   };
 }
 

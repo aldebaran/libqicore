@@ -7,79 +7,62 @@
 #include <qicore-compat/model/choicemodel.hpp>
 #include "choicemodel_p.hpp"
 
+#include <qi/log.hpp>
+qiLogCategory("QiCore-Compat.ChoiceModel");
+
 namespace qi {
 
   //----------------------------------------Private Class------------------------------------------//
 
-  ChoiceModelPrivate::ChoiceModelPrivate(const GenericValue &value, ParameterModel::ContentType type)
+  ChoiceModelPrivate::ChoiceModelPrivate(AutoGenericValuePtr value) :
+    _value(value.clone()),
+    _isValid(true)
   {
-    _type = type;
-    _value = value;
   }
 
   ChoiceModelPrivate::ChoiceModelPrivate(boost::shared_ptr<const AL::XmlElement> elt,
-                                         ParameterModel::ContentType type) :
+                                         const Signature& type) :
     _value(),
-    _type(type)
+    _isValid(true)
   {
-    switch(_type)
+    if(type.isConvertibleTo(Signature::fromType(Signature::Type_Bool)))
     {
-    case ParameterModel::ContentType_Bool:
       bool valueBool;
       elt->getAttribute("value", valueBool);
-      _value = GenericValue(valueBool);
-      break;
-
-    case ParameterModel::ContentType_Int:
+      _value = GenericValuePtr(&valueBool).clone();
+    }
+    else if(type.isConvertibleTo(Signature::fromType(Signature::Type_Int32)))
+    {
       int valueInt;
       elt->getAttribute("value", valueInt);
-      _value = GenericValue(valueInt);
-      break;
-
-    case ParameterModel::ContentType_Double:
+      _value = GenericValuePtr(&valueInt).clone();
+    }
+    else if(type.isConvertibleTo(Signature::fromType(Signature::Type_Double)))
+    {
       double valueDouble;
       elt->getAttribute("value", valueDouble);
-      _value = GenericValue(valueDouble);
-      break;
-
-    case ParameterModel::ContentType_String:
-    case ParameterModel::ContentType_Ressource:
+      _value = GenericValuePtr(&valueDouble).clone();
+    }
+    else if(type.isConvertibleTo(Signature::fromType(Signature::Type_String)))
     {
       std::string valueString;
       elt->getAttribute("value", valueString);
-      _value = GenericValue(valueString);
-      break;
+      _value = GenericValuePtr(&valueString).clone();
     }
-
-    case ParameterModel::ContentType_Error:
-      break;
+    else
+    {
+      _isValid = false;
     }
   }
 
   //-----------------------------------------Public Class------------------------------------------//
 
-  ChoiceModel::ChoiceModel(bool value) :
-    _p(new ChoiceModelPrivate(GenericValue(value), ParameterModel::ContentType_Bool))
+  ChoiceModel::ChoiceModel(AutoGenericValuePtr value) :
+    _p(new ChoiceModelPrivate(value))
   {
   }
 
-  ChoiceModel::ChoiceModel(int value) :
-    _p(new ChoiceModelPrivate(GenericValue(value), ParameterModel::ContentType_Int))
-  {
-  }
-
-  ChoiceModel::ChoiceModel(double value) :
-    _p(new ChoiceModelPrivate(GenericValue(value), ParameterModel::ContentType_Double))
-  {
-    qiLogDebug("QICore") << "Double Choice" << std::endl;
-  }
-
-  ChoiceModel::ChoiceModel(const std::string &value) :
-    _p(new ChoiceModelPrivate(GenericValue(value), ParameterModel::ContentType_String))
-  {
-  }
-
-  ChoiceModel::ChoiceModel(boost::shared_ptr<const AL::XmlElement> elt, ParameterModel::ContentType type) :
+  ChoiceModel::ChoiceModel(boost::shared_ptr<const AL::XmlElement> elt, const Signature &type) :
     _p(new ChoiceModelPrivate(elt, type))
   {
   }
@@ -89,53 +72,13 @@ namespace qi {
     delete _p;
   }
 
-  bool ChoiceModel::getValueBool()
+  GenericValuePtr ChoiceModel::getValue() const
   {
-    return _p->_value.to<bool>();
+    return _p->_value;
   }
 
-  int ChoiceModel::getValueInt()
+  void ChoiceModel::setValue(AutoGenericValuePtr value)
   {
-    return _p->_value.toInt();
+    _p->_value = value.clone();
   }
-
-  double ChoiceModel::getValueDouble()
-  {
-    return _p->_value.toDouble();
-  }
-
-  std::string ChoiceModel::getValueString()
-  {
-    return _p->_value.toString();
-  }
-
-  int ChoiceModel::getType()
-  {
-    return _p->_type;
-  }
-
-  void ChoiceModel::setValueBool(bool value)
-  {
-    _p->_type  = ParameterModel::ContentType_Bool;
-    _p->_value = GenericValue(value);
-  }
-
-  void ChoiceModel::setValueInt(int value)
-  {
-    _p->_type  = ParameterModel::ContentType_Int;
-    _p->_value = GenericValue(value);
-  }
-
-  void ChoiceModel::setValueDouble(double value)
-  {
-    _p->_type  = ParameterModel::ContentType_Double;
-    _p->_value = GenericValue(value);
-  }
-
-  void ChoiceModel::setValueString(const std::string& value)
-  {
-    _p->_type  = ParameterModel::ContentType_String;
-    _p->_value = GenericValue(value);
-  }
-
 }

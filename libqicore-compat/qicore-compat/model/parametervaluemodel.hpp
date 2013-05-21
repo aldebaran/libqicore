@@ -6,10 +6,12 @@
 #pragma once
 
 #ifndef PARAMETERVALUE_H_
-# define PARAMETERVALUE_H_
+#define PARAMETERVALUE_H_
 
-# include <qicore-compat/api.hpp>
-# include <alserial/alserial.h>
+#include <qicore-compat/api.hpp>
+#include <alserial/alserial.h>
+#include <qitype/signature.hpp>
+#include <qitype/genericvalue.hpp>
 
 namespace qi {
   class ParameterValueModelPrivate;
@@ -17,23 +19,18 @@ namespace qi {
 
   class QICORECOMPAT_API ParameterValueModel {
   public:
-    ParameterValueModel();
+    ParameterValueModel(int id, AutoGenericValuePtr value);
     ParameterValueModel(boost::shared_ptr<const AL::XmlElement> elt, boost::shared_ptr<BoxInterfaceModel> interface);
 
     virtual ~ParameterValueModel();
 
     int getId()                  const;
-    int getType()                const;
-    bool getValueBool()          const;
-    int getValueInt()            const;
-    double getValueDouble()      const;
-    std::string getValueString() const;
+    GenericValuePtr getValue() const;
 
     void setId(int id);
-    void setValueBool(bool value);
-    void setValueInt(int value);
-    void setValueDouble(double value);
-    void setValueString(const std::string& value);
+    void setValueDefault(AutoGenericValuePtr value);
+
+    bool isValid() const;
 
   private:
     QI_DISALLOW_COPY_AND_ASSIGN(ParameterValueModel);

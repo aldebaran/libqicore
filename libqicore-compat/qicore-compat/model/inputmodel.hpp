@@ -9,6 +9,7 @@
 #define INPUT_H_
 
 #include <alserial/alserial.h>
+#include <qitype/metamethod.hpp>
 #include <qicore-compat/api.hpp>
 
 namespace qi
@@ -17,14 +18,6 @@ namespace qi
 
   class QICORECOMPAT_API InputModel {
   public:
-    enum InputType {
-      InputType_Dynamic = 0,
-      InputType_Bang    = 1,
-      InputType_Number  = 2,
-      InputType_String  = 3,
-      InputType_Error   = -1
-    };
-
     enum InputNature  {
       InputNature_OnLoad   = 0,
       InputNature_Event    = 1,
@@ -36,15 +29,13 @@ namespace qi
 
     InputModel(boost::shared_ptr<const AL::XmlElement> elt);
     InputModel(const std::string &name,
-               InputType type,
-               int type_size,
+               const Signature &signature,
                InputNature nature,
                bool inner,
                const std::string &tooltip,
                int id);
     InputModel(const std::string &name,
-               InputType type,
-               int type_size,
+               const Signature &signature,
                const std::string &stm_value_name,
                bool inner,
                const std::string &tooltip,
@@ -52,23 +43,20 @@ namespace qi
 
     virtual ~InputModel();
 
-    const std::string& getName() const;
-    InputType getType() const;
-    int getTypeSize() const;
+
+    const MetaMethod& metaMethod() const;
     InputNature getNature() const;
     const std::string& getSTMValueName() const;
     bool getInner() const;
-    const std::string& getTooltip() const;
-    int getId() const;
 
-    void setName(const std::string& name);
-    void setType(InputType type);
-    void setTypeSize(int type_size);
+
+    void setMetaMethod(const std::string &name,
+                       const Signature &signature,
+                       const std::string &tooltip,
+                       unsigned int id);
     void setNature(InputNature nature);
     void setSTMValueName(const std::string& stm_value_name);
     void setInner(bool inner);
-    void setTooltip(const std::string& tooltip);
-    void setId(int id);
 
   private:
     QI_DISALLOW_COPY_AND_ASSIGN(InputModel);

@@ -3,11 +3,13 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
-#include <qi/log.hpp>
-
 #include <qicore-compat/model/boxinstancemodel.hpp>
 #include <qicore-compat/model/parametermodel.hpp>
 #include "boxinstancemodel_p.hpp"
+
+
+#include <qi/log.hpp>
+qiLogCategory("QiCore-Compat.BoxInstanceModel");
 
 namespace qi {
   BoxInstanceModelPrivate::BoxInstanceModelPrivate() :
@@ -70,13 +72,11 @@ namespace qi {
 
   bool BoxInstanceModelPrivate::addParameterValue(ParameterValueModelPtr value)
   {
-
-
     ParameterModelPtr param = _interface->findParameter(value->getId());
 
-    if(value->getType() == ParameterModel::ContentType_Error)
+    if(!value->isValid())
     {
-      qiLogError("QICore") << "Invalid ParameterValue, in BoxInterface.name = "
+      qiLogError() << "Invalid ParameterValue, in BoxInterface.name = "
                            << _interface->getName()
                            << " ParameterValue is not initialized."
                            << std::endl;
@@ -85,7 +85,7 @@ namespace qi {
 
     if (!param)
     {
-      qiLogError("QICore") << "Invalid ParameterValue, in BoxInterface.name = "
+      qiLogError() << "Invalid ParameterValue, in BoxInterface.name = "
                            << _interface->getName()
                            << " Parameter with id = "
                            << value->getId()
@@ -94,20 +94,24 @@ namespace qi {
       return false;
     }
 
-    if (!param->checkInterval(value))
+    if(Signature(param->metaProperty().signature()).isConvertibleTo(Signature(value->getValue().signature())) < 1.0f)
     {
-      qiLogError("QICore") << "Invalid ParameterValue, in BoxInterface.name = "
-                           << _interface->getName()
-                           << " ParameterValue is not in interval of Parameter."
-                           << std::endl;
+      qiLogDebug() << "Xml File : " << _interface->getPath();
+      qiLogDebug() << "Parameter.signature = " << param->metaProperty().signature();
+      qiLogDebug() << "ParameterValue.signature = " << value->getValue().signature();
+      qiLogError() << "Invalid ParameterValue, in BoxInterface.name = \""
+                   << _interface->getName() << "\""
+                   << " ParameterValue have not the same signature as Parameter.name ="
+                   << param->metaProperty().name() << "."
+                   << std::endl;
       return false;
     }
 
-    if(param->getContentType() != value->getType())
+    if (!param->checkInterval(value))
     {
-      qiLogError("QICore") << "Invalid ParameterValue, in BoxInterface.name = "
+      qiLogError() << "Invalid ParameterValue, in BoxInterface.name = "
                            << _interface->getName()
-                           << " ParameterValue is not the same type as Parameter."
+                           << " ParameterValue is not in interval of Parameter."
                            << std::endl;
       return false;
     }

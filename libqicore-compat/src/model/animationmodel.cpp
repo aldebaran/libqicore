@@ -4,11 +4,13 @@
 */
 
 #include <alserial/alserial.h>
-#include <qi/log.hpp>
 #include <boost/filesystem.hpp>
 
 #include <qicore-compat/model/animationmodel.hpp>
 #include "animationmodel_p.hpp"
+
+#include <qi/log.hpp>
+qiLogCategory("QiCore-Compat.AnimationModel");
 
 namespace qi
 {
@@ -40,11 +42,11 @@ namespace qi
 
     if(!xmlFile)
     {
-      qiLogError("QICore") << "Failed to open the given file : "
-                           << _path
-                           << std::endl
-                           << errorMsg
-                           << std::endl;
+      qiLogError() << "Failed to open the given file : "
+                   << _path
+                   << std::endl
+                   << errorMsg
+                   << std::endl;
       return false;
     }
 
@@ -52,9 +54,9 @@ namespace qi
 
     if(root == NULL)
     {
-      qiLogError("QICore") << "No root element in the given file : "
-                           << _path
-                           << std::endl;
+      qiLogError() << "No root element in the given file : "
+                   << _path
+                   << std::endl;
       return false;
     }
 
@@ -68,9 +70,9 @@ namespace qi
 
     if( actuator_list.size() != 1 )
     {
-      qiLogError("QIcore") << "Exactly one tag \"ActuatorList\" is required in file : "
-                           << _path
-                           << std::endl;
+      qiLogError() << "Exactly one tag \"ActuatorList\" is required in file : "
+                   << _path
+                   << std::endl;
       return false;
     }
 

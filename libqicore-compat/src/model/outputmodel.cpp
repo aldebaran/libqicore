@@ -10,54 +10,43 @@
 
 namespace qi
 {
-  OutputModelPrivate::OutputModelPrivate() :
-    _name(),
-    _type(),
-    _typeSize(),
-    _nature(),
-    _inner(),
-    _tooltip(),
-    _id()
-  {
-  }
-
   OutputModelPrivate::OutputModelPrivate(const std::string &name,
-                                         int type,
-                                         int type_size,
+                                         const Signature &signature,
                                          int nature,
                                          bool inner,
                                          const std::string &tooltip,
-                                         int id) :
-    _name(name),
-    _type(type),
-    _typeSize(type_size),
+                                         unsigned int id) :
+
+    _metaSignal(id, name, signature.toString()),
     _nature(nature),
     _inner(inner),
-    _tooltip(tooltip),
-    _id(id)
+    _tooltip(tooltip)
   {
   }
 
   OutputModelPrivate::OutputModelPrivate(boost::shared_ptr<const AL::XmlElement> elt)
   {
-    elt->getAttribute("name",      _name);
-    elt->getAttribute("type",      _type);
-    elt->getAttribute("type_size", _typeSize);
+    std::string signature;
+    std::string name;
+    int id;
+    elt->getAttribute("name",      name);
+    elt->getAttribute("type",      signature);
+    elt->getAttribute("id",        id);
+    _metaSignal = MetaSignal(id, name, signature);
+
     elt->getAttribute("nature",    _nature);
     elt->getAttribute("inner",     _inner);
     elt->getAttribute("tooltip",   _tooltip);
-    elt->getAttribute("id",        _id);
   }
 
   //--------------------------------Public Class-----------------------------------------//
   OutputModel::OutputModel(const std::string &name,
-                           int type,
-                           int type_size,
+                           const Signature &signature,
                            int nature,
                            bool inner,
                            const std::string &tooltip,
                            int id) :
-    _p(new OutputModelPrivate(name, type, type_size, nature, inner, tooltip, id))
+    _p(new OutputModelPrivate(name, signature, nature, inner, tooltip, id))
   {
   }
 
@@ -72,19 +61,9 @@ namespace qi
   }
 
   //--------------------------------Getter-----------------------------------------//
-  const std::string& OutputModel::getName() const
+  const MetaSignal& OutputModel::metaSignal() const
   {
-    return _p->_name;
-  }
-
-  int OutputModel::getType() const
-  {
-    return _p->_type;
-  }
-
-  int OutputModel::getTypeSize() const
-  {
-    return _p->_typeSize;
+    return _p->_metaSignal;
   }
 
   int OutputModel::getNature() const
@@ -102,24 +81,11 @@ namespace qi
     return _p->_tooltip;
   }
 
-  int OutputModel::getId() const
+  void OutputModel::setMetaSignal(const std::string &name,
+                                  const Signature &signature,
+                                  unsigned int id)
   {
-    return _p->_id;
-  }
-
-  void OutputModel::setName(const std::string& name)
-  {
-    _p->_name = name;
-  }
-
-  void OutputModel::setType(int type)
-  {
-    _p->_type = type;
-  }
-
-  void OutputModel::setTypeSize(int type_size)
-  {
-    _p->_typeSize = type_size;
+    _p->_metaSignal = MetaSignal(id, name, signature.toString());
   }
 
   void OutputModel::setNature(int nature)
@@ -135,10 +101,5 @@ namespace qi
   void OutputModel::setTooltip(const std::string& tooltip)
   {
     _p->_tooltip = tooltip;
-  }
-
-  void OutputModel::setId(int id)
-  {
-    _p->_id = id;
   }
 }

@@ -17,12 +17,12 @@ namespace qi
   {
     friend class ChoiceModel;
   public:
-    ChoiceModelPrivate(const GenericValue &value, ParameterModel::ContentType type);
-    ChoiceModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, ParameterModel::ContentType type);
+    ChoiceModelPrivate(AutoGenericValuePtr value);
+    ChoiceModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const Signature& type);
 
   private:
-    GenericValue _value;
-    ParameterModel::ContentType _type;
+    GenericValuePtr _value;
+    bool _isValid;
   };
 }
 

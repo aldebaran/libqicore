@@ -7,8 +7,8 @@
         </PluginContent>
     </BoxInstance>
     <BoxInstance name="Say Text" id="7" x="858" y="198" path="B_0_0_Say_Text7.xml" >
-        <ParameterValue id="5" value="100" />
         <ParameterValue id="6" value="100" />
+        <ParameterValue id="5" value="100" />
     </BoxInstance>
     <Link inputowner="8" indexofinput="2" outputowner="1" indexofoutput="3" />
     <Link inputowner="15" indexofinput="2" outputowner="14" indexofoutput="3" />

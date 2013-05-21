@@ -76,7 +76,7 @@ namespace qi
 
     bool loadFromFile();
 
-    boost::shared_ptr<ParameterModel> findParameter(int id) const;
+    boost::shared_ptr<ParameterModel> findParameter(unsigned int id) const;
 
   private:
     QI_DISALLOW_COPY_AND_ASSIGN(BoxInterfaceModel);

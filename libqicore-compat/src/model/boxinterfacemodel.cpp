@@ -6,7 +6,6 @@
 #include <boost/filesystem.hpp>
 
 #include <alserial/alserial.h>
-#include <qi/log.hpp>
 
 #include <qicore-compat/model/boxinterfacemodel.hpp>
 #include <qicore-compat/model/parametermodel.hpp>
@@ -15,6 +14,8 @@
 
 #include "xmlutils.hpp"
 
+#include <qi/log.hpp>
+qiLogCategory("QiCore-Compat.BoxInterfaceModel");
 
 namespace qi {
   //------------------------------------Private Class---------------------------------------//
@@ -57,11 +58,11 @@ namespace qi {
 
     if (!xmlFile)
     {
-      qiLogError("QICore") << "Failed to open the given file : "
-                           << _path
-                           << std::endl
-                           << errorMsg
-                           << std::endl;
+      qiLogError() << "Failed to open the given file : "
+                   << _path
+                   << std::endl
+                   << errorMsg
+                   << std::endl;
       return false;
     }
 
@@ -70,9 +71,9 @@ namespace qi {
 
     if (root == NULL)
     {
-      qiLogError("QICore") << "No root element in the given file : "
-                           << _path
-                           << std::endl;
+      qiLogError() << "No root element in the given file : "
+                   << _path
+                   << std::endl;
       return false;
     }
 
@@ -87,9 +88,9 @@ namespace qi {
 
     if (bitmaps.size() > 5)
     {
-      qiLogError("QICore") << "Too many Bitmap (max 4) tag in file : "
-                           << _path
-                           << std::endl;
+      qiLogError() << "Too many Bitmap (max 4) tag in file : "
+                   << _path
+                   << std::endl;
       return false;
     }
 
@@ -104,11 +105,11 @@ namespace qi {
     {
       if((*it)->getLockType() == ResourceModel::LockType_Error)
       {
-        qiLogError("QICore") << "In file : "
-                             << _path
-                             << ". Invalid type in tag Resource.name = "
-                             << (*it)->getName()
-                             << std::endl;
+        qiLogError() << "In file : "
+                     << _path
+                     << ". Invalid type in tag Resource.name = "
+                     << (*it)->getName()
+                     << std::endl;
         return false;
       }
     }
@@ -120,13 +121,14 @@ namespace qi {
         itEnd = _parameters.end();
         it != itEnd; ++it)
     {
-      if((*it)->getContentType() == ParameterModel::ContentType_Error)
+      ParameterModelPtr parameter = *it;
+      if(!parameter->isValid())
       {
-        qiLogError("QICore") << "In file : "
-                             << _path
-                             << ". Invalid type in tag Parameter.name = "
-                             << (*it)->getName()
-                             << std::endl;
+        qiLogError() << "In file : "
+                     << _path
+                     << ". Invalid type in tag Parameter.name = "
+                     << parameter->metaProperty().name()
+                     << std::endl;
         return false;
       }
     }
@@ -135,9 +137,9 @@ namespace qi {
 
     if (inputs.size() < 1)
     {
-      qiLogError("QICore") << "At least one tag Input is required in file : "
-                           << _path
-                           << std::endl;
+      qiLogError() << "At least one tag Input is required in file : "
+                   << _path
+                   << std::endl;
       return false;
     }
     _inputs = XmlUtils::constructObjects<InputModel>(inputs);
@@ -150,9 +152,9 @@ namespace qi {
 
     if(contents.empty() || contents.size() > 1)
     {
-      qiLogError("QICore") << "Exactly one tag Contents is required in file"
-                           << _path
-                           << std::endl;
+      qiLogError() << "Exactly one tag Contents is required in file"
+                   << _path
+                   << std::endl;
       return false;
     }
 
@@ -321,7 +323,7 @@ namespace qi {
 
   bool BoxInterfaceModel::addParameter(ParameterModelPtr parameter)
   {
-    if(parameter->getContentType() == ParameterModel::ContentType_Error)
+    if(!parameter->isValid())
       return false;
 
     _p->_parameters.push_front(parameter);
@@ -346,7 +348,7 @@ namespace qi {
     _p->_contents->addContent(content);
   }
 
-  ParameterModelPtr BoxInterfaceModel::findParameter(int id) const
+  ParameterModelPtr BoxInterfaceModel::findParameter(unsigned int id) const
   {
     ParameterModelPtr rest = ParameterModelPtr();
 
@@ -356,7 +358,7 @@ namespace qi {
     {
       ParameterModelPtr ptr = *it;
 
-      if(ptr->getId() == id)
+      if(ptr->metaProperty().uid() == id)
       {
         rest = ptr;
         break;

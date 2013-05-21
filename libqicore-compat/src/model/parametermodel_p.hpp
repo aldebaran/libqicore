@@ -10,6 +10,8 @@
 
 #include <qicore-compat/model/choicemodel.hpp>
 #include <qitype/genericvalue.hpp>
+#include <qitype/signature.hpp>
+#include <qitype/metaproperty.hpp>
 #include <alserial/alserial.h>
 
 namespace qi
@@ -18,34 +20,25 @@ namespace qi
   {
     friend class ParameterModel;
   public:
-    ParameterModelPrivate();
+    ParameterModelPrivate(const std::string &name, AutoGenericValuePtr defaultValue, bool inheritsFromParent, bool customChoice, bool password, const std::string &tooltip, unsigned int id, bool resource);
+    ParameterModelPrivate(const std::string &name, AutoGenericValuePtr defaultValue, AutoGenericValuePtr min, AutoGenericValuePtr max, bool inheritsFromParent, bool customChoice, bool password, const std::string &tooltip, unsigned int id);
 
     ParameterModelPrivate(boost::shared_ptr<const AL::XmlElement> elt);
 
-    template <typename T>
-    bool inInterval(T value, T min, T max);
+
+    bool inInterval(GenericValuePtr value, GenericValuePtr min, GenericValuePtr max) const;
 
   private:
-    std::string _name;
+    MetaProperty _metaProperty;
     bool _inheritsFromParent;
-    ParameterModel::ContentType _contentType;
-    GenericValue _defaultValue;
-    GenericValue _min;
-    GenericValue                          _max;
-    bool                                  _customChoice;
-    bool                                  _password;
-    std::string                           _tooltip;
-    int                                   _id;
+    bool _customChoice;
+    bool _password;
+    std::string _tooltip;
     std::list<boost::shared_ptr<ChoiceModel> > _choices;
+    bool _isValid;
+    GenericValuePtr _defaultValue;
+    GenericValuePtr _min;
+    GenericValuePtr _max;
   };
-
-  template <typename T>
-  bool ParameterModelPrivate::inInterval(T value, T min, T max)
-  {
-    if(value < min || value > max)
-      return false;
-
-    return true;
-  }
 }
 #endif /* !PARAMETER_P_H_ */

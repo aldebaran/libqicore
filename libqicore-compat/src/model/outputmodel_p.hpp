@@ -9,6 +9,8 @@
 #define OUTPUT_P_H_
 
 #include <alserial/alserial.h>
+#include <qitype/signature.hpp>
+#include <qitype/metasignal.hpp>
 
 namespace qi
 {
@@ -16,23 +18,18 @@ namespace qi
   {
     friend class OutputModel;
   public:
-    OutputModelPrivate();
     OutputModelPrivate(boost::shared_ptr<const AL::XmlElement> elt);
     OutputModelPrivate(const std::string &name,
-                       int type,
-                       int type_size,
+                       const Signature &signature,
                        int nature,
                        bool inner,
                        const std::string &tooltip,
-                       int id);
+                       unsigned int id);
   private:
-    std::string _name;
-    int _type;
-    int _typeSize;
+    MetaSignal _metaSignal;
     int _nature;
     bool _inner;
     std::string _tooltip;
-    int _id;
   };
 
 }

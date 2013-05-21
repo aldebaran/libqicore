@@ -8,13 +8,15 @@
 #include <qicore-compat/model/parametervaluemodel.hpp>
 #include "parametervaluemodel_p.hpp"
 
+#include <qi/log.hpp>
+qiLogCategory("QiCore-Compat.ParameterValueModel");
+
 namespace qi {
-  ParameterValueModelPrivate::ParameterValueModelPrivate() :
-    _id(),
-    _type(ParameterModel::ContentType_Error)
+  ParameterValueModelPrivate::ParameterValueModelPrivate(int id, AutoGenericValuePtr value) :
+    _id(id),
+    _value(value.clone()),
+    _isValid(true)
   {
-    int defaultvalue = 0;
-    _value = GenericValue(defaultvalue);
   }
 
   ParameterValueModelPrivate::ParameterValueModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, BoxInterfaceModelPtr interface)
@@ -22,44 +24,48 @@ namespace qi {
     elt->getAttribute("id", _id);
 
     ParameterModelPtr param = interface->findParameter(_id);
-
-    _type = param->getContentType();
-    switch(_type)
+    if(!param)
     {
-    case ParameterModel::ContentType_Bool:
+      qiLogError() << "Parameter not found." << std::endl;
+      _isValid = false;
+      return;
+    }
+
+    Signature type(param->metaProperty().signature());
+    _isValid = true;
+    if(type.isConvertibleTo(Signature::fromType(Signature::Type_Bool)) == 1.0f)
+    {
       bool valueBool;
       elt->getAttribute("value", valueBool);
-      _value = GenericValue(valueBool);
-      break;
-
-    case ParameterModel::ContentType_Double:
-      double valueDouble;
-      elt->getAttribute("value", valueDouble);
-      _value = GenericValue(valueDouble);
-      break;
-
-    case ParameterModel::ContentType_Int:
+      _value = GenericValue(valueBool).clone();
+    }
+    else if(type.isConvertibleTo(Signature::fromType(Signature::Type_Int32)) == 1.0f)
+    {
       int valueInt;
       elt->getAttribute("value", valueInt);
-      _value = GenericValue(valueInt);
-      break;
-
-    case ParameterModel::ContentType_Ressource:
-    case ParameterModel::ContentType_String:
+      _value = GenericValue(valueInt).clone();
+    }
+    else if(type.isConvertibleTo(Signature::fromType(Signature::Type_Double)) == 1.0f)
+    {
+      double valueDouble;
+      elt->getAttribute("value", valueDouble);
+      _value = GenericValue(valueDouble).clone();
+    }
+    else if(type.isConvertibleTo(Signature::fromType(Signature::Type_String)) == 1.0f)
     {
       std::string valueString;
       elt->getAttribute("value", valueString);
-      _value = GenericValue(valueString);
+      _value = GenericValue(valueString).clone();
     }
-      break;
-
-    default:
-      break;
+    else
+    {
+      qiLogError() << "Bad type : " << type.toString();
+      _isValid = false;
     }
   }
 
-  ParameterValueModel::ParameterValueModel() :
-    _p(new ParameterValueModelPrivate())
+  ParameterValueModel::ParameterValueModel(int id, AutoGenericValuePtr value) :
+    _p(new ParameterValueModelPrivate(id, value))
   {
   }
 
@@ -78,29 +84,9 @@ namespace qi {
     return _p->_id;
   }
 
-  int ParameterValueModel::getType() const
+  GenericValuePtr ParameterValueModel::getValue() const
   {
-    return _p->_type;
-  }
-
-  bool ParameterValueModel::getValueBool() const
-  {
-    return _p->_value.to<bool>();
-  }
-
-  int ParameterValueModel::getValueInt() const
-  {
-    return _p->_value.toInt();
-  }
-
-  double ParameterValueModel::getValueDouble() const
-  {
-    return _p->_value.to<double>();
-  }
-
-  std::string ParameterValueModel::getValueString() const
-  {
-    return _p->_value.toString();
+    return _p->_value;
   }
 
   void ParameterValueModel::setId(int id)
@@ -108,27 +94,13 @@ namespace qi {
     _p->_id = id;
   }
 
-  void ParameterValueModel::setValueBool(bool value)
+  void ParameterValueModel::setValueDefault(AutoGenericValuePtr value)
   {
-    _p->_type  = ParameterModel::ContentType_Bool;
-    _p->_value = GenericValue(value);
+    _p->_value = value.clone();
   }
 
-  void ParameterValueModel::setValueInt(int value)
+  bool ParameterValueModel::isValid() const
   {
-    _p->_type  = ParameterModel::ContentType_Int;
-    _p->_value = GenericValue(value);
-  }
-
-  void ParameterValueModel::setValueDouble(double value)
-  {
-    _p->_type  = ParameterModel::ContentType_Double;
-    _p->_value = GenericValue(value);
-  }
-
-  void ParameterValueModel::setValueString(const std::string& value)
-  {
-    _p->_type  = ParameterModel::ContentType_String;
-    _p->_value = GenericValue(value);
+    return _p->_isValid;
   }
 }

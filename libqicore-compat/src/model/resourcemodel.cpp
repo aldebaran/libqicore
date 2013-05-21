@@ -4,9 +4,10 @@
 */
 
 #include <qicore-compat/model/resourcemodel.hpp>
-#include <qi/log.hpp>
-#include <sstream>
 #include "resourcemodel_p.hpp"
+
+#include <qi/log.hpp>
+qiLogCategory("QiCore-Compat.ResourceModel");
 
 namespace qi
 {
@@ -36,13 +37,13 @@ namespace qi
     else
       _lockType = ResourceModel::LockType_Error;
 
-    qiLogDebug("QICore") << "Resource : name = "
-                         << _name
-                         << ", lock_type = "
-                         << _lockType << ", " << lock_type
-                         << ", timeout = "
-                         << _timeout
-                         << std::endl;
+    qiLogDebug() << "Resource : name = "
+                 << _name
+                 << ", lock_type = "
+                 << _lockType << ", " << lock_type
+                 << ", timeout = "
+                 << _timeout
+                 << std::endl;
 
 
   }

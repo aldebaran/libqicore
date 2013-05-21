@@ -3,11 +3,13 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
-#include <qi/log.hpp>
 #include <qicore-compat/model/keymodel.hpp>
 #include <qicore-compat/model/tangentmodel.hpp>
 #include "keymodel_p.hpp"
 #include "xmlutils.hpp"
+
+#include <qi/log.hpp>
+qiLogCategory("QiCore-Compat.KeyModel");
 
 namespace qi
 {
@@ -40,7 +42,7 @@ namespace qi
                          << std::endl;
     if(_tangents.size() != 2 && _tangents.size() != 0)
     {
-      qiLogError("QICore") << "Invalid number of tag Tangent"
+      qiLogError() << "Invalid number of tag Tangent"
                            << std::endl;
       _isValid = false;
     }

@@ -5,11 +5,13 @@
 
 #include <boost/filesystem.hpp>
 #include <alserial/alserial.h>
-#include <qi/log.hpp>
 
 #include <qicore-compat/model/flowdiagrammodel.hpp>
 #include "flowdiagrammodel_p.hpp"
 #include "xmlutils.hpp"
+
+#include <qi/log.hpp>
+qiLogCategory("QiCore-Compat.FlowDiagramModel");
 
 namespace qi {
   FlowDiagramModelPrivate::FlowDiagramModelPrivate(const std::string &path,
@@ -33,20 +35,20 @@ namespace qi {
 
     if(!xmlFile)
     {
-      qiLogError("QICore") << "Failed to open the given file : "
-                           << _path
-                           << std::endl
-                           << errorMsg
-                           << std::endl;
+      qiLogError() << "Failed to open the given file : "
+                   << _path
+                   << std::endl
+                   << errorMsg
+                   << std::endl;
       return false;
     }
 
     boost::shared_ptr<const AL::XmlElement> root = xmlFile->root();
     if(root == NULL)
     {
-      qiLogError("QICore") << "No root element in the given file : "
-                           << _path
-                           << std::endl;
+      qiLogError() << "No root element in the given file : "
+                   << _path
+                   << std::endl;
       return false;
     }
 
