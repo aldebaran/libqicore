@@ -98,3 +98,4 @@ qi_stage_lib(qicore-compat)
 
 add_subdirectory("python")
 add_subdirectory("tests")
+add_subdirectory("bin")
