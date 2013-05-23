@@ -1,10 +1,12 @@
 #include <gtest/gtest.h>
 
+#include <boost/assign/list_of.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <qi/application.hpp>
 
 #include <qitype/objectfactory.hpp>
+#include <qitype/proxyproperty.hpp>
 
 #include <qimessaging/session.hpp>
 #include <testsession/testsessionpair.hpp>
@@ -54,6 +56,14 @@ std::vector<qi::AnyValue> arguments(qi::AutoAnyReference v1 = qi::AutoAnyReferen
   return res;
 }
 
+class PropHolder
+{
+public:
+  qi::Property<qi::AnyValue> prop;
+  qi::Property<qi::AnyValue> prop2;
+};
+
+QI_REGISTER_OBJECT(PropHolder, prop, prop2);
 
 class TestObject
 {
@@ -86,6 +96,7 @@ QI_REGISTER_OBJECT(TestObject2, add, getv, setv, v, onAdd, lastAdd);
 // TestObjectService::create
 QI_REGISTER_OBJECT_FACTORY_BUILDER(TestObject);
 QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(TestObject2);
+QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(PropHolder);
 
 #define STRING(a) std::string(#a)
 TEST(Behavior, testFactory)
@@ -268,6 +279,41 @@ TEST(Behavior, targetPropertyDbgOff)
   b->call<void>("call", "a", "setv", arguments(55));
   PERSIST(, 55 == b->call<int>("call", "d", "getv", arguments()), 1000);
   ASSERT_EQ(55, b->call<int>("call", "d", "getv", arguments()));
+}
+
+TEST(Behavior, PropSet)
+{
+  TestSessionPair p;
+  qi::os::dlopen("behavior");
+  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
+  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
+  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->registerService("PropHolder", qi::createObject("PropHolder"));
+  qi::ObjectPtr propHolder = p.client()->service("PropHolder");
+  qi::ProxyProperty<qi::AnyValue> prop(propHolder, "prop");
+  qi::ProxyProperty<qi::AnyValue> prop2(propHolder, "prop2");
+
+  b->call<void>("loadString", "a x PropHolder prop=1 prop2=2");
+  b->call<void>("loadObjects");
+  EXPECT_EQ(1, prop.get().toInt());
+  EXPECT_EQ(2, prop2.get().toInt());
+  b->call<void>("unloadObjects");
+
+  b->call<void>("loadString", "a x PropHolder prop=[1,2] prop2=\"foo\"");
+  b->call<void>("loadObjects");
+  std::vector<int> vi = boost::assign::list_of(1)(2);
+  EXPECT_EQ(vi, prop.get().to<std::vector<int> >());
+  EXPECT_EQ("foo", prop2.get().toString());
+  b->call<void>("unloadObjects");
+
+  prop.set(qi::AnyValue::from(0)); prop2.set(qi::AnyValue::from(0));
+
+  b->call<void>("loadString", "a x PropHolder prop= [ 1 , 2 ]  prop2= \"foo\"  ");
+  b->call<void>("loadObjects");
+  vi = boost::assign::list_of(1)(2);
+  EXPECT_EQ(vi, prop.get().to<std::vector<int> >());
+  EXPECT_EQ("foo", prop2.get().toString());
+  b->call<void>("unloadObjects");
 }
 
 int main(int argc, char **argv) {
