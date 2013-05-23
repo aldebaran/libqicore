@@ -49,8 +49,7 @@ class BoxInterface(node.Node):
 
     def attach_input(self, attrs):
         input = xar_types.IO(attrs.getValue('name'),
-                             attrs.getValue('type'),
-                             attrs.getValue('type_size'),
+                             attrs.getValue('signature'),
                              attrs.getValue('nature'),
                              attrs.getValue('stm_value_name'),
                              attrs.getValue('inner'),
@@ -60,8 +59,7 @@ class BoxInterface(node.Node):
 
     def attach_output(self, attrs):
         output = xar_types.IO(attrs.getValue('name'),
-                              attrs.getValue('type'),
-                              attrs.getValue('type_size'),
+                              attrs.getValue('signature'),
                               attrs.getValue('nature'),
                               attrs.getValue('stm_value_name'),
                               attrs.getValue('inner'),

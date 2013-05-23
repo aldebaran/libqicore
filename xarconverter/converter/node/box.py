@@ -65,9 +65,12 @@ class Box(node.Node):
         self.script = script
 
     def attach_input(self, attrs):
+        ioType = attrs.getValue('type')
+        ioSize = attrs.getValue('type_size')
+
+        signature = xar_types.resolve_io_signature(ioType, ioSize)
         input = xar_types.IO(attrs.getValue('name'),
-                             attrs.getValue('type'),
-                             attrs.getValue('type_size'),
+                             signature,
                              attrs.getValue('nature'),
                              attrs.getValue('stm_value_name'),
                              attrs.getValue('inner'),
@@ -76,9 +79,12 @@ class Box(node.Node):
         self.inputs.append(input)
 
     def attach_output(self, attrs):
+        ioType = attrs.getValue('type')
+        ioSize = attrs.getValue('type_size')
+
+        signature = xar_types.resolve_io_signature(ioType, ioSize)
         output = xar_types.IO(attrs.getValue('name'),
-                              attrs.getValue('type'),
-                              attrs.getValue('type_size'),
+                              signature,
                               attrs.getValue('nature'),
                               attrs.getValue('stm_value_name'),
                               attrs.getValue('inner'),

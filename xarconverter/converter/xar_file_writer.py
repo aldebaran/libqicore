@@ -178,12 +178,10 @@ def _write_plugin_subnode(f, subnode, indent):
 
 
 def _write_input(f, input, indent):
-    f.write((u"{}<Input name=\"{}\" type=\"{}\""
-            + u" type_size=\"{}\" nature=\"{}\"")
+    f.write((u"{}<Input name=\"{}\" {} nature=\"{}\"")
             .format(indent,
                     input.name,
-                    input.type,
-                    input.type_size,
+                    _resolve_io_type_and_size(input),
                     input.nature))
 
     if input.stm_value_name:
@@ -198,12 +196,11 @@ def _write_input(f, input, indent):
 
 
 def _write_output(f, output, indent):
-    f.write((u"{}<Output name=\"{}\" type=\"{}\" type_size=\"{}\""
+    f.write((u"{}<Output name=\"{}\" {}"
             + u" nature=\"{}\" inner=\"{}\" tooltip=\"{}\" id=\"{}\" />{}")
             .format(indent,
                     output.name,
-                    output.type,
-                    output.type_size,
+                    _resolve_io_type_and_size(output),
                     output.nature,
                     output.inner,
                     saxutils.escape(output.tooltip, entities=ENTITIES),
@@ -217,12 +214,12 @@ def _write_parameter(f, parameter, value, indent):
             .format(indent,
                     parameter.name,
                     parameter.inherits_from_parent,
-                    parameter.content_type,
+                    _resolve_parameter_type(parameter),
                     value,
                     parameter.default_value))
 
-    if (parameter.content_type == xar_types.ParameterType.DOUBLE
-            or parameter.content_type == xar_types.ParameterType.INT):
+    if (parameter.type == xar_types.IOSignature.DOUBLE
+            or parameter.type == xar_types.IOSignature.INT):
         f.write((u" min=\"{}\" max=\"{}\"")
                 .format(parameter.min,
                         parameter.max))
@@ -251,6 +248,51 @@ def _write_parameter(f, parameter, value, indent):
                 .format(saxutils.escape(parameter.tooltip, entities=ENTITIES),
                         parameter.id,
                         os.linesep))
+
+
+def _resolve_io_type_and_size(io):
+    ioType = ""
+    ioSize = u"1"
+
+    # allowed because old xar do not manage complete types
+    signature = io.signature.strip("()")
+    if signature == xar_types.IOSignature.BANG:  # empty
+        ioType = xar_types.IOType.BANG
+    elif signature == xar_types.IOSignature.BITMAP:
+        ioType = xar_types.IOType.BITMAP
+    elif signature == xar_types.IOSignature.SOUND:
+        ioType = xar_types.IOType.SOUND
+    elif signature[0] == xar_types.IOSignature.DYNAMIC:
+        ioType = xar_types.IOType.DYNAMIC
+    elif signature[0] == xar_types.IOSignature.DOUBLE:
+        ioType = xar_types.IOType.NUMBER
+        ioSize = str(signature.count(xar_types.IOSignature.DOUBLE))
+    elif signature[0] == xar_types.IOSignature.STRING:
+        ioType = xar_types.IOType.STRING
+        ioSize = str(signature.count(xar_types.IOSignature.STRING))
+    else:
+        raise Exception("Unknown signature: %s" % io.type)
+
+    return u"type=\"{}\" type_size=\"{}\"".format(ioType, ioSize)
+
+
+def _resolve_parameter_type(parameter):
+    paramType = ""
+
+    if parameter.type == xar_types.IOSignature.BOOL:
+        paramType = xar_types.ParameterType.BOOL
+    elif parameter.type == xar_types.IOSignature.DOUBLE:
+        paramType = xar_types.ParameterType.DOUBLE
+    elif parameter.type == xar_types.IOSignature.INT:
+        paramType = xar_types.ParameterType.INT
+    elif parameter.type == xar_types.IOSignature.RESOURCE:
+        paramType = xar_types.ParameterType.RESOURCE
+    elif parameter.type == xar_types.IOSignature.STRING:
+        paramType = xar_types.ParameterType.STRING
+    else:
+        raise Exception("Unknown signature: %s" % parameter.type)
+
+    return paramType
 
 
 def _write_timeline(f, interface, indent):

@@ -27,10 +27,9 @@ class IO:
     """ Used to represent a input or output
     """
 
-    def __init__(self, name, type, type_size, nature, stm_value_name, inner, tooltip, id):
+    def __init__(self, name, signature, nature, stm_value_name, inner, tooltip, id):
         self.name = name
-        self.type = type
-        self.type_size = type_size
+        self.signature = signature
         self.nature = nature
         self.stm_value_name = stm_value_name
         self.inner = inner
@@ -136,6 +135,18 @@ class ParameterType:
     RESOURCE = u"4"
 
 
+class IOSignature:
+    BANG = u""
+    DYNAMIC = u"m"
+    STRING = u"s"
+    BITMAP = u"s<Bitmap>"  #old compatibility, maybe never used
+    SOUND = u"s<Sound>"  #old compatibility, maybe never used
+    BOOL = u"b"
+    INT = u"i"  # int32 only
+    DOUBLE = u"d"
+    RESOURCE = u"s<Resource>"  #todo fix that when qi::Signature API is frozen
+
+
 class ResourceMode:
     LOCK = u"Lock"
     STOP_ON_DEMAND = u"Stop on demand"
@@ -159,3 +170,52 @@ class ContentType:
     FLOW_DIAGRAM = u"2"
     BEHAVIOR_SEQUENCE = u"3"
     ANIMATION = u"4"
+
+
+def resolve_parameter_signature(paramType):
+    signature = ""
+
+    if paramType == ParameterType.BOOL:
+        signature = IOSignature.BOOL
+    elif paramType == ParameterType.DOUBLE:
+        signature = IOSignature.DOUBLE
+    elif paramType == ParameterType.INT:
+        signature = IOSignature.INT
+    elif paramType == ParameterType.RESOURCE:
+        signature = IOSignature.RESOURCE
+    elif paramType == ParameterType.STRING:
+        signature = IOSignature.STRING
+    else:
+        raise Exception("Unknown parameter type: %s" % paramType)
+
+    return signature
+
+
+def resolve_io_signature(ioType, ioSize):
+    signature = ""
+
+    if ioType == IOType.DYNAMIC:
+        signature = IOSignature.DYNAMIC
+    elif ioType == IOType.BANG:
+        signature = IOSignature.BANG
+    elif ioType == IOType.NUMBER:
+        signature = IOSignature.DOUBLE
+    elif ioType == IOType.STRING:
+        signature = IOSignature.STRING
+    elif ioType == IOType.BITMAP:
+        signature = IOSignature.BITMAP
+    elif ioType == IOType.SOUND:
+        signature = IOSignature.SOUND
+    else:
+        raise Exception("Unknown IO type: %s" % ioType)
+
+    result = ""
+    size = int(ioSize)
+    if size > 1:
+        result += u"("
+        for i in range(0, size):
+            result += signature
+        result += u")"
+    else:
+        result = signature
+    return u"(" + result + u")"

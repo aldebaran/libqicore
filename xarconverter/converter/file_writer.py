@@ -68,12 +68,11 @@ def write_box_interface(f, node):
         if not inp.tooltip:
             inp.tooltip = ""
         if inp.stm_value_name:
-            f.write((u"    <Input name=\"{}\" type=\"{}\" type_size=\"{}\""
+            f.write((u"    <Input name=\"{}\" signature=\"{}\""
                      + u" nature=\"{}\" stm_value_name=\"{}\" inner=\"{}\""
                      + u" tooltip=\"{}\" id=\"{}\" />{}")
                     .format(inp.name,
-                            inp.type,
-                            inp.type_size,
+                            saxutils.escape(inp.signature, entities=ENTITIES),
                             inp.nature,
                             inp.stm_value_name,
                             inp.inner,
@@ -81,12 +80,11 @@ def write_box_interface(f, node):
                             inp.id,
                             os.linesep))
         else:
-            f.write((u"    <Input name=\"{}\" type=\"{}\" type_size=\"{}\""
+            f.write((u"    <Input name=\"{}\" signature=\"{}\""
                     + u" nature=\"{}\" inner=\"{}\" tooltip=\"{}\""
                     + u" id=\"{}\" />{}")
                     .format(inp.name,
-                            inp.type,
-                            inp.type_size,
+                            saxutils.escape(inp.signature, entities=ENTITIES),
                             inp.nature,
                             inp.inner,
                             saxutils.escape(inp.tooltip, entities=ENTITIES),
@@ -96,12 +94,11 @@ def write_box_interface(f, node):
     for output in node.outputs:
         if not output.tooltip:
             output.tooltip = ""
-        f.write((u"    <Output name=\"{}\" type=\"{}\" type_size=\"{}\""
+        f.write((u"    <Output name=\"{}\" signature=\"{}\""
                  + u" nature=\"{}\" inner=\"{}\" tooltip=\"{}\""
                  + u" id=\"{}\" />{}")
                 .format(output.name,
-                        output.type,
-                        output.type_size,
+                        saxutils.escape(output.signature, entities=ENTITIES),
                         output.nature,
                         output.inner,
                         saxutils.escape(output.tooltip, entities=ENTITIES),
@@ -112,14 +109,14 @@ def write_box_interface(f, node):
         if not parameter.tooltip:
             parameter.tooltip = ""
         f.write((u"    <Parameter name=\"{}\" inherits_from_parent=\"{}\""
-                 + u" content_type=\"{}\" default_value=\"{}\"")
+                 + u" type=\"{}\" default_value=\"{}\"")
                 .format(parameter.name,
                         parameter.inherits_from_parent,
-                        parameter.content_type,
+                        saxutils.escape(parameter.type, entities=ENTITIES),
                         parameter.default_value))
 
-        if (parameter.content_type == xar_types.ParameterType.DOUBLE
-                or parameter.content_type == xar_types.ParameterType.INT):
+        if (parameter.type == xar_types.IOSignature.DOUBLE
+                or parameter.type == xar_types.IOSignature.INT):
             f.write((u" min=\"{}\" max=\"{}\"")
                     .format(parameter.min,
                             parameter.max))
