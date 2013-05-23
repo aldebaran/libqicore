@@ -26,7 +26,6 @@ def _default_args():
     args = []
     currentDir = os.path.dirname(os.path.abspath(__file__))
     args.append(os.path.join(currentDir,
-                             "..",
                              "tests",
                              "behavior1",
                              "behavior.xar"))

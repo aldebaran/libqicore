@@ -48,26 +48,32 @@ def _default_args():
                                                ".."))
 
     args.append(os.path.join(currentDir,
+                             "xarconverter",
                              "tests",
                              "behavior1",
                              "behavior.xar"))
     args.append(os.path.join(currentDir,
+                             "xarconverter",
                              "tests",
                              "behavior2",
                              "behavior.xar"))
     args.append(os.path.join(currentDir,
+                             "xarconverter",
                              "tests",
                              "behavior2",
                              "B_0_0_Hello1.xml"))
     args.append(os.path.join(currentDir,
+                             "xarconverter",
                              "tests",
                              "behavior2",
                              "B_0_0_Hello1.bhs"))
     args.append(os.path.join(currentDir,
+                             "xarconverter",
                              "tests",
                              "behavior2",
                              "B_0_0_Hello1.anim"))
     args.append(os.path.join(currentDir,
+                             "xarconverter",
                              "tests",
                              "behavior2",
                              "B_0_0_B1_0_FaceLeds0.fld"))
