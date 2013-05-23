@@ -1,3 +1,5 @@
+#include <boost/algorithm/string.hpp>
+
 #include <qicore/behavior.hpp>
 
 
@@ -46,33 +48,28 @@ namespace qi {
         state.uid = uid;
         state.interface = p1;
         state.factory = p2;
-        while (true)
+
+        std::string parameters;
+        std::getline(st,parameters);
+        size_t p = 0;
+        std::string::const_iterator begin = parameters.begin();
+        while (p <= parameters.size())
         {
-          std::string p;
-          st >> p;
-          if (p.empty())
+          size_t eq = parameters.find_first_of('=', p);
+          if (eq == parameters.npos)
+          { // check for remaining data
+            std::string remain = parameters.substr(p);
+            boost::trim(remain);
+            if (!remain.empty())
+              throw std::runtime_error("Trailing data: " + remain);
             break;
-          size_t sep = p.find_first_of('=');
-          if (sep == p.npos)
-            throw std::runtime_error("No '=' found in parameter " + p);
-          std::string key = p.substr(0, sep);
-          std::string val = p.substr(sep + 1);
-          // FIXME call parseText when someone will implement it
-          qi::GenericValue gValue;
-          char* lend;
-          long lval = strtol(val.c_str(), &lend, 0);
-          if (lend == val.c_str() + val.size())
-            gValue = qi::GenericValueRef(lval);
-          else
-          {
-            char* dend;
-            double dval = strtod(val.c_str(), &dend);
-            if (dend == val.c_str() + val.size())
-              gValue = qi::GenericValueRef(dval);
-            else
-              gValue = qi::GenericValueRef(val);
           }
-          state.parameters[key] = gValue;
+          std::string name = parameters.substr(p, eq-p);
+          boost::algorithm::trim(name);
+          qi::GenericValue gValue;
+          size_t end = decodeJSON(begin + eq + 1, begin + parameters.size(), gValue) - begin;
+          state.parameters[name] = gValue;
+          p = end;
         }
       }
       else
