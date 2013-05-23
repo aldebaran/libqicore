@@ -1,5 +1,5 @@
 #include <boost/algorithm/string.hpp>
-
+#include <qitype/jsoncodec.hpp>
 #include <qicore/behavior.hpp>
 
 
@@ -63,31 +63,10 @@ namespace qi {
             if (!remain.empty())
               throw std::runtime_error("Trailing data: " + remain);
             break;
-
-          size_t sep = p.find_first_of('=');
-          if (sep == p.npos)
-            throw std::runtime_error("No '=' found in parameter " + p);
-          std::string key = p.substr(0, sep);
-          std::string val = p.substr(sep + 1);
-          // FIXME call parseText when someone will implement it
-          qi::AnyValue gValue;
-          char* lend;
-          long lval = strtol(val.c_str(), &lend, 0);
-          if (lend == val.c_str() + val.size())
-            gValue = qi::AnyReference(lval);
-          else
-          {
-            char* dend;
-            double dval = strtod(val.c_str(), &dend);
-            if (dend == val.c_str() + val.size())
-              gValue = qi::AnyReference(dval);
-            else
-              gValue = qi::AnyReference(val);
-
           }
           std::string name = parameters.substr(p, eq-p);
           boost::algorithm::trim(name);
-          qi::GenericValue gValue;
+          qi::AnyValue gValue;
           size_t end = decodeJSON(begin + eq + 1, begin + parameters.size(), gValue) - begin;
           state.parameters[name] = gValue;
           p = end;
