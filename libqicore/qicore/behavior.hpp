@@ -5,7 +5,7 @@
 
 
 #ifndef QICORE_BEHAVIOR_H_
-# define QICORE_BEHAVIOR__H
+# define QICORE_BEHAVIOR_H_
 
 #include <qicore/api.hpp>
 #include <qitype/anyvalue.hpp>
