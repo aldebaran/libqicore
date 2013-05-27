@@ -45,18 +45,22 @@ public:
   Behavior(): _session(new qi::Session) {}
   ~Behavior() { delete _session;}
   AnyObject makeObject(const std::string& model, const std::string& factory, const qi::BehaviorModel::ParameterMap& params);
-  void loadObjects();
+  void loadObjects(bool debugmode);
   void unloadObjects();
   void setTransitions(bool debugmode, qi::MetaCallType type = qi::MetaCallType_Auto);
   void removeTransitions();
   void loadFile(const std::string& path);
   void loadString(const std::string& data);
   void connect(const std::string& url);
+  ObjectPtr object(const std::string& name);
   qi::AnyValue call(const std::string& objUid, const std::string& fun, std::vector<qi::AnyValue> args);
 
   /// Triggered when a transition occurrs, if transitions were set in debug mode.
   qi::Signal<const std::string&, qi::AnyValue> onTransition;
-
+  /// Triggered when one of the tasks enter/leave an error state
+  qi::Signal<const std::string&, const std::string&> onTaskError;
+  /// Triggered when one of the tasks's running property changes state
+  qi::Signal<const std::string&, bool> onTaskRunning;
 
 public:
   void setModel(const qi::BehaviorModel &model) { _model = model; }
@@ -73,13 +77,17 @@ private:
   void transition(qi::AnyValue argument, const std::string& transitionId);
 
 private:
+  typedef qi::SignalBase::Link Link;
+  // hooks on running/error
+  typedef std::map<std::string, std::pair<Link, Link> > ObjectLinks;
+  ObjectLinks       _objectLinks;
   qi::BehaviorModel _model;
   ObjectMap         _objects;
   TransitionMap     _transitions;
   qi::Session*      _session;
 };
 
-QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call, onTransition, model, objects, transitions, setModel);
+QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call, onTransition, model, objects, transitions, setModel, onTaskRunning, onTaskError);
 QI_REGISTER_OBJECT_FACTORY_BUILDER(Behavior);
 
 
@@ -121,7 +129,19 @@ void Behavior::connect(const std::string& url)
   session().connect(url);
 }
 
-void Behavior::loadObjects()
+static void onTaskErrorBounce(Behavior* b, const std::string& task, const std::string& err)
+{
+  qiLogDebug() << "onTaskError " << task << " " << err;
+  b->onTaskError(task, err);
+}
+
+static void onTaskRunningBounce(Behavior* b, const std::string& task, bool state)
+{
+  qiLogDebug() << "onTaskRunning " << task << " " << state;
+  b->onTaskRunning(task, state);
+}
+
+void Behavior::loadObjects(bool debugmode)
 {
   if (!_objects.empty())
     throw std::runtime_error("Objects already present");
@@ -130,6 +150,27 @@ void Behavior::loadObjects()
     qiLogDebug() << "loading " << n.first << " from " <<n.second.factory;
     AnyObject o = makeObject(n.second.interface, n.second.factory, n.second.parameters);
     _objects[n.first] = o;
+    if (debugmode)
+    {
+      qi::MetaObject mo = o->metaObject();
+      int pRunningId = mo.propertyId("running");
+      int pErrorId = mo.propertyId("error");
+      if (pRunningId!= -1 && pErrorId != -1)
+      {
+        qiLogDebug() << "Detected a Task, hooking signals...";
+        SignalLink lRunning = o->connect("running",
+          (boost::function<void(bool)>)boost::bind(
+            &onTaskRunningBounce, this, n.first, _1));
+
+        SignalLink lError = o->connect("error",
+          (boost::function<void(const std::string&)>)boost::bind(
+            onTaskErrorBounce, this, n.first, _1));
+        _objectLinks[n.first] = std::make_pair(lRunning, lError);
+        if (lRunning == qi::SignalBase::invalidSignalLink
+          || lError == qi::SignalBase::invalidSignalLink)
+          qiLogError() << "Failed to hook Task signals for " << n.first;
+      }
+    }
   }
   qiLogDebug() << "loadObjects finished";
 }
@@ -138,6 +179,19 @@ void Behavior::unloadObjects()
 {
   if (!_transitions.empty())
     throw std::runtime_error("Refusing to unload with transitions presents");
+  // unhook Task signals
+  for (ObjectLinks::iterator it = _objectLinks.begin(); it != _objectLinks.end(); ++it)
+  {
+    AnyObject& obj = _objects[it->first];
+    if (!obj)
+    {
+      qiLogError() << "Expected object in map for " << it->first;
+      continue;
+    }
+    obj->disconnect(it->second.first);
+    obj->disconnect(it->second.second);
+  }
+  _objectLinks.clear();
   _objects.clear();
 }
 
@@ -315,5 +369,12 @@ void Behavior::transition(qi::AnyValue arg, const std::string& transId)
     args.push_back(qi::AnyReference(arg.type, arg.value));
     t.target->metaPost(t.targetMethod, args);
   }
+}
+
+qi::ObjectPtr Behavior::object(const std::string& s)
+{
+  qi::ObjectPtr res = _objects[s];
+  qiLogDebug() << "transmiting object " << s <<" : " << res;
+  return res;
 }
 

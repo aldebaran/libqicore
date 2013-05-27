@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <boost/assign/list_of.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <qi/application.hpp>
@@ -9,6 +10,8 @@
 #include <qitype/proxyproperty.hpp>
 
 #include <qimessaging/session.hpp>
+
+#include <qicore/task.hpp>
 #include <testsession/testsessionpair.hpp>
 
 
@@ -56,6 +59,77 @@ std::vector<qi::AnyValue> arguments(qi::AutoAnyReference v1 = qi::AutoAnyReferen
   return res;
 }
 
+template<typename T> class Pulse
+{
+public:
+  Pulse(T& tgt, T start, T end)
+  : tgt(tgt), end(end)
+  {
+    tgt = start;
+  }
+  ~Pulse()
+  {
+    tgt = end;
+  }
+  T& tgt;
+  T end;
+};
+
+template<typename T> class Pulse<qi::Property<T> >
+{
+public:
+  Pulse(qi::Property<T>& prop, T start, T end)
+  :prop(prop), end(end)
+  {
+    prop.set(start);
+  }
+  ~Pulse()
+  {
+    prop.set(end);
+  }
+  qi::Property<T>& prop;
+  T end;
+};
+
+class SqrtTask: public qi::Task
+{
+public:
+  virtual bool interrupt()
+  {
+    if (_running)
+    {
+      _running = false;
+      return true;
+    }
+    else
+      return false;
+  }
+  void start(double v)
+  {
+    qiLogInfo("SqrtTask") << "start " << v;
+    Pulse<qi::Property<bool> > pulse(running, true, false);
+    Pulse<bool> pulse2(_running, true, false);
+    if (v < 0)
+    {
+      error.set("Negative input");
+    }
+    else
+    {
+      // hmm, that's a long computation...
+      qi::os::msleep(v);
+      if (!_running)
+        error.set("interrupted");
+      else
+        val.set(std::sqrt(v));
+    }
+    qiLogInfo("SqrtTask") << "stop";
+  }
+  qi::Property<double> val;
+  bool _running;
+};
+
+QI_REGISTER_OBJECT(SqrtTask, start, val, QI_TASK_MEMBERS);
+
 class PropHolder
 {
 public:
@@ -98,6 +172,7 @@ QI_REGISTER_OBJECT(TestObject2, add, getv, setv, v, onAdd, lastAdd);
 
 // TestObjectService::create
 QI_REGISTER_OBJECT_FACTORY_BUILDER(TestObject);
+QI_REGISTER_OBJECT_FACTORY_BUILDER(SqrtTask);
 QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(TestObject2);
 QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(PropHolder);
 
@@ -120,7 +195,7 @@ TEST(Behavior, testFactory)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects");
+  b->call<void>("loadObjects", false);
   b->call<void>("call", "a", "setv", arguments(42));
   ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
   b->call<void>("call", "b", "setv", arguments(1));
@@ -153,7 +228,7 @@ TEST(Behavior, testService)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects");
+  b->call<void>("loadObjects", false);
   ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
   ASSERT_EQ(1, b->call<int>("call", "b", "getv", arguments()));
   ASSERT_EQ(2, b->call<int>("call", "c", "getv", arguments()));
@@ -205,7 +280,7 @@ TEST(Behavior, transitionTrack)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects");
+  b->call<void>("loadObjects", false);
   b->call<void>("call", "a", "setv", arguments(42));
   ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
   b->call<void>("call", "b", "setv", arguments(1));
@@ -248,7 +323,7 @@ TEST(Behavior, targetPropertyDbgOn)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects");
+  b->call<void>("loadObjects", false);
   b->call<void>("setTransitions", true);
   b->call<void>("call", "a", "setv", arguments(55));
   PERSIST(, 55 == b->call<int>("call", "d", "getv", arguments()), 1000);
@@ -277,7 +352,7 @@ TEST(Behavior, targetPropertyDbgOff)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects");
+  b->call<void>("loadObjects", false);
   b->call<void>("setTransitions", false);
   b->call<void>("call", "a", "setv", arguments(55));
   PERSIST(, 55 == b->call<int>("call", "d", "getv", arguments()), 1000);
@@ -297,13 +372,13 @@ TEST(Behavior, PropSet)
   qi::ProxyProperty<qi::AnyValue> prop2(propHolder, "prop2");
 
   b->call<void>("loadString", "a x PropHolder prop=1 prop2=2");
-  b->call<void>("loadObjects");
+  b->call<void>("loadObjects", false);
   EXPECT_EQ(1, prop.get().toInt());
   EXPECT_EQ(2, prop2.get().toInt());
   b->call<void>("unloadObjects");
 
   b->call<void>("loadString", "a x PropHolder prop=[1,2] prop2=\"foo\"");
-  b->call<void>("loadObjects");
+  b->call<void>("loadObjects", false);
   std::vector<int> vi = boost::assign::list_of(1)(2);
   EXPECT_EQ(vi, prop.get().to<std::vector<int> >());
   EXPECT_EQ("foo", prop2.get().toString());
@@ -312,7 +387,7 @@ TEST(Behavior, PropSet)
   prop.set(qi::AnyValue::from(0)); prop2.set(qi::AnyValue::from(0));
 
   b->call<void>("loadString", "a x PropHolder prop= [ 1 , 2 ]  prop2= \"foo\"  ");
-  b->call<void>("loadObjects");
+  b->call<void>("loadObjects", false);
   vi = boost::assign::list_of(1)(2);
   EXPECT_EQ(vi, prop.get().to<std::vector<int> >());
   EXPECT_EQ("foo", prop2.get().toString());
@@ -343,7 +418,7 @@ TEST(Behavior, Filter)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects");
+  b->call<void>("loadObjects", false);
   b->call<void>("setTransitions", false);
   propInt.set(12);
   qi::os::msleep(100);
@@ -362,6 +437,69 @@ TEST(Behavior, Filter)
   qi::os::msleep(100);
   EXPECT_EQ(51, testObject->call<int>("lastAdd"));
   */
+}
+
+void pushState(std::vector<std::string>& store,
+  const std::string& obj, bool state)
+{
+  store.push_back(obj + " " + (state?"start":"stop"));
+}
+
+void pushError(std::vector<std::string>& store,
+  const std::string& obj, const std::string& err)
+{
+  store.push_back(obj + " error " +err);
+}
+
+
+TEST(Behavior, Task)
+{
+  TestSessionPair p;
+  qi::os::dlopen("behavior");
+  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
+  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
+  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
+  std::string behavior = STRING(
+    sq1 W SqrtTaskService.create   ;
+    sq2 W SqrtTaskService.create   ;
+    sq3 W SqrtTaskService.create   ;
+    st  W TestObjectService.create v=0;
+    t1 sq1.val -> sq2.start        ;
+    t2 sq2.val -> sq3.start        ;
+    ts st.onAdd -> sq1.start       ;
+    );
+  size_t pos = 0;
+  while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
+    behavior[pos] = '\n';
+  std::cerr << "INPUT: " << behavior << std::endl;
+  b->call<void>("loadString", behavior);
+  b->call<void>("loadObjects", true);
+  b->call<void>("setTransitions", true);
+  std::vector<std::string> store;
+  qi::SignalLink l1 =  b->connect("onTaskError",   (boost::function<void(const std::string&, const std::string&)>)boost::bind(&pushError, boost::ref(store), _1, _2));
+  qi::SignalLink l2 = b->connect("onTaskRunning", (boost::function<void(const std::string&, bool)>)boost::bind(&pushState, boost::ref(store), _1, _2));
+  ASSERT_TRUE(l1 != qi::SignalBase::invalidSignalLink);
+  ASSERT_TRUE(l2 != qi::SignalBase::invalidSignalLink);
+  qi::AnyObject ts = b->call<qi::AnyObject>("object", "st");
+  qi::AnyObject sq3 = b->call<qi::AnyObject>("object", "sq3");
+  qi::ProxyProperty<double> sq3_val(sq3, "val");
+  ASSERT_TRUE(!!ts);
+  ts->call<int>("add", 256);
+  PERSIST_CHECK(, sq3_val.get() == 2, , 2000);
+  ASSERT_EQ(2.0, sq3_val.get());
+  EXPECT_EQ(6u, store.size());
+  std::sort(store.begin(), store.end());
+  EXPECT_EQ("sq1 start;sq1 stop;sq2 start;sq2 stop;sq3 start;sq3 stop",
+    boost::algorithm::join(store, ";"));
+  store.clear();
+  ts->setProperty("v", -17);
+  ts->call<int>("add", 0);
+  PERSIST_CHECK(, store.size() == 3, , 2000);
+  EXPECT_EQ(3u, store.size());
+  std::sort(store.begin(), store.end());
+  EXPECT_EQ("sq1 error Negative input;sq1 start;sq1 stop",
+    boost::algorithm::join(store, ";"));
 }
 
 int main(int argc, char **argv) {
