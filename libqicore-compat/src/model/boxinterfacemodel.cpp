@@ -103,12 +103,12 @@ namespace qi {
         itEnd = _resources.end();
         it != itEnd; ++it)
     {
-      if((*it)->getLockType() == ResourceModel::LockType_Error)
+      if((*it)->lockType() == ResourceModel::LockType_Error)
       {
         qiLogError() << "In file : "
                      << _path
                      << ". Invalid type in tag Resource.name = "
-                     << (*it)->getName()
+                     << (*it)->name()
                      << std::endl;
         return false;
       }
@@ -205,68 +205,68 @@ namespace qi {
   }
 
   //--------------------------------------------Getter------------------------------------//
-  std::string BoxInterfaceModel::getPath() const
+  std::string BoxInterfaceModel::path() const
   {
     boost::filesystem::path path(_p->_path);
     return path.filename().string();
   }
 
-  const std::string& BoxInterfaceModel::getUuid() const
+  const std::string& BoxInterfaceModel::uuid() const
   {
     return _p->_uuid;
   }
 
-  const std::string& BoxInterfaceModel::getBoxVersion() const
+  const std::string& BoxInterfaceModel::boxVersion() const
   {
     return _p->_boxVersion;
   }
 
-  const std::string& BoxInterfaceModel::getName() const
+  const std::string& BoxInterfaceModel::name() const
   {
     return _p->_name;
   }
 
-  const std::string& BoxInterfaceModel::getTooltip() const
+  const std::string& BoxInterfaceModel::tooltip() const
   {
     return _p->_tooltip;
   }
 
-  const std::string& BoxInterfaceModel::getPlugin() const
+  const std::string& BoxInterfaceModel::plugin() const
   {
     return _p->_plugin;
   }
 
-  const std::string& BoxInterfaceModel::getFormatVersion() const
+  const std::string& BoxInterfaceModel::formatVersion() const
   {
     return _p->_formatVersion;
   }
 
-  const std::list<BitmapModelPtr>& BoxInterfaceModel::getBitmaps() const
+  const std::list<BitmapModelPtr>& BoxInterfaceModel::bitmaps() const
   {
     return _p->_bitmaps;
   }
 
-  const std::list<ResourceModelPtr>& BoxInterfaceModel::getResources() const
+  const std::list<ResourceModelPtr>& BoxInterfaceModel::resources() const
   {
     return _p->_resources;
   }
 
-  const std::list<ParameterModelPtr>& BoxInterfaceModel::getParameters() const
+  const std::list<ParameterModelPtr>& BoxInterfaceModel::parameters() const
   {
     return _p->_parameters;
   }
 
-  const std::list<InputModelPtr>& BoxInterfaceModel::getInputs() const
+  const std::list<InputModelPtr>& BoxInterfaceModel::inputs() const
   {
     return _p->_inputs;
   }
 
-  const std::list<OutputModelPtr>& BoxInterfaceModel::getOutputs() const
+  const std::list<OutputModelPtr>& BoxInterfaceModel::outputs() const
   {
     return _p->_outputs;
   }
 
-  boost::shared_ptr<ContentsModel> BoxInterfaceModel::getContents() const
+  boost::shared_ptr<ContentsModel> BoxInterfaceModel::contents() const
   {
     return _p->_contents;
   }

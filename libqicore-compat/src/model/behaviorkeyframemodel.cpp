@@ -51,28 +51,28 @@ namespace qi {
     delete _p;
   }
 
-  const std::string& BehaviorKeyFrameModel::getName() const
+  const std::string& BehaviorKeyFrameModel::name() const
   {
     return _p->_name;
   }
 
-  int BehaviorKeyFrameModel::getIndex() const
+  int BehaviorKeyFrameModel::index() const
   {
     return _p->_index;
   }
 
-  const std::string& BehaviorKeyFrameModel::getBitmap() const
+  const std::string& BehaviorKeyFrameModel::bitmap() const
   {
     return _p->_bitmap;
   }
 
-  std::string BehaviorKeyFrameModel::getPath() const
+  std::string BehaviorKeyFrameModel::path() const
   {
     boost::filesystem::path path(_p->_path);
     return path.filename().string();
   }
 
-  FlowDiagramModelPtr BehaviorKeyFrameModel::getDiagram() const
+  FlowDiagramModelPtr BehaviorKeyFrameModel::diagram() const
   {
     FlowDiagramModelPtr flowDiagram = FlowDiagramModelPtr(new FlowDiagramModel(_p->_path));
 

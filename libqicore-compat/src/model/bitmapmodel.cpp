@@ -39,7 +39,7 @@ namespace qi
     delete _p;
   }
 
-  const std::string& Bitmap::getPath() const
+  const std::string& Bitmap::path() const
   {
     return _p->_path;
   }

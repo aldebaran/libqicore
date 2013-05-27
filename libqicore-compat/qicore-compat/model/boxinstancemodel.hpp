@@ -23,15 +23,15 @@ namespace qi {
     BoxInstanceModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
     virtual ~BoxInstanceModel();
 
-    const std::string& getName() const;
-    int getId() const;
-    int getX() const;
-    int getY() const;
-    const std::string& getPath() const;
-    boost::shared_ptr<BoxInterfaceModel> getInterface() const;
+    const std::string& name() const;
+    int id() const;
+    int x() const;
+    int y() const;
+    const std::string& path() const;
+    boost::shared_ptr<BoxInterfaceModel> interface() const;
 
-    std::list<boost::shared_ptr<ParameterValueModel> > getParametersValue() const;
-    const std::string& getPlugin() const;
+    std::list<boost::shared_ptr<ParameterValueModel> > parametersValue() const;
+    const std::string& plugin() const;
 
     void setName(const std::string& name);
     void setId(int id);

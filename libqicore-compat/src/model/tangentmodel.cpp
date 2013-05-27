@@ -70,22 +70,22 @@ namespace qi {
     delete _p;
   }
 
-  TangentModel::Side TangentModel::getSide() const
+  TangentModel::Side TangentModel::side() const
   {
     return _p->_side;
   }
 
-  TangentModel::InterpolationType TangentModel::getInterpType() const
+  TangentModel::InterpolationType TangentModel::interpType() const
   {
     return _p->_interType;
   }
 
-  float TangentModel::getAbscissaParam() const
+  float TangentModel::abscissaParam() const
   {
     return _p->_abscissaParam;
   }
 
-  float TangentModel::getOrdinateParam() const
+  float TangentModel::ordinateParam() const
   {
     return _p->_ordinateParam;
   }

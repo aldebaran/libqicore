@@ -28,10 +28,10 @@ namespace qi {
 
     bool loadFromFile();
 
-    const std::string& getName()          const;
-    const std::string& getFormatVersion() const;
+    const std::string& name()          const;
+    const std::string& formatVersion() const;
 
-    boost::shared_ptr<BoxInstanceModel> getRootBox() const;
+    boost::shared_ptr<BoxInstanceModel> rootBox() const;
 
     void setName(const std::string& name);
     void setFormatVersion(const std::string& formatVersion);

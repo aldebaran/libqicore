@@ -21,7 +21,7 @@ namespace qi {
     Bitmap(boost::shared_ptr<const AL::XmlElement> elt);
     virtual ~Bitmap();
 
-    const std::string& getPath() const;
+    const std::string& path() const;
     void setPath(const std::string &path);
 
   private:

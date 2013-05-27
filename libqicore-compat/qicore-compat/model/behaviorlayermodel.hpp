@@ -23,9 +23,9 @@ namespace qi {
     BehaviorLayerModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
     virtual ~BehaviorLayerModel();
 
-    const std::string &getName() const;
-    bool getMute() const;
-    const std::list<boost::shared_ptr<BehaviorKeyFrameModel> > &getBehaviorsKeyFrame() const;
+    const std::string &name() const;
+    bool mute() const;
+    const std::list<boost::shared_ptr<BehaviorKeyFrameModel> >& behaviorsKeyFrame() const;
 
     void setName(const std::string &name);
     void setMute(bool mute);

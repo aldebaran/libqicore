@@ -79,12 +79,12 @@ namespace qi {
     delete _p;
   }
 
-  int ParameterValueModel::getId() const
+  int ParameterValueModel::id() const
   {
     return _p->_id;
   }
 
-  GenericValuePtr ParameterValueModel::getValue() const
+  GenericValuePtr ParameterValueModel::value() const
   {
     return _p->_value;
   }

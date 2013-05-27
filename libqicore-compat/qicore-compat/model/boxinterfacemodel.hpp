@@ -45,19 +45,19 @@ namespace qi
 
     virtual ~BoxInterfaceModel();
 
-    std::string getPath() const;
-    const std::string& getUuid() const;
-    const std::string& getBoxVersion() const;
-    const std::string& getName() const;
-    const std::string& getTooltip() const;
-    const std::string& getPlugin() const;
-    const std::string& getFormatVersion() const;
-    const std::list<boost::shared_ptr<Bitmap> >& getBitmaps() const;
-    const std::list<boost::shared_ptr<ResourceModel> >& getResources() const;
-    const std::list<boost::shared_ptr<ParameterModel> >& getParameters() const;
-    const std::list<boost::shared_ptr<InputModel> >& getInputs() const;
-    const std::list<boost::shared_ptr<OutputModel> >& getOutputs() const;
-    boost::shared_ptr<ContentsModel> getContents() const;
+    std::string path() const;
+    const std::string& uuid() const;
+    const std::string& boxVersion() const;
+    const std::string& name() const;
+    const std::string& tooltip() const;
+    const std::string& plugin() const;
+    const std::string& formatVersion() const;
+    const std::list<boost::shared_ptr<Bitmap> >& bitmaps() const;
+    const std::list<boost::shared_ptr<ResourceModel> >& resources() const;
+    const std::list<boost::shared_ptr<ParameterModel> >& parameters() const;
+    const std::list<boost::shared_ptr<InputModel> >& inputs() const;
+    const std::list<boost::shared_ptr<OutputModel> >& outputs() const;
+    boost::shared_ptr<ContentsModel> contents() const;
 
     void setPath(const std::string& path);
     void setUuid(const std::string& uuid);

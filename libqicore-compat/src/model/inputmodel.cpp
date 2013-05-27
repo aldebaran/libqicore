@@ -99,17 +99,17 @@ namespace qi
     return _p->_metaMethod;
   }
 
-  InputModel::InputNature InputModel::getNature() const
+  InputModel::InputNature InputModel::nature() const
   {
     return _p->_nature;
   }
 
-  const std::string& InputModel::getSTMValueName() const
+  const std::string& InputModel::stmValueName() const
   {
     return _p->_stmValueName;
   }
 
-  bool InputModel::getInner() const
+  bool InputModel::inner() const
   {
     return _p->_inner;
   }

@@ -45,13 +45,13 @@ namespace qi
     virtual ~ParameterModel();
 
     const MetaProperty& metaProperty() const;
-    bool getInheritsFromParent() const;
-    GenericValuePtr getDefaultValue() const;
-    GenericValuePtr getMin() const;
-    GenericValuePtr getMax() const;
-    bool getCustomChoice() const;
-    bool getPassword() const;
-    const std::string& getTooltip() const;
+    bool inheritsFromParent() const;
+    GenericValuePtr defaultValue() const;
+    GenericValuePtr min() const;
+    GenericValuePtr max() const;
+    bool customChoice() const;
+    bool password() const;
+    const std::string& tooltip() const;
 
     void setMetaProperty(unsigned int id, const std::string &name, const Signature &sig);
     void setInheritsFromParent(bool inheritsFromParent);

@@ -46,7 +46,7 @@ namespace qi
     delete _p;
   }
 
-  const std::list<ContentModelPtr>& ContentsModel::getContents() const
+  const std::list<ContentModelPtr>& ContentsModel::contents() const
   {
     return _p->_contents;
   }
@@ -64,7 +64,7 @@ namespace qi
 
     for(; it != itEnd; ++it)
     {
-      if((*it)->getType() == type)
+      if((*it)->type() == type)
         result.push_front(*it);
     }
 

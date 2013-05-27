@@ -97,38 +97,38 @@ namespace qi
     delete _p;
   }
 
-  std::string AnimationModel::getPath() const
+  std::string AnimationModel::path() const
   {
     boost::filesystem::path path(_p->_path);
     return path.filename().string();
   }
 
-  int AnimationModel::getFPS() const
+  int AnimationModel::fps() const
   {
     return _p->_fps;
   }
 
-  int AnimationModel::getStartFrame() const
+  int AnimationModel::startFrame() const
   {
     return _p->_startFrame;
   }
 
-  int AnimationModel::getEndFrame() const
+  int AnimationModel::endFrame() const
   {
     return _p->_endFrame;
   }
 
-  int AnimationModel::getSize() const
+  int AnimationModel::size() const
   {
     return _p->_size;
   }
 
-  const std::string& AnimationModel::getFormatVersion() const
+  const std::string& AnimationModel::formatVersion() const
   {
     return _p->_formatVersion;
   }
 
-  ActuatorListModelPtr AnimationModel::getActuatorList() const
+  ActuatorListModelPtr AnimationModel::actuatorList() const
   {
     return _p->_actuatorList;
   }

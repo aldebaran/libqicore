@@ -23,8 +23,8 @@ namespace qi {
     ActuatorListModel(boost::shared_ptr<const AL::XmlElement> elt);
     virtual ~ActuatorListModel();
 
-    const std::string& getModel() const;
-    const std::list<boost::shared_ptr<ActuatorCurveModel> >& getActuatorsCurve() const;
+    const std::string& model() const;
+    const std::list<boost::shared_ptr<ActuatorCurveModel> >& actuatorsCurve() const;
 
     void setModel(const std::string &model);
     void addActuatorCurve(boost::shared_ptr<ActuatorCurveModel> actuatorCurve);

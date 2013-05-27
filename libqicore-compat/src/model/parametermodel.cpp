@@ -218,37 +218,37 @@ namespace qi
     return _p->_metaProperty;
   }
 
-  bool ParameterModel::getInheritsFromParent() const
+  bool ParameterModel::inheritsFromParent() const
   {
     return _p->_inheritsFromParent;
   }
 
-  GenericValuePtr ParameterModel::getDefaultValue() const
+  GenericValuePtr ParameterModel::defaultValue() const
   {
     return _p->_defaultValue;
   }
 
-  GenericValuePtr ParameterModel::getMin() const
+  GenericValuePtr ParameterModel::min() const
   {
     return _p->_min;
   }
 
-  GenericValuePtr ParameterModel::getMax() const
+  GenericValuePtr ParameterModel::max() const
   {
     return _p->_max;
   }
 
-  bool ParameterModel::getCustomChoice() const
+  bool ParameterModel::customChoice() const
   {
     return _p->_customChoice;
   }
 
-  bool ParameterModel::getPassword() const
+  bool ParameterModel::password() const
   {
     return _p->_password;
   }
 
-  const std::string& ParameterModel::getTooltip() const
+  const std::string& ParameterModel::tooltip() const
   {
     return _p->_tooltip;
   }
@@ -323,10 +323,10 @@ namespace qi
     Signature signature(_p->_metaProperty.signature());
 
     //if false choice and parameter are the same type
-    if(Signature(choice->getValue().signature()).isConvertibleTo(signature) < 1.0f )
+    if(Signature(choice->value().signature()).isConvertibleTo(signature) < 1.0f )
     {
       qiLogWarning() << "choice.type (i.e "
-                     << choice->getValue().signature()
+                     << choice->value().signature()
                      << ") != parameter.type (i.e "
                      << _p->_defaultValue.signature()
                      <<")"
@@ -336,7 +336,7 @@ namespace qi
 
     //If choice.value is not in [parameter.min, paramater.max] then the choice
     //is incorrect
-    if(!_p->inInterval(choice->getValue(),
+    if(!_p->inInterval(choice->value(),
                        _p->_min,
                        _p->_max)
        )
@@ -357,7 +357,7 @@ namespace qi
 
   bool ParameterModel::checkInterval(ParameterValueModelPtr value) const
   {
-    return _p->inInterval(value->getValue(), _p->_min, _p->_max);
+    return _p->inInterval(value->value(), _p->_min, _p->_max);
   }
 
   bool ParameterModel::isValid() const

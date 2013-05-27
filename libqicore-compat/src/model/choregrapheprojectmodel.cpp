@@ -84,17 +84,17 @@ namespace qi
     return _p->loadFromFile();
   }
 
-  const std::string& ChoregrapheProjectModel::getName() const
+  const std::string& ChoregrapheProjectModel::name() const
   {
     return _p->_name;
   }
 
-  const std::string& ChoregrapheProjectModel::getFormatVersion() const
+  const std::string& ChoregrapheProjectModel::formatVersion() const
   {
     return _p->_formatVersion;
   }
 
-  BoxInstanceModelPtr ChoregrapheProjectModel::getRootBox() const
+  BoxInstanceModelPtr ChoregrapheProjectModel::rootBox() const
   {
     return _p->_rootBox;
   }

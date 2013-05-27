@@ -27,7 +27,7 @@ namespace qi {
     _id(id),
     _x(x),
     _y(y),
-    _path(interface->getPath()),
+    _path(interface->path()),
     _interface(interface),
     _parameters(),
     _isValid(true)
@@ -64,7 +64,7 @@ namespace qi {
         if(!addParameterValue(param))
           _isValid = false;
 
-        _parameters.insert(std::pair<int, ParameterValueModelPtr>(param->getId(), param));
+        _parameters.insert(std::pair<int, ParameterValueModelPtr>(param->id(), param));
 
       }
     }
@@ -72,12 +72,12 @@ namespace qi {
 
   bool BoxInstanceModelPrivate::addParameterValue(ParameterValueModelPtr value)
   {
-    ParameterModelPtr param = _interface->findParameter(value->getId());
+    ParameterModelPtr param = _interface->findParameter(value->id());
 
     if(!value->isValid())
     {
       qiLogError() << "Invalid ParameterValue, in BoxInterface.name = "
-                           << _interface->getName()
+                           << _interface->name()
                            << " ParameterValue is not initialized."
                            << std::endl;
       return false;
@@ -86,21 +86,21 @@ namespace qi {
     if (!param)
     {
       qiLogError() << "Invalid ParameterValue, in BoxInterface.name = "
-                           << _interface->getName()
+                           << _interface->name()
                            << " Parameter with id = "
-                           << value->getId()
+                           << value->id()
                            << " does not exist."
                            << std::endl;
       return false;
     }
 
-    if(Signature(param->metaProperty().signature()).isConvertibleTo(Signature(value->getValue().signature())) < 1.0f)
+    if(Signature(param->metaProperty().signature()).isConvertibleTo(Signature(value->value().signature())) < 1.0f)
     {
-      qiLogDebug() << "Xml File : " << _interface->getPath();
+      qiLogDebug() << "Xml File : " << _interface->path();
       qiLogDebug() << "Parameter.signature = " << param->metaProperty().signature();
-      qiLogDebug() << "ParameterValue.signature = " << value->getValue().signature();
+      qiLogDebug() << "ParameterValue.signature = " << value->value().signature();
       qiLogError() << "Invalid ParameterValue, in BoxInterface.name = \""
-                   << _interface->getName() << "\""
+                   << _interface->name() << "\""
                    << " ParameterValue have not the same signature as Parameter.name ="
                    << param->metaProperty().name() << "."
                    << std::endl;
@@ -110,13 +110,13 @@ namespace qi {
     if (!param->checkInterval(value))
     {
       qiLogError() << "Invalid ParameterValue, in BoxInterface.name = "
-                           << _interface->getName()
+                           << _interface->name()
                            << " ParameterValue is not in interval of Parameter."
                            << std::endl;
       return false;
     }
 
-    _parameters.insert(std::pair<int, ParameterValueModelPtr>(value->getId(), value));
+    _parameters.insert(std::pair<int, ParameterValueModelPtr>(value->id(), value));
     return true;
   }
 
@@ -135,37 +135,37 @@ namespace qi {
     delete _p;
   }
 
-  const std::string& BoxInstanceModel::getName() const
+  const std::string& BoxInstanceModel::name() const
   {
     return _p->_name;
   }
 
-  int BoxInstanceModel::getId() const
+  int BoxInstanceModel::id() const
   {
     return _p->_id;
   }
 
-  int BoxInstanceModel::getX() const
+  int BoxInstanceModel::x() const
   {
     return _p->_x;
   }
 
-  int BoxInstanceModel::getY() const
+  int BoxInstanceModel::y() const
   {
     return _p->_y;
   }
 
-  const std::string& BoxInstanceModel::getPath() const
+  const std::string& BoxInstanceModel::path() const
   {
     return _p->_path;
   }
 
-  BoxInterfaceModelPtr BoxInstanceModel::getInterface() const
+  BoxInterfaceModelPtr BoxInstanceModel::interface() const
   {
     return _p->_interface;
   }
 
-  std::list<ParameterValueModelPtr> BoxInstanceModel::getParametersValue() const
+  std::list<ParameterValueModelPtr> BoxInstanceModel::parametersValue() const
   {
     std::list<ParameterValueModelPtr> rest;
 
@@ -179,9 +179,9 @@ namespace qi {
     return rest;
   }
 
-  const std::string& BoxInstanceModel::getPlugin() const
+  const std::string& BoxInstanceModel::plugin() const
   {
-    return _p->_interface->getPlugin();
+    return _p->_interface->plugin();
   }
 
   void BoxInstanceModel::setName(const std::string& name)
@@ -208,7 +208,7 @@ namespace qi {
   {
     _p->_parameters.clear();
     _p->_interface = interface;
-    _p->_path = interface->getPath();
+    _p->_path = interface->path();
   }
 
   bool BoxInstanceModel::addParameterValue(ParameterValueModelPtr value)

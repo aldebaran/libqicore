@@ -52,22 +52,22 @@ namespace qi
     delete _p;
   }
 
-  int ContentModel::getType() const
+  int ContentModel::type() const
   {
     return _p->_type;
   }
 
-  const std::string& ContentModel::getPath() const
+  const std::string& ContentModel::path() const
   {
     return _p->_path;
   }
 
-  const std::string& ContentModel::getChecksum() const
+  const std::string& ContentModel::checksum() const
   {
     return _p->_checksum;
   }
 
-  AnimationModelPtr ContentModel::getAnimationModel()
+  AnimationModelPtr ContentModel::animationModel()
   {
     if(_p->_type != ContentModel::ContentType_Animation)
       return AnimationModelPtr();
@@ -80,7 +80,7 @@ namespace qi
     return animation;
   }
 
-  BehaviorSequenceModelPtr ContentModel::getBehaviorSequenceModel()
+  BehaviorSequenceModelPtr ContentModel::behaviorSequenceModel()
   {
     if(_p->_type != ContentModel::ContentType_BehaviorSequence)
       return BehaviorSequenceModelPtr();
@@ -93,7 +93,7 @@ namespace qi
     return behaviorSequence;
   }
 
-  FlowDiagramModelPtr ContentModel::getFlowDiagramModel()
+  FlowDiagramModelPtr ContentModel::flowDiagramModel()
   {
     if(_p->_type != ContentModel::ContentType_FlowDiagram)
       return FlowDiagramModelPtr();

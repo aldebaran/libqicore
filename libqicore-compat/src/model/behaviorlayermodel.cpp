@@ -51,17 +51,17 @@ namespace qi {
     delete _p;
   }
 
-  const std::string& BehaviorLayerModel::getName() const
+  const std::string& BehaviorLayerModel::name() const
   {
     return _p->_name;
   }
 
-  bool BehaviorLayerModel::getMute() const
+  bool BehaviorLayerModel::mute() const
   {
     return _p->_mute;
   }
 
-  const std::list<BehaviorKeyFrameModelPtr>& BehaviorLayerModel::getBehaviorsKeyFrame() const
+  const std::list<BehaviorKeyFrameModelPtr>& BehaviorLayerModel::behaviorsKeyFrame() const
   {
     return _p->_behaviorsKeyFrame;
   }

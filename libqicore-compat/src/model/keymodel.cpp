@@ -66,27 +66,27 @@ namespace qi
     delete _p;
   }
 
-  int KeyModel::getFrame() const
+  int KeyModel::frame() const
   {
     return _p->_frame;
   }
 
-  float KeyModel::getValue() const
+  float KeyModel::value() const
   {
     return _p->_value;
   }
 
-  bool KeyModel::getSmooth() const
+  bool KeyModel::smooth() const
   {
     return _p->_smooth;
   }
 
-  bool KeyModel::getSymmetrical() const
+  bool KeyModel::symmetrical() const
   {
     return _p->_symmetrical;
   }
 
-  const std::list<TangentModelPtr>& KeyModel::getTangents() const
+  const std::list<TangentModelPtr>& KeyModel::tangents() const
   {
     return _p->_tangents;
   }

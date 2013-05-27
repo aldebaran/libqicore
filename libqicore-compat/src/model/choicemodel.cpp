@@ -72,7 +72,7 @@ namespace qi {
     delete _p;
   }
 
-  GenericValuePtr ChoiceModel::getValue() const
+  GenericValuePtr ChoiceModel::value() const
   {
     return _p->_value;
   }

@@ -45,9 +45,9 @@ namespace qi
 
 
     const MetaMethod& metaMethod() const;
-    InputNature getNature() const;
-    const std::string& getSTMValueName() const;
-    bool getInner() const;
+    InputNature nature() const;
+    const std::string& stmValueName() const;
+    bool inner() const;
 
 
     void setMetaMethod(const std::string &name,

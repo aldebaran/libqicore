@@ -37,9 +37,9 @@ namespace qi
     virtual ~OutputModel();
 
     const MetaSignal& metaSignal() const;
-    int getNature() const;
-    bool getInner() const;
-    const std::string& getTooltip() const;
+    int nature() const;
+    bool inner() const;
+    const std::string& tooltip() const;
 
     void setMetaSignal(const std::string &name,
                        const Signature &signature,

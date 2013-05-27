@@ -20,10 +20,10 @@ namespace qi {
     LinkModel(boost::shared_ptr<const AL::XmlElement> elt);
     virtual ~LinkModel();
 
-    int getInputTowner()   const;
-    int getIndexOfInput()  const;
-    int getOutputTowner()  const;
-    int getIndexOfOutput() const;
+    int inputTowner()   const;
+    int indexOfInput()  const;
+    int outputTowner()  const;
+    int indexOfOutput() const;
 
     void setInputTowner(int input);
     void setIndexOfInput(int index);

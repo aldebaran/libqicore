@@ -28,13 +28,13 @@ namespace qi {
                    boost::shared_ptr<ActuatorListModel> actuatorList = boost::shared_ptr<ActuatorListModel>());
     virtual ~AnimationModel();
 
-    std::string getPath() const;
-    int getFPS() const;
-    int getStartFrame() const;
-    int getEndFrame() const;
-    int getSize() const;
-    const std::string& getFormatVersion() const;
-    boost::shared_ptr<ActuatorListModel> getActuatorList() const;
+    std::string path() const;
+    int fps() const;
+    int startFrame() const;
+    int endFrame() const;
+    int size() const;
+    const std::string& formatVersion() const;
+    boost::shared_ptr<ActuatorListModel> actuatorList() const;
 
     void setPath(const std::string &path);
     void setFPS(int fps);

@@ -30,11 +30,11 @@ namespace qi {
 
     virtual ~FlowDiagramModel();
 
-    std::string getPath() const;
-    float getScale() const;
-    const std::string& getFormatVersion() const;
-    const std::list<boost::shared_ptr<LinkModel> >& getLinks() const;
-    const std::list<boost::shared_ptr<BoxInstanceModel> >& getBoxsInstance() const;
+    std::string path() const;
+    float scale() const;
+    const std::string& formatVersion() const;
+    const std::list<boost::shared_ptr<LinkModel> >& links() const;
+    const std::list<boost::shared_ptr<BoxInstanceModel> >& boxsInstance() const;
 
     void setPath(const std::string& path);
     void setScale(float scale);

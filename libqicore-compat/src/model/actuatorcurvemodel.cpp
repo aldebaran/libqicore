@@ -69,32 +69,32 @@ namespace qi
     delete _p;
   }
 
-  const std::string& ActuatorCurveModel::getName() const
+  const std::string& ActuatorCurveModel::name() const
   {
     return _p->_name;
   }
 
-  const std::string& ActuatorCurveModel::getActuator() const
+  const std::string& ActuatorCurveModel::actuator() const
   {
     return _p->_actuator;
   }
 
-  bool ActuatorCurveModel::getRecordable() const
+  bool ActuatorCurveModel::recordable() const
   {
     return _p->_recordable;
   }
 
-  bool ActuatorCurveModel::getMute() const
+  bool ActuatorCurveModel::mute() const
   {
     return _p->_mute;
   }
 
-  ActuatorCurveModel::UnitType ActuatorCurveModel::getUnit() const
+  ActuatorCurveModel::UnitType ActuatorCurveModel::unit() const
   {
     return static_cast<ActuatorCurveModel::UnitType>( _p->_unit );
   }
 
-  const std::list<KeyModelPtr>& ActuatorCurveModel::getKeys() const
+  const std::list<KeyModelPtr>& ActuatorCurveModel::keys() const
   {
     return _p->_keys;
   }

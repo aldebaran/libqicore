@@ -66,17 +66,17 @@ namespace qi
     return _p->_metaSignal;
   }
 
-  int OutputModel::getNature() const
+  int OutputModel::nature() const
   {
     return _p->_nature;
   }
 
-  bool OutputModel::getInner() const
+  bool OutputModel::inner() const
   {
     return _p->_inner;
   }
 
-  const std::string& OutputModel::getTooltip() const
+  const std::string& OutputModel::tooltip() const
   {
     return _p->_tooltip;
   }

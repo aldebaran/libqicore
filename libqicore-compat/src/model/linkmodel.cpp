@@ -47,22 +47,22 @@ namespace qi {
     delete _p;
   }
 
-  int LinkModel::getInputTowner() const
+  int LinkModel::inputTowner() const
   {
     return _p->_inputTowner;
   }
 
-  int LinkModel::getIndexOfInput() const
+  int LinkModel::indexOfInput() const
   {
     return _p->_indexOfInput;
   }
 
-  int LinkModel::getOutputTowner() const
+  int LinkModel::outputTowner() const
   {
     return _p->_outputTowner;
   }
 
-  int LinkModel::getIndexOfOutput() const
+  int LinkModel::indexOfOutput() const
   {
     return _p->_indexOfOutput;
   }

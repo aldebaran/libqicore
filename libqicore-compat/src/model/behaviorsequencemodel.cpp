@@ -90,38 +90,38 @@ namespace qi {
     delete _p;
   }
 
-  std::string BehaviorSequenceModel::getPath() const
+  std::string BehaviorSequenceModel::path() const
   {
     boost::filesystem::path path(_p->_path);
     return path.filename().string();
   }
 
-  int BehaviorSequenceModel::getFPS() const
+  int BehaviorSequenceModel::fps() const
   {
     return _p->_fps;
   }
 
-  int BehaviorSequenceModel::getStartFrame() const
+  int BehaviorSequenceModel::startFrame() const
   {
     return _p->_startFrame;
   }
 
-  int BehaviorSequenceModel::getEndFrame() const
+  int BehaviorSequenceModel::endFrame() const
   {
     return _p->_endFrame;
   }
 
-  int BehaviorSequenceModel::getSize() const
+  int BehaviorSequenceModel::size() const
   {
     return _p->_size;
   }
 
-  const std::string& BehaviorSequenceModel::getFormatVersion() const
+  const std::string& BehaviorSequenceModel::formatVersion() const
   {
     return _p->_formatVersion;
   }
 
-  const std::list<BehaviorLayerModelPtr>& BehaviorSequenceModel::getBehaviorsLayer() const
+  const std::list<BehaviorLayerModelPtr>& BehaviorSequenceModel::behaviorsLayer() const
   {
     return _p->_behaviorsLayer;
   }

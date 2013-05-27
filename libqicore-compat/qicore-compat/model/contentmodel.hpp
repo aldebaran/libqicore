@@ -34,13 +34,13 @@ namespace qi
     ContentModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
     virtual ~ContentModel();
 
-    int getType() const;
-    const std::string& getPath() const;
-    const std::string& getChecksum() const;
+    int type() const;
+    const std::string& path() const;
+    const std::string& checksum() const;
 
-    boost::shared_ptr<AnimationModel> getAnimationModel();
-    boost::shared_ptr<BehaviorSequenceModel> getBehaviorSequenceModel();
-    boost::shared_ptr<FlowDiagramModel> getFlowDiagramModel();
+    boost::shared_ptr<AnimationModel> animationModel();
+    boost::shared_ptr<BehaviorSequenceModel> behaviorSequenceModel();
+    boost::shared_ptr<FlowDiagramModel> flowDiagramModel();
 
     void setType(ContentType type);
     void setPath(const std::string& path);

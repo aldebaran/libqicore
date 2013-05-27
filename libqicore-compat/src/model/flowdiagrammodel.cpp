@@ -92,28 +92,28 @@ namespace qi {
     return _p->loadFromFile();
   }
 
-  std::string FlowDiagramModel::getPath() const
+  std::string FlowDiagramModel::path() const
   {
     boost::filesystem::path path(_p->_path);
     return path.filename().string();
   }
 
-  float FlowDiagramModel::getScale() const
+  float FlowDiagramModel::scale() const
   {
     return _p->_scale;
   }
 
-  const std::string& FlowDiagramModel::getFormatVersion() const
+  const std::string& FlowDiagramModel::formatVersion() const
   {
     return _p->_formatVersion;
   }
 
-  const std::list<LinkModelPtr>& FlowDiagramModel::getLinks() const
+  const std::list<LinkModelPtr>& FlowDiagramModel::links() const
   {
     return _p->_links;
   }
 
-  const std::list<BoxInstanceModelPtr>& FlowDiagramModel::getBoxsInstance() const
+  const std::list<BoxInstanceModelPtr>& FlowDiagramModel::boxsInstance() const
   {
     return _p->_boxsInstance;
   }

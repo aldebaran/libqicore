@@ -33,10 +33,10 @@ namespace qi {
     TangentModel(boost::shared_ptr<const AL::XmlElement> elt);
     virtual ~TangentModel();
 
-    Side getSide() const;
-    InterpolationType getInterpType() const;
-    float getAbscissaParam() const;
-    float getOrdinateParam() const;
+    Side side() const;
+    InterpolationType interpType() const;
+    float abscissaParam() const;
+    float ordinateParam() const;
 
     bool isValid() const;
 

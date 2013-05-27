@@ -23,7 +23,7 @@ namespace qi
     ContentsModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
     virtual ~ContentsModel();
 
-    const std::list<boost::shared_ptr<ContentModel> >& getContents() const;
+    const std::list<boost::shared_ptr<ContentModel> >& contents() const;
     void addContent(boost::shared_ptr<ContentModel> content);
 
     std::list<boost::shared_ptr<ContentModel> > findContents(int type) const;

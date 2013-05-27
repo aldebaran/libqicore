@@ -31,10 +31,10 @@ namespace qi
     ResourceModel(boost::shared_ptr<const AL::XmlElement> elt);
     virtual ~ResourceModel();
 
-    const std::string& getName() const;
-    const std::string& getLockTypeString() const;
-    LockType getLockType() const;
-    int getTimeout() const;
+    const std::string& name() const;
+    const std::string& lockTypeString() const;
+    LockType lockType() const;
+    int timeout() const;
 
     void setName(const std::string& name);
     void setLockType(ResourceModel::LockType lock_type);

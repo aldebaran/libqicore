@@ -63,7 +63,7 @@ namespace qi
     delete _p;
   }
 
-  const std::string& ResourceModel::getLockTypeString() const
+  const std::string& ResourceModel::lockTypeString() const
   {
     switch(_p->_lockType)
     {
@@ -91,17 +91,17 @@ namespace qi
     return _p->_type;
   }
 
-  ResourceModel::LockType ResourceModel::getLockType() const
+  ResourceModel::LockType ResourceModel::lockType() const
   {
     return static_cast<LockType>(_p->_lockType);
   }
 
-  const std::string& ResourceModel::getName() const
+  const std::string& ResourceModel::name() const
   {
     return _p->_name;
   }
 
-  int ResourceModel::getTimeout() const
+  int ResourceModel::timeout() const
   {
     return _p->_timeout;
   }

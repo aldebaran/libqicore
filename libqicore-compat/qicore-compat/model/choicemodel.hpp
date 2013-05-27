@@ -24,7 +24,7 @@ namespace qi
     ChoiceModel(boost::shared_ptr<const AL::XmlElement> elt, const Signature &type);
     virtual ~ChoiceModel();
 
-    GenericValuePtr getValue() const;
+    GenericValuePtr value() const;
 
     void setValue(AutoGenericValuePtr value);
 

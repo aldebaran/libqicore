@@ -24,8 +24,8 @@ namespace qi {
 
     virtual ~ParameterValueModel();
 
-    int getId()                  const;
-    GenericValuePtr getValue() const;
+    int id()                  const;
+    GenericValuePtr value() const;
 
     void setId(int id);
     void setValueDefault(AutoGenericValuePtr value);

@@ -23,12 +23,12 @@ namespace qi
     KeyModel(boost::shared_ptr<const AL::XmlElement> elt);
     virtual ~KeyModel();
 
-    int   getFrame()       const;
-    float getValue()       const;
-    bool  getSmooth()      const;
-    bool  getSymmetrical() const;
+    int   frame()       const;
+    float value()       const;
+    bool  smooth()      const;
+    bool  symmetrical() const;
 
-    const std::list<boost::shared_ptr<TangentModel> > &getTangents() const;
+    const std::list<boost::shared_ptr<TangentModel> > &tangents() const;
 
     bool isValid() const;
 

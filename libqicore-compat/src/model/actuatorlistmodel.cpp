@@ -46,12 +46,12 @@ namespace qi {
     delete _p;
   }
 
-  const std::string& ActuatorListModel::getModel() const
+  const std::string& ActuatorListModel::model() const
   {
     return _p->_model;
   }
 
-  const std::list<ActuatorCurveModelPtr>& ActuatorListModel::getActuatorsCurve() const
+  const std::list<ActuatorCurveModelPtr>& ActuatorListModel::actuatorsCurve() const
   {
     return _p->_actuatorsCurve;
   }

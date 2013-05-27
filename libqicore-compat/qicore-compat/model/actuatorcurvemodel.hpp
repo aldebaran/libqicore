@@ -34,12 +34,12 @@ namespace qi
     ActuatorCurveModel(boost::shared_ptr<const AL::XmlElement> elt);
     virtual ~ActuatorCurveModel();
 
-    const std::string& getName() const;
-    const std::string& getActuator() const;
-    bool getRecordable() const;
-    bool getMute() const;
-    UnitType getUnit() const;
-    const std::list<boost::shared_ptr<KeyModel> >& getKeys() const;
+    const std::string& name() const;
+    const std::string& actuator() const;
+    bool recordable() const;
+    bool mute() const;
+    UnitType unit() const;
+    const std::list<boost::shared_ptr<KeyModel> >& keys() const;
 
     bool isValid() const;
 

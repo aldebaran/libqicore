@@ -28,13 +28,13 @@ namespace qi {
                           const std::string &formatVersion = "4");
     virtual ~BehaviorSequenceModel();
 
-    std::string getPath() const;
-    int getFPS() const;
-    int getStartFrame() const;
-    int getEndFrame() const;
-    int getSize() const;
-    const std::string& getFormatVersion() const;
-    const std::list<boost::shared_ptr<BehaviorLayerModel> >& getBehaviorsLayer() const;
+    std::string path() const;
+    int fps() const;
+    int startFrame() const;
+    int endFrame() const;
+    int size() const;
+    const std::string& formatVersion() const;
+    const std::list<boost::shared_ptr<BehaviorLayerModel> >& behaviorsLayer() const;
 
     void setPath(const std::string& path);
     void setFPS(int fps);

@@ -23,12 +23,12 @@ namespace qi {
     BehaviorKeyFrameModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
     virtual ~BehaviorKeyFrameModel();
 
-    const std::string& getName() const;
-    int getIndex() const;
-    const std::string& getBitmap() const;
-    std::string getPath() const;
+    const std::string& name() const;
+    int index() const;
+    const std::string& bitmap() const;
+    std::string path() const;
 
-    boost::shared_ptr<FlowDiagramModel> getDiagram() const;
+    boost::shared_ptr<FlowDiagramModel> diagram() const;
 
     void setName(const std::string& name);
     void setIndex(int index);
