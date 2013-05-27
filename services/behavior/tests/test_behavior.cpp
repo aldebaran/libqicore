@@ -91,6 +91,19 @@ public:
   T end;
 };
 
+class Sqrt
+{
+public:
+  double sqrt(double v)
+  {
+    if (v < 0)
+      throw std::runtime_error("Negative input");
+    qi::os::msleep(v);
+    return std::sqrt(v);
+  }
+};
+QI_REGISTER_OBJECT(Sqrt, sqrt);
+
 class SqrtTask: public qi::Task
 {
 public:
@@ -173,6 +186,7 @@ QI_REGISTER_OBJECT(TestObject2, add, getv, setv, v, onAdd, lastAdd);
 // TestObjectService::create
 QI_REGISTER_OBJECT_FACTORY_BUILDER(TestObject);
 QI_REGISTER_OBJECT_FACTORY_BUILDER(SqrtTask);
+QI_REGISTER_OBJECT_FACTORY_BUILDER(Sqrt);
 QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(TestObject2);
 QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(PropHolder);
 
@@ -367,7 +381,7 @@ TEST(Behavior, PropSet)
   qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
   b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("PropHolder", qi::createObject("PropHolder"));
-  qi::ObjectPtr propHolder = p.client()->service("PropHolder");
+  qi::AnyObject propHolder = p.client()->service("PropHolder");
   qi::ProxyProperty<qi::AnyValue> prop(propHolder, "prop");
   qi::ProxyProperty<qi::AnyValue> prop2(propHolder, "prop2");
 
@@ -403,8 +417,8 @@ TEST(Behavior, Filter)
   b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   p.server()->registerService("PropHolder", qi::createObject("PropHolder"));
-  qi::ObjectPtr propHolder = p.client()->service("PropHolder");
-  qi::ObjectPtr testObject = p.client()->service("TestObject2");
+  qi::AnyObject propHolder = p.client()->service("PropHolder");
+  qi::AnyObject testObject = p.client()->service("TestObject2");
   qi::ProxyProperty<qi::AnyValue> prop(propHolder, "prop");
   qi::ProxyProperty<int> propInt(propHolder, "propInt");
   std::string behavior = STRING(
@@ -497,6 +511,53 @@ TEST(Behavior, Task)
   ts->call<int>("add", 0);
   PERSIST_CHECK(, store.size() == 3, , 2000);
   EXPECT_EQ(3u, store.size());
+  std::sort(store.begin(), store.end());
+  EXPECT_EQ("sq1 error Negative input;sq1 start;sq1 stop",
+    boost::algorithm::join(store, ";"));
+}
+
+TEST(Behavior, TaskCall)
+{
+   std::string behavior = STRING(
+     SQ  W SqrtService.create          ;
+     sq1 W &SQ.sqrt                    ;
+     sq2 W &SQ.sqrt                    ;
+     st  W TestObjectService.create v=0;
+     t1 st.onAdd -> sq1.start          ;
+     t2 sq1.result -> sq2.start        ;
+     );
+  TestSessionPair p;
+  qi::os::dlopen("behavior");
+  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
+  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
+  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  size_t pos = 0;
+  while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
+    behavior[pos] = '\n';
+  std::cerr << "INPUT: " << behavior << std::endl;
+  b->call<void>("loadString", behavior);
+  b->call<void>("loadObjects", true);
+  b->call<void>("setTransitions", true);
+  std::vector<std::string> store;
+  qi::SignalLink l1 =  b->connect("onTaskError",   (boost::function<void(const std::string&, const std::string&)>)boost::bind(&pushError, boost::ref(store), _1, _2));
+  qi::SignalLink l2 = b->connect("onTaskRunning", (boost::function<void(const std::string&, bool)>)boost::bind(&pushState, boost::ref(store), _1, _2));
+  ASSERT_TRUE(l1 != qi::SignalBase::invalidSignalLink);
+  ASSERT_TRUE(l2 != qi::SignalBase::invalidSignalLink);
+  qi::AnyObject ts = b->call<qi::AnyObject>("object", "st");
+  qi::AnyObject sq2 = b->call<qi::AnyObject>("object", "sq2");
+  qi::ProxyProperty<double> sq2_result(sq2, "result");
+  sq2_result.set(0); //bug, should not be required, get on uninitialized segv
+
+  ts->call<int>("add", 256);
+  PERSIST_CHECK(, sq2_result.get() == 4, , 2000);
+  ASSERT_EQ(4.0, sq2_result.get());
+  std::sort(store.begin(), store.end());
+  EXPECT_EQ("sq1 start;sq1 stop;sq2 start;sq2 stop",
+    boost::algorithm::join(store, ";"));
+  store.clear();
+  ts->setProperty("v", -17);
+  ts->call<int>("add", 0);
+  PERSIST_CHECK(, store.size() == 3, , 2000);
   std::sort(store.begin(), store.end());
   EXPECT_EQ("sq1 error Negative input;sq1 start;sq1 stop",
     boost::algorithm::join(store, ";"));
