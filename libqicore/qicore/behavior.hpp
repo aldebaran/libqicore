@@ -34,6 +34,7 @@ namespace qi {
       std::string uid;
       Slot src; // uid.slot
       Slot dst; // uid.slot
+      AnyValue filter; // will probably change
       std::string toString()
       {
         return src.first + '.' + src.second + " -> " + dst.first + '.' + dst.second;
@@ -52,6 +53,6 @@ namespace qi {
 
 QI_TYPE_STRUCT_REGISTER(::qi::BehaviorModel, nodes, transitions);
 QI_TYPE_STRUCT_REGISTER(::qi::BehaviorModel::Node, uid, interface, factory);
-QI_TYPE_STRUCT_REGISTER(::qi::BehaviorModel::Transition, uid, src, dst);
+QI_TYPE_STRUCT_REGISTER(::qi::BehaviorModel::Transition, uid, src, dst, filter);
 
 #endif

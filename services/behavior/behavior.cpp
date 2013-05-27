@@ -207,7 +207,7 @@ void Behavior::setTransitions(bool debugmode, qi::MetaCallType type)
     else
       ptr.targetMethod = dstMethods[best.second].uid();
     // If target is a property, we need to use our bouncer to invoke setProperty
-    if (debugmode || best.second == PROP_MATCH)
+    if (debugmode || best.second == PROP_MATCH || t.filter.isValue())
       ptr.link = src->connect(srcSignals[best.first].uid(),
         qi::SignalSubscriber(qi::AnyFunction::from((boost::function<void(qi::AnyValue)>) boost::bind(&Behavior::transition, this, _1, t.uid)),type));
     else
@@ -295,6 +295,14 @@ void Behavior::loadString(const std::string& path)
 void Behavior::transition(qi::AnyValue arg, const std::string& transId)
 {
   TransitionPtr t = _transitions[transId];
+  qi::BehaviorModel::Transition& modelTransition = _model.transitions[transId];
+  if (modelTransition.filter.isValue())
+  {
+    qiLogDebug() << "Filtering " << qi::encodeJSON(arg) <<" with " << qi::encodeJSON(modelTransition.filter);
+    bool match = !(arg < modelTransition.filter) && !(modelTransition.filter < arg);
+    if (!match)
+      return;
+  }
   if (t.debug)
     onTransition(transId, arg);
 

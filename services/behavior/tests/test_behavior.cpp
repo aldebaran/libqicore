@@ -61,13 +61,15 @@ class PropHolder
 public:
   qi::Property<qi::AnyValue> prop;
   qi::Property<qi::AnyValue> prop2;
+  qi::Property<int> propInt;
 };
 
-QI_REGISTER_OBJECT(PropHolder, prop, prop2);
+QI_REGISTER_OBJECT(PropHolder, prop, prop2, propInt);
 
 class TestObject
 {
 public:
+  TestObject() : lastRes(0) {}
   int getv() { return v.get();}
   void setv(int i) { v.set(i);}
   int add(int i) { int res =  i+v.get(); lastRes = res; onAdd(res); return res;}
@@ -82,6 +84,7 @@ QI_REGISTER_OBJECT(TestObject, add, getv, setv, v, onAdd, lastAdd);
 class TestObject2 // yes its the same
 {
 public:
+  TestObject2() : lastRes(0) {}
   int getv() { return v.get();}
   void setv(int i) { v.set(i);}
   int add(int i) { int res =  i+v.get(); lastRes = res; onAdd(res); return res;}
@@ -314,6 +317,51 @@ TEST(Behavior, PropSet)
   EXPECT_EQ(vi, prop.get().to<std::vector<int> >());
   EXPECT_EQ("foo", prop2.get().toString());
   b->call<void>("unloadObjects");
+}
+
+TEST(Behavior, Filter)
+{
+  TestSessionPair p;
+  qi::os::dlopen("behavior");
+  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
+  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
+  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
+  p.server()->registerService("PropHolder", qi::createObject("PropHolder"));
+  qi::ObjectPtr propHolder = p.client()->service("PropHolder");
+  qi::ObjectPtr testObject = p.client()->service("TestObject2");
+  qi::ProxyProperty<qi::AnyValue> prop(propHolder, "prop");
+  qi::ProxyProperty<int> propInt(propHolder, "propInt");
+  std::string behavior = STRING(
+    to Whatever TestObject2 v=0;
+    ph Whatever PropHolder;
+    t1 ph.propInt -> to.add 42;
+    //t2 ph.prop -> to.add 51;
+    );
+  size_t pos = 0;
+  while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
+    behavior[pos] = '\n';
+  std::cerr << "INPUT: " << behavior << std::endl;
+  b->call<void>("loadString", behavior);
+  b->call<void>("loadObjects");
+  b->call<void>("setTransitions", false);
+  propInt.set(12);
+  qi::os::msleep(100);
+  EXPECT_EQ(0, testObject->call<int>("lastAdd"));
+  propInt.set(42);
+  qi::os::msleep(100);
+  EXPECT_EQ(42, testObject->call<int>("lastAdd"));
+  /*
+  prop.set(qi::AnyValue::from("foo"));
+  qi::os::msleep(100);
+  EXPECT_EQ(42, testObject->call<int>("lastAdd"));
+  prop.set(qi::AnyValue::from(12));
+  qi::os::msleep(100);
+  EXPECT_EQ(42, testObject->call<int>("lastAdd"));
+  prop.set(qi::AnyValue::from(51));
+  qi::os::msleep(100);
+  EXPECT_EQ(51, testObject->call<int>("lastAdd"));
+  */
 }
 
 int main(int argc, char **argv) {

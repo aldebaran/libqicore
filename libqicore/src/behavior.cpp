@@ -21,28 +21,31 @@ namespace qi {
 
   void BehaviorModel::load(std::istream& is)
   {
-    // uid a.b -> c.d
-    // uid model factory
+    /* uid model factory prop1 = jsonVal1 prop2 = jsonval2
+    *  uid a.b -> c.d [filterExp]
+    *
+    */
     char line[1024];
     while (is.good())
     {
       line[0] = 0;
       is.getline(line, 1024);
       std::string s(line);
+      boost::trim(s);
       if (s.empty() || s[0] == '#')
         continue;
       std::stringstream st(s);
       std::string uid, p1, p2;
-      bool t = false;
+      bool isTransition = false;
       st >> uid >> p1 >> p2;
       if (p2.empty())
         continue;
       if (p2 == "->")
       {
-        t = true;
+        isTransition = true;
         st >> p2;
       }
-      if (!t)
+      if (!isTransition)
       {
         BehaviorModel::Node& state = nodes[uid];
         state.uid = uid;
@@ -75,6 +78,11 @@ namespace qi {
       else
       {
         BehaviorModel::Transition transition;
+        std::string parameters;
+        std::getline(st,parameters);
+        boost::trim(parameters);
+        if (!parameters.empty())
+          transition.filter = decodeJSON(parameters);
         transition.uid = uid;
         transition.src = splitString2(p1, '.');
         transition.dst = splitString2(p2, '.');
