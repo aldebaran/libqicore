@@ -19,7 +19,3 @@ add_custom_target(copy-python-naoqi ALL
   "${CMAKE_CURRENT_SOURCE_DIR}/py/"
   "${QI_SDK_DIR}/${QI_SDK_LIB}"
   )
-
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src")
-qi_swig_wrap_python(qicore src/qicore.i
-                           DEPENDS QICORE-COMPAT)
