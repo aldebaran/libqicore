@@ -46,6 +46,8 @@ namespace qi {
     _outputs(outputs),
     _contents(contents)
   {
+    if(!contents)
+      _contents = ContentsModelPtr(new ContentsModel());
   }
 
   bool BoxInterfaceModelPrivate::loadFromFile()

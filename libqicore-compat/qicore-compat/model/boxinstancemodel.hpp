@@ -6,10 +6,11 @@
 #pragma once
 
 #ifndef BOXINSTANCE_H_
-# define BOXINSTANCE_H_
+#define BOXINSTANCE_H_
 
-# include <alserial/alserial.h>
-# include <qicore-compat/api.hpp>
+#include <alserial/alserial.h>
+#include <qicore-compat/api.hpp>
+#include <qitype/anyvalue.hpp>
 
 namespace qi {
   class BoxInstanceModelPrivate;
@@ -25,10 +26,13 @@ namespace qi {
 
     const std::string& name() const;
     int id() const;
+    std::string uid() const;
     int x() const;
     int y() const;
-    const std::string& path() const;
+    std::string path() const;
+    std::string behaviorPath() const;
     boost::shared_ptr<BoxInterfaceModel> interface() const;
+    AnyReference parameter(int id);
 
     std::list<boost::shared_ptr<ParameterValueModel> > parametersValue() const;
     const std::string& plugin() const;

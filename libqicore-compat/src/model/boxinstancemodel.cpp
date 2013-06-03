@@ -7,6 +7,8 @@
 #include <qicore-compat/model/parametermodel.hpp>
 #include "boxinstancemodel_p.hpp"
 
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <qi/log.hpp>
 qiLogCategory("QiCore-Compat.BoxInstanceModel");
@@ -43,10 +45,11 @@ namespace qi {
     elt->getAttribute("id",   _id);
     elt->getAttribute("x",    _x);
     elt->getAttribute("y",    _y);
-    elt->getAttribute("path", _path);
+    elt->getAttribute("path", path);
 
-    path = dir + "/" + _path;
-    _interface = BoxInterfaceModelPtr(new BoxInterfaceModel(path));
+    _path = dir + "/" + path;
+    qiLogDebug() << "BoxInterface path : " << _path;
+    _interface = BoxInterfaceModelPtr(new BoxInterfaceModel(_path));
 
     if(!_interface->loadFromFile())
       _isValid = false;
@@ -145,6 +148,19 @@ namespace qi {
     return _p->_id;
   }
 
+  std::string BoxInstanceModel::uid() const
+  {
+    std::ostringstream oss;
+    if(_p->_id >= 0)
+      oss << _p->_id;
+    else
+      oss << 1;
+
+    std::string uniqueId = this->name() + std::string("_") + oss.str();
+    boost::replace_all(uniqueId, " ", "_");
+    return uniqueId;
+  }
+
   int BoxInstanceModel::x() const
   {
     return _p->_x;
@@ -155,14 +171,38 @@ namespace qi {
     return _p->_y;
   }
 
-  const std::string& BoxInstanceModel::path() const
+  std::string BoxInstanceModel::behaviorPath() const
   {
-    return _p->_path;
+    return boost::filesystem::path(_p->_path).parent_path().string();
+  }
+
+  std::string BoxInstanceModel::path() const
+  {
+    return boost::filesystem::path(_p->_path).filename().string();
   }
 
   BoxInterfaceModelPtr BoxInstanceModel::interface() const
   {
     return _p->_interface;
+  }
+
+  AnyReference BoxInstanceModel::parameter(int id)
+  {
+    //Search the user value
+    std::map<int, ParameterValueModelPtr>::iterator it = _p->_parameters.find(id);
+
+    if(it != _p->_parameters.end())
+      return it->second->value();
+
+    //Return default value
+    ParameterModelPtr parameter = _p->_interface->findParameter(id);
+    if(!parameter)
+    {
+      qiLogError() << "Parameter " << id << " not found";
+      return AnyReference();
+    }
+
+    return parameter->defaultValue();
   }
 
   std::list<ParameterValueModelPtr> BoxInstanceModel::parametersValue() const

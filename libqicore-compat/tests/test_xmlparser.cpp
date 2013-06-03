@@ -54,6 +54,7 @@ TEST(XmlParser, LoadXARFile)
   EXPECT_EQ(rootBox->y(),     0);
   EXPECT_EQ(rootBox->path(), "test_boxinterface.xml");
   EXPECT_EQ(rootBox->parametersValue().size(), 0);
+  EXPECT_EQ(rootBox->behaviorPath(), valid_boxinterface);
 
   qi::BoxInterfaceModelPtr rootBoxInterface = rootBox->interface();
   ASSERT_TRUE(rootBoxInterface);
@@ -502,7 +503,8 @@ TEST(XmlParse, BoxInterface)
   EXPECT_EQ(interface.parameters().size(), 0);
   EXPECT_EQ(interface.inputs().size(), 0);
   EXPECT_EQ(interface.outputs().size(), 0);
-  EXPECT_FALSE(interface.contents());
+  EXPECT_TRUE(interface.contents());
+  EXPECT_EQ(0, interface.contents()->contents().size());
 
   interface.setPath("box2.xml");
   EXPECT_EQ(interface.path(), "box2.xml");
@@ -845,6 +847,8 @@ TEST(XmlParser, BoxInstance)
   EXPECT_EQ(box.parametersValue().size(), 0);
   EXPECT_EQ(box.path(), "box.xml");
   EXPECT_EQ(box.interface(), interface);
+  //qi::GenericValuePtr value = box.parameter("Test");
+  //EXPECT_EQ(0.0, value.toDouble());
 
   box.setName("ra");
   EXPECT_EQ(box.name(), "ra");
