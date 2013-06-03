@@ -326,9 +326,9 @@ namespace qi
     if(Signature(choice->value().signature()).isConvertibleTo(signature) < 1.0f )
     {
       qiLogWarning() << "choice.type (i.e "
-                     << choice->value().signature()
+                     << choice->value().signature().toString()
                      << ") != parameter.type (i.e "
-                     << _p->_defaultValue.signature()
+                     << _p->_defaultValue.signature().toString()
                      <<")"
                      << std::endl;
       return false;

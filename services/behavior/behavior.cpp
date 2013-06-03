@@ -170,12 +170,12 @@ void Behavior::setTransitions(bool debugmode)
     float bestScore = 0;
     for (unsigned s=0; s<srcSignals.size(); ++s)
     {
-      std::string sigS = srcSignals[s].parametersSignature();
+      Signature sigS = srcSignals[s].parametersSignature();
       for (unsigned d=0; d<dstMethods.size(); ++d)
       {
-        std::string sigD = dstMethods[d].parametersSignature();
-        float score = Signature(sigS).isConvertibleTo(Signature(sigD));
-        qiLogDebugF("scoring %s -> %s : %s", sigS, sigD, score);
+        Signature sigD = dstMethods[d].parametersSignature();
+        float score = sigS.isConvertibleTo(sigD);
+        qiLogDebugF("scoring %s -> %s : %s", sigS.toString(), sigD.toString(), score);
         if (score > bestScore)
         {
           bestScore = score;
@@ -184,9 +184,9 @@ void Behavior::setTransitions(bool debugmode)
       }
       if (prop)
       {
-        std::string sigD = "(" + prop->signature() + ")";
-        float score = Signature(sigS).isConvertibleTo(Signature(sigD));
-        qiLogDebugF("scoring %s -> %s : %s", sigS, sigD, score);
+        std::string sigD = "(" + prop->signature().toString() + ")";
+        float score = sigS.isConvertibleTo(Signature(sigD));
+        qiLogDebugF("scoring %s -> %s : %s", sigS.toString(), sigD, score);
         if (score > bestScore)
         {
           bestScore = score;

@@ -97,8 +97,8 @@ namespace qi {
     if(Signature(param->metaProperty().signature()).isConvertibleTo(Signature(value->value().signature())) < 1.0f)
     {
       qiLogDebug() << "Xml File : " << _interface->path();
-      qiLogDebug() << "Parameter.signature = " << param->metaProperty().signature();
-      qiLogDebug() << "ParameterValue.signature = " << value->value().signature();
+      qiLogDebug() << "Parameter.signature = " << param->metaProperty().signature().toString();
+      qiLogDebug() << "ParameterValue.signature = " << value->value().signature().toString();
       qiLogError() << "Invalid ParameterValue, in BoxInterface.name = \""
                    << _interface->name() << "\""
                    << " ParameterValue have not the same signature as Parameter.name ="
