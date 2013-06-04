@@ -5,6 +5,7 @@
 ## found in the COPYING file.
 
 import os
+import uuid
 import xml.sax.saxutils as saxutils
 
 import converter.xar_types as xar_types
@@ -45,8 +46,8 @@ def write_box_interface(f, node):
 
     # Root tag and attributes
     f.write((u"<BoxInterface uuid=\"{}\" box_version=\"{}\" name=\"{}\"")
-            .format(node.uuid,
-                    node.box_version,
+            .format(uuid.uuid4(),
+                    "1.0.0.0",
                     node.name))
     if node.localization:
         f.write((u" localization=\"{}\"")

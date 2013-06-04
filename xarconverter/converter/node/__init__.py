@@ -36,9 +36,8 @@ class Node(object):
             rdict = self.__dict__
             ldict = other.__dict__
             for key in rdict.keys():
-                if (key == "parent_node"
-                        or key == "children_node"
-                        or key == "_function_map"):
+                ignored_keys = ["parent_node", "children_node", "_function_map", "uuid"]
+                if key in ignored_keys:
                     continue
                 elif isinstance(rdict[key], list) and isinstance(ldict[key], list):
                     if len(rdict[key]) != len(ldict[key]):
@@ -86,9 +85,8 @@ class Node(object):
         rdict = self.__dict__
         ldict = other.__dict__
         for key in rdict.keys():
-            if (key == "parent_node"
-                    or key == "children_node"
-                    or key == "_function_map"):
+            ignored_keys = ["parent_node", "children_node", "_function_map", "uuid"]
+            if key in ignored_keys:
                 continue
             elif isinstance(rdict[key], list) and isinstance(ldict[key], list):
                 if len(rdict[key]) != len(ldict[key]):

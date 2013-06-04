@@ -32,8 +32,6 @@ class Box(node.Node):
         self.plugin = attrs.getValue("plugin")
         self.x_pos = attrs.getValue("x")
         self.y_pos = attrs.getValue("y")
-        self.uuid = ""
-        self.box_version = "1.0.0.0"
 
         # Elements
         self.bitmaps = []
