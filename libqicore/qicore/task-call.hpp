@@ -56,11 +56,14 @@ namespace qi
   public:
     TaskCall()
     : result(typeOf<T>()) {}
-    TaskCall(AnyFunction f)
-    : result(typeOf<T>())
+    // Accept an explicit type that overrides
+    TaskCall(AnyFunction f, Type* eff = 0)
+    : result(eff?eff:typeOf<T>())
     , _f(f)
     , _live(new bool(true))
     {
+      if (eff && qi::typeOf<T>()->info() != qi::typeOf<qi::AnyValue>()->info())
+        qiLogWarning("TaskCall") << "Overriding TaskCall type for a template different from GenericValue";
       qiLogDebug("TaskCall") << "TaskCall " << this;
     }
     ~TaskCall()

@@ -546,7 +546,6 @@ TEST(Behavior, TaskCall)
   qi::AnyObject ts = b->call<qi::AnyObject>("object", "st");
   qi::AnyObject sq2 = b->call<qi::AnyObject>("object", "sq2");
   qi::ProxyProperty<double> sq2_result(sq2, "result");
-  sq2_result.set(0); //bug, should not be required, get on uninitialized segv
 
   ts->call<int>("add", 256);
   PERSIST_CHECK(, sq2_result.get() == 4, , 2000);
@@ -554,6 +553,7 @@ TEST(Behavior, TaskCall)
   std::sort(store.begin(), store.end());
   EXPECT_EQ("sq1 start;sq1 stop;sq2 start;sq2 stop",
     boost::algorithm::join(store, ";"));
+
   store.clear();
   ts->setProperty("v", -17);
   ts->call<int>("add", 0);

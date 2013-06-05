@@ -78,7 +78,7 @@ private:
   void transition(qi::AnyValue argument, const std::string& transitionId);
 
 private:
-  typedef qi::SignalBase::Link Link;
+  typedef qi::SignalLink Link;
   // hooks on running/error
   typedef std::map<std::string, std::pair<Link, Link> > ObjectLinks;
   ObjectLinks       _objectLinks;
@@ -210,63 +210,60 @@ void Behavior::setTransitions(bool debugmode, qi::MetaCallType type)
       throw std::runtime_error("No object " + t.src.first);
     if (!dst)
       throw std::runtime_error("No object " + t.dst.first);
-    std::vector<qi::MetaSignal> srcSignals = src->metaObject().findSignal(t.src.second);
+    const qi::MetaSignal* srcSignal = src->metaObject().signal(t.src.second);
     std::vector<qi::MetaMethod> dstMethods = dst->metaObject().findMethod(t.dst.second);
     // also lookup for a matching property
     int propId = dst->metaObject().propertyId(t.dst.second);
     const qi::MetaProperty* prop = dst->metaObject().property(propId);
     // fixme: handle properties as target
-    if (srcSignals.empty())
+    if (!srcSignal)
       throw std::runtime_error("No signal " + t.src.second);
     if (dstMethods.empty() && !prop)
       throw std::runtime_error("No method or property " + t.dst.second);
     // find a compatible pair
-    std::pair<unsigned, unsigned> best;
+    unsigned best;
     static const unsigned PROP_MATCH = 0xFFFFFFFF;
     float bestScore = 0;
-    for (unsigned s=0; s<srcSignals.size(); ++s)
+    qi::Signature sigS = srcSignal->parametersSignature();
+    for (unsigned d=0; d<dstMethods.size(); ++d)
     {
-      Signature sigS = srcSignals[s].parametersSignature();
-      for (unsigned d=0; d<dstMethods.size(); ++d)
+      qi::Signature sigD = dstMethods[d].parametersSignature();
+      float score = sigS.isConvertibleTo(sigD);
+      qiLogDebugF("scoring %s -> %s : %s", sigS.toString(), sigD.toString(), score);
+      if (score > bestScore)
       {
-        Signature sigD = dstMethods[d].parametersSignature();
-        float score = sigS.isConvertibleTo(sigD);
-        qiLogDebugF("scoring %s -> %s : %s", sigS.toString(), sigD.toString(), score);
-        if (score > bestScore)
-        {
-          bestScore = score;
-          best = std::make_pair(s, d);
-        }
+        bestScore = score;
+        best =  d;
       }
-      if (prop)
+    }
+    if (prop)
+    {
+      Signature sigD = makeTupleSignature(prop->signature());
+      float score = sigS.isConvertibleTo(sigD);
+      qiLogDebugF("scoring %s -> %s : %s", sigS.toString(), sigD.toString(), score);
+      if (score > bestScore)
       {
-        std::string sigD = "(" + prop->signature().toString() + ")";
-        float score = sigS.isConvertibleTo(Signature(sigD));
-        qiLogDebugF("scoring %s -> %s : %s", sigS.toString(), sigD, score);
-        if (score > bestScore)
-        {
-          bestScore = score;
-          best = std::make_pair(s, PROP_MATCH);
-        }
+        bestScore = score;
+        best = PROP_MATCH;
       }
     }
     if (!bestScore)
       throw std::runtime_error("Could not match " + t.toString());
-    qiLogDebug() << "Best match " << best.second;
+    qiLogDebug() << "Best match " << best;
     TransitionPtr& ptr = _transitions[t.uid];
     ptr.debug = debugmode;
     ptr.source = src;
     ptr.target = dst;
-    if (best.second == PROP_MATCH)
+    if (best == PROP_MATCH)
       ptr.property = t.dst.second;
     else
-      ptr.targetMethod = dstMethods[best.second].uid();
+      ptr.targetMethod = dstMethods[best].uid();
     // If target is a property, we need to use our bouncer to invoke setProperty
-    if (debugmode || best.second == PROP_MATCH || t.filter.isValue())
-      ptr.link = src->connect(srcSignals[best.first].uid(),
+    if (debugmode || best == PROP_MATCH || t.filter.isValue())
+      ptr.link = src->connect(srcSignal->uid(),
         qi::SignalSubscriber(qi::AnyFunction::from((boost::function<void(qi::AnyValue)>) boost::bind(&Behavior::transition, this, _1, t.uid)),type));
     else
-      ptr.link = src->connect(srcSignals[best.first].uid(), qi::SignalSubscriber(dst, ptr.targetMethod));
+      ptr.link = src->connect(srcSignal->uid(), qi::SignalSubscriber(dst, ptr.targetMethod));
   }
 }
 
@@ -318,9 +315,18 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
       AnyObject o = _objects[object];
       if (!o)
         throw std::runtime_error("AutoTask argument is not a previously loaded object: " + object);
+      // Fetch method return type if we can
+      qi::TypeInterface* taskType = 0;
+      qi::MetaObject mo = o->metaObject();
+      std::vector<qi::MetaMethod> mm = mo.findMethod(method);
+      if (mm.size() == 1)
+        taskType = qi::TypeInterface::fromSignature(mm[0].returnSignature());
+      if (!taskType)
+        qiLogWarning() << "Could not determine type of " << object << '.' << method
+                       << ", getProperty might return a null value until set";
       // There is a convert bug that prevent shared_ptr tracking from working, manual override!
       TaskAdapter* task = new TaskAdapter(
-          makeDynamicGenericFunction(boost::bind(&bounce_call, o, method, _1)));
+          qi::AnyFunction::fromDynamicFunction(boost::bind(&bounce_call, o, method, _1)), taskType);
       qi::TypeInterface* taType = qi::typeOf<TaskAdapter>();
       qi::TypeInterface* taTypeNext = dynamic_cast<qi::TemplateTypeInterface*>(taType)->next();
       qi::GenericObject* go = new qi::GenericObject(
@@ -400,10 +406,15 @@ void Behavior::transition(qi::AnyValue arg, const std::string& transId)
     onTransition(transId, arg);
 
   qiLogDebug() << "Intercepted transition " << transId << " to " << t.targetMethod;
+  qiLogDebug() << "Payload: " << encodeJSON(arg);
   if (!t.property.empty())
+  {
+    qiLogDebug() << "Forwarding transition to property " << t.property;
     t.target->setProperty(t.property, arg);
+  }
   else
   {
+    qiLogDebug() << "Forwarding transition to method " << t.targetMethod;
     qi::GenericFunctionParameters args;
     args.push_back(qi::AnyReference(arg.type, arg.value));
     t.target->metaPost(t.targetMethod, args);
