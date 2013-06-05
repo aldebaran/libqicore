@@ -5,8 +5,6 @@
 #include <qitype/type.hpp>
 #include <boost/shared_ptr.hpp>
 
-QI_TYPE_STRUCT(::qi::os::timeval, tv_sec, tv_usec);
-
 QI_TYPE_ENUM_REGISTER(qi::log::LogLevel)
 
 struct Message

@@ -7,6 +7,7 @@ qi_create_idl(idlfiles
   SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/logger_service.hpp
   CLASSES LogListener Logger LogProvider
   PREFIX ${CMAKE_CURRENT_BINARY_DIR}/share/idl
+  TYPE_MAP qi::log::LogLevel=i<qi::log::LogLevel>
 )
 message("IDL files: ${idlfiles}")
 
