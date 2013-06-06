@@ -3,10 +3,13 @@
 * Aldebaran Robotics (c) 2012 All Rights Reserved
 */
 
+#include <boost/foreach.hpp>
 #include <qicore-compat/model/contentsmodel.hpp>
 #include "xmlutils.hpp"
 #include "contentsmodel_p.hpp"
 #include <qi/log.hpp>
+
+#define foreach BOOST_FOREACH
 
 namespace qi
 {
@@ -56,18 +59,14 @@ namespace qi
     _p->_contents.push_front(content);
   }
 
-  std::list<ContentModelPtr> ContentsModel::findContents(int type) const
+  ContentModelPtr ContentsModel::findContent(int type) const
   {
-    std::list<ContentModelPtr> result;
-    std::list<ContentModelPtr>::const_iterator it = _p->_contents.begin();
-    std::list<ContentModelPtr>::const_iterator itEnd = _p->_contents.end();
-
-    for(; it != itEnd; ++it)
+    foreach(ContentModelPtr content, _p->_contents)
     {
-      if((*it)->type() == type)
-        result.push_front(*it);
+      if(content->type() == type)
+        return content;
     }
 
-    return result;
+    return ContentModelPtr();
   }
 }

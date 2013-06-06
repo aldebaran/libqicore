@@ -125,18 +125,16 @@ TEST(XmlParser, LoadXARFile)
 
   qi::ContentsModelPtr contents = rootBoxInterface->contents();
   ASSERT_TRUE(contents);
+  EXPECT_EQ(contents->contents().size(), 3);
   qi::ContentModelPtr content = contents->contents().front();
   ASSERT_TRUE(content);
   EXPECT_EQ(content->checksum(), "");
   EXPECT_EQ(content->path(), "test_bhs.bhs");
   EXPECT_EQ(content->type(), qi::ContentModel::ContentType_BehaviorSequence);
 
-  EXPECT_EQ(contents->contents().size(), 3);
-  ASSERT_EQ(contents->findContents(qi::ContentModel::ContentType_Animation).size(), 1);
-  qi::ContentModelPtr contentAnim = contents->findContents(qi::ContentModel::ContentType_Animation).front();
-  qi::AnimationModelPtr anim = contentAnim->animationModel();
+  qi::AnimationModel *anim = rootBox->content(qi::ContentModel::ContentType_Animation).ptr<qi::AnimationModel>();
   ASSERT_TRUE(anim);
-  EXPECT_EQ(anim->path(), contentAnim->path());
+  EXPECT_EQ(anim->path(), "test_anim.anim");
   EXPECT_EQ(anim->fps(), 25);
   EXPECT_EQ(anim->startFrame(), 0);
   EXPECT_EQ(anim->endFrame(), -1);
@@ -178,11 +176,9 @@ TEST(XmlParser, LoadXARFile)
   EXPECT_EQ(tangent->ordinateParam(), 7.0f);
   EXPECT_EQ(tangent->abscissaParam(), 4.0f);
 
-  ASSERT_EQ(contents->findContents(qi::ContentModel::ContentType_FlowDiagram).size(), 1);
-  qi::ContentModelPtr contentFlowDiagram = contents->findContents(qi::ContentModel::ContentType_FlowDiagram).front();
-  qi::FlowDiagramModelPtr flowdiagram = contentFlowDiagram->flowDiagramModel();
+  qi::FlowDiagramModel *flowdiagram = rootBox->content(qi::ContentModel::ContentType_FlowDiagram).ptr<qi::FlowDiagramModel>();
   ASSERT_TRUE(flowdiagram);
-  EXPECT_EQ(flowdiagram->path(), contentFlowDiagram->path());
+  EXPECT_EQ(flowdiagram->path(), "test_fld.fld");
   EXPECT_EQ(flowdiagram->scale(), 59.4604f);
   EXPECT_EQ(flowdiagram->formatVersion(), "4");
 
@@ -195,14 +191,13 @@ TEST(XmlParser, LoadXARFile)
   EXPECT_EQ(link->outputTowner(), 26);
   EXPECT_EQ(link->indexOfOutput(), 4);
 
-  std::list<qi::BoxInstanceModelPtr> boxs = flowdiagram->boxsInstance();
-  EXPECT_EQ(boxs.size(), 2);
+  std::list<qi::BoxInstanceModelPtr> boxes = flowdiagram->boxsInstance();
+  EXPECT_EQ(boxes.size(), 2);
+  qi::BoxInstanceModelPtr box = boxes.front();
 
-  ASSERT_EQ(contents->findContents(qi::ContentModel::ContentType_BehaviorSequence).size(), 1);
-  qi::ContentModelPtr contentBehaviorSequence = contents->findContents(qi::ContentModel::ContentType_BehaviorSequence).front();
-  qi::BehaviorSequenceModelPtr behaviorSequence = contentBehaviorSequence->behaviorSequenceModel();
+  qi::BehaviorSequenceModel *behaviorSequence = rootBox->content(qi::ContentModel::ContentType_BehaviorSequence).ptr<qi::BehaviorSequenceModel>();
   ASSERT_TRUE(behaviorSequence);
-  EXPECT_EQ(behaviorSequence->path(), contentBehaviorSequence->path());
+  EXPECT_EQ(behaviorSequence->path(), "test_bhs.bhs");
   EXPECT_EQ(behaviorSequence->fps(), 25);
   EXPECT_EQ(behaviorSequence->startFrame(), 0);
   EXPECT_EQ(behaviorSequence->endFrame(), -1);

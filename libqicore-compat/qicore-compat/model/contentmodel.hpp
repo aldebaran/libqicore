@@ -10,6 +10,7 @@
 
 #include <alserial/alserial.h>
 #include <qicore-compat/api.hpp>
+#include <qitype/anyvalue.hpp>
 
 namespace qi
 {
@@ -17,6 +18,7 @@ namespace qi
   class AnimationModel;
   class BehaviorSequenceModel;
   class FlowDiagramModel;
+  class BoxInstanceModel;
 
   class QICORECOMPAT_API ContentModel
   {
@@ -38,9 +40,7 @@ namespace qi
     const std::string& path() const;
     const std::string& checksum() const;
 
-    boost::shared_ptr<AnimationModel> animationModel();
-    boost::shared_ptr<BehaviorSequenceModel> behaviorSequenceModel();
-    boost::shared_ptr<FlowDiagramModel> flowDiagramModel();
+    AnyReference content();
 
     void setType(ContentType type);
     void setPath(const std::string& path);

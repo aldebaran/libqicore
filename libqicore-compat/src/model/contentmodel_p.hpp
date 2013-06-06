@@ -9,6 +9,7 @@
 #define CONTENT_P_H_
 
 #include <alserial/alserial.h>
+#include <qitype/anyreference.hpp>
 
 namespace qi
 {
@@ -20,12 +21,14 @@ namespace qi
     ContentModelPrivate();
     ContentModelPrivate(int type, const std::string &path, const std::string &checksum);
     ContentModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
+    ~ContentModelPrivate();
 
   private:
     int _type;
     std::string _path;
     std::string _checksum;
     std::string _dir;
+    AnyReference _content;
 
   };
 }

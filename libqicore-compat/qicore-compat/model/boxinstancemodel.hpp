@@ -11,6 +11,7 @@
 #include <alserial/alserial.h>
 #include <qicore-compat/api.hpp>
 #include <qitype/anyvalue.hpp>
+#include <qicore-compat/model/contentmodel.hpp>
 
 namespace qi {
   class BoxInstanceModelPrivate;
@@ -43,6 +44,7 @@ namespace qi {
     void setY(int y);
     void setBoxInterface(boost::shared_ptr<BoxInterfaceModel> interface);
     bool addParameterValue(boost::shared_ptr<ParameterValueModel> value);
+    AnyReference content(ContentModel::ContentType type);
 
     bool isValid() const;
 

@@ -5,6 +5,8 @@
 
 #include <qicore-compat/model/boxinstancemodel.hpp>
 #include <qicore-compat/model/parametermodel.hpp>
+#include <qicore-compat/model/contentmodel.hpp>
+#include <qicore-compat/model/contentsmodel.hpp>
 #include "boxinstancemodel_p.hpp"
 
 #include <boost/filesystem.hpp>
@@ -254,6 +256,18 @@ namespace qi {
   bool BoxInstanceModel::addParameterValue(ParameterValueModelPtr value)
   {
     return _p->addParameterValue(value);
+  }
+
+  AnyReference BoxInstanceModel::content(ContentModel::ContentType type)
+  {
+    qiLogDebug() << "Content Load";
+    ContentModelPtr content = _p->_interface->contents()->findContent(type);
+
+    if(!content)
+      return AnyReference();
+
+    qiLogDebug() << "Content found";
+    return content->content();
   }
 
   bool BoxInstanceModel::isValid() const

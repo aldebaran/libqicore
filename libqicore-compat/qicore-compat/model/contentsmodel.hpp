@@ -26,7 +26,7 @@ namespace qi
     const std::list<boost::shared_ptr<ContentModel> >& contents() const;
     void addContent(boost::shared_ptr<ContentModel> content);
 
-    std::list<boost::shared_ptr<ContentModel> > findContents(int type) const;
+    boost::shared_ptr<ContentModel> findContent(int type) const;
 
   private:
     QI_DISALLOW_COPY_AND_ASSIGN(ContentsModel);

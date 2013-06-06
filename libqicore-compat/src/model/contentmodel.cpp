@@ -7,8 +7,11 @@
 #include <qicore-compat/model/animationmodel.hpp>
 #include <qicore-compat/model/behaviorsequencemodel.hpp>
 #include <qicore-compat/model/flowdiagrammodel.hpp>
+#include <qicore-compat/model/boxinstancemodel.hpp>
 
 #include "contentmodel_p.hpp"
+
+qiLogCategory("QiCore-Compat.ContentModel");
 
 namespace qi
 {
@@ -33,6 +36,30 @@ namespace qi
     elt->getAttribute("path",     _path);
     elt->getAttribute("checksum", _checksum);
     _dir = dir;
+  }
+
+  ContentModelPrivate::~ContentModelPrivate()
+  {
+    if(_content.isValid())
+    {
+      switch(_type)
+      {
+      case ContentModel::ContentType_Animation:
+        delete _content.ptr<AnimationModel>();
+        break;
+
+      case ContentModel::ContentType_BehaviorSequence:
+        delete _content.ptr<BehaviorSequenceModel>();
+        break;
+
+      case ContentModel::ContentType_FlowDiagram:
+        delete _content.ptr<FlowDiagramModel>();
+        break;
+
+      default:
+        break;
+      }
+    }
   }
 
   //-----------------------------Public Class-------------------------------//
@@ -67,43 +94,49 @@ namespace qi
     return _p->_checksum;
   }
 
-  AnimationModelPtr ContentModel::animationModel()
+  template<class T>
+  AnyReference loadContent(const std::string &path)
   {
-    if(_p->_type != ContentModel::ContentType_Animation)
-      return AnimationModelPtr();
+    T *ptr = new T(path);
 
-    AnimationModelPtr animation = AnimationModelPtr(new AnimationModel(_p->_dir + "/" + _p->_path));
 
-    if(!animation->loadFromFile())
-      return AnimationModelPtr();
+    if(!ptr->loadFromFile())
+    {
 
-    return animation;
+      delete ptr;
+      return AnyReference();
+    }
+    return AnyReference::fromPtr(ptr);
   }
 
-  BehaviorSequenceModelPtr ContentModel::behaviorSequenceModel()
+  AnyReference ContentModel::content()
   {
-    if(_p->_type != ContentModel::ContentType_BehaviorSequence)
-      return BehaviorSequenceModelPtr();
+    //if content is already loading return content
+    if(_p->_content.isValid())
+      return _p->_content;
 
-    BehaviorSequenceModelPtr behaviorSequence = BehaviorSequenceModelPtr(new BehaviorSequenceModel(_p->_dir + "/" + _p->_path));
+    qiLogDebug() << "First load";
 
-    if(!behaviorSequence->loadFromFile())
-      return BehaviorSequenceModelPtr();
+    //Load content
+    AnyReference content;
+    switch(_p->_type)
+    {
+    case ContentType_Animation:
+      content = loadContent<AnimationModel>(_p->_dir + "/" + _p->_path);
+      break;
+    case ContentType_BehaviorSequence:
+      content = loadContent<BehaviorSequenceModel>(_p->_dir + "/" + _p->_path);
+      break;
+    case ContentType_FlowDiagram:
+      content = loadContent<FlowDiagramModel>(_p->_dir + "/" + _p->_path);
+      break;
+    default:
+      return AnyReference();
+      break;
+    }
 
-    return behaviorSequence;
-  }
-
-  FlowDiagramModelPtr ContentModel::flowDiagramModel()
-  {
-    if(_p->_type != ContentModel::ContentType_FlowDiagram)
-      return FlowDiagramModelPtr();
-
-    FlowDiagramModelPtr behaviorSequence = FlowDiagramModelPtr(new FlowDiagramModel(_p->_dir + "/" + _p->_path));
-
-    if(!behaviorSequence->loadFromFile())
-      return FlowDiagramModelPtr();
-
-    return behaviorSequence;
+    _p->_content = content;
+    return content;
   }
 
   void ContentModel::setType(ContentType type)
