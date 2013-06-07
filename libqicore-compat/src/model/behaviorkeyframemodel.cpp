@@ -27,13 +27,14 @@ namespace qi {
   {
   }
 
-  BehaviorKeyFrameModelPrivate::BehaviorKeyFrameModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir)
+  BehaviorKeyFrameModelPrivate::BehaviorKeyFrameModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, boost::shared_ptr<BoxInstanceModel> parent)
   {
     elt->getAttribute("name",   _name);
     elt->getAttribute("index",  _index);
     elt->getAttribute("bitmap", _bitmap);
     elt->getAttribute("path",   _path);
     _path = dir + "/" + _path;
+    _parent = parent;
   }
 
   BehaviorKeyFrameModel::BehaviorKeyFrameModel(const std::string &name, int index, const std::string &bitmap, const std::string &path) :
@@ -41,8 +42,8 @@ namespace qi {
   {
   }
 
-  BehaviorKeyFrameModel::BehaviorKeyFrameModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir) :
-    _p( new BehaviorKeyFrameModelPrivate(elt, dir) )
+  BehaviorKeyFrameModel::BehaviorKeyFrameModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, boost::shared_ptr<BoxInstanceModel> parent) :
+    _p( new BehaviorKeyFrameModelPrivate(elt, dir, parent) )
   {
   }
 
@@ -72,14 +73,17 @@ namespace qi {
     return path.filename().string();
   }
 
-  FlowDiagramModelPtr BehaviorKeyFrameModel::diagram() const
+  FlowDiagramModelPtr BehaviorKeyFrameModel::diagram()
   {
-    FlowDiagramModelPtr flowDiagram = FlowDiagramModelPtr(new FlowDiagramModel(_p->_path));
+    if(_p->_diagram)
+      return _p->_diagram;
 
-    if(!flowDiagram->loadFromFile())
-      return FlowDiagramModelPtr();
+    _p->_diagram = FlowDiagramModelPtr(new FlowDiagramModel(_p->_path));
 
-    return flowDiagram;
+    if(!_p->_diagram->loadFromFile())
+      _p->_diagram = FlowDiagramModelPtr();
+
+    return _p->_diagram;
   }
 
   void BehaviorKeyFrameModel::setName(const std::string& name)

@@ -10,6 +10,7 @@
 
 #include <string>
 #include <alserial/alserial.h>
+#include <qicore-compat/model/boxinstancemodel.hpp>
 
 namespace qi
 {
@@ -47,6 +48,25 @@ namespace qi
       {
         boost::shared_ptr<const AL::XmlElement> elt = *it;
         T *object = new T (elt, dir);
+        boost::shared_ptr<T> pobject(object);
+
+        returnList.push_front(pobject);
+
+      }
+      return returnList;
+    }
+
+    template <typename T>
+    static std::list<boost::shared_ptr<T> > constructObjects(AL::XmlElement::CList list, std::string dir, BoxInstanceModelPtr parent)
+    {
+      if(list.empty())
+        return std::list<boost::shared_ptr<T> > ();
+
+      std::list<boost::shared_ptr<T> >  returnList;
+      for (AL::XmlElement::CList::const_iterator it=list.begin(), itEnd=list.end(); it!=itEnd; ++it)
+      {
+        boost::shared_ptr<const AL::XmlElement> elt = *it;
+        T *object = new T (elt, dir, parent);
         boost::shared_ptr<T> pobject(object);
 
         returnList.push_front(pobject);

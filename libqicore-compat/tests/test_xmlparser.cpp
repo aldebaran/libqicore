@@ -702,7 +702,7 @@ TEST(XmlParser, Tangent)
 
 TEST(XmlParser, BehaviorSequence)
 {
-  qi::BehaviorSequenceModel seq("bhs.bhs", 25, 0, 61, 3000, "42");
+  qi::BehaviorSequenceModel seq("bhs.bhs", qi::BoxInstanceModelPtr(), 25, 0, 61, 3000, "42");
 
   ASSERT_EQ(seq.path(), "bhs.bhs");
   ASSERT_EQ(seq.fps(), 25);
@@ -778,7 +778,7 @@ TEST(XmlParser, BehaviorKeyFrame)
 
 TEST(XmlParser, FlowDiagram)
 {
-  qi::FlowDiagramModel flowDiagram("d.fld", 12.0, "53");
+  qi::FlowDiagramModel flowDiagram("d.fld", qi::BoxInstanceModelPtr(), 12.0, "53");
 
   ASSERT_EQ(flowDiagram.path(), "d.fld");
   ASSERT_EQ(flowDiagram.scale(), 12.0);

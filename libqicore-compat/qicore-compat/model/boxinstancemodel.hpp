@@ -8,6 +8,7 @@
 #ifndef BOXINSTANCE_H_
 #define BOXINSTANCE_H_
 
+#include <boost/enable_shared_from_this.hpp>
 #include <alserial/alserial.h>
 #include <qicore-compat/api.hpp>
 #include <qitype/anyvalue.hpp>
@@ -18,11 +19,11 @@ namespace qi {
   class BoxInterfaceModel;
   class ParameterValueModel;
 
-  class QICORECOMPAT_API BoxInstanceModel
+  class QICORECOMPAT_API BoxInstanceModel : public boost::enable_shared_from_this<BoxInstanceModel>
   {
   public:
     BoxInstanceModel(const std::string &name, int id, int x, int y, boost::shared_ptr<BoxInterfaceModel> interface);
-    BoxInstanceModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
+    BoxInstanceModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, boost::shared_ptr<BoxInstanceModel> parent);
     virtual ~BoxInstanceModel();
 
     const std::string& name() const;
@@ -37,6 +38,7 @@ namespace qi {
 
     std::list<boost::shared_ptr<ParameterValueModel> > parametersValue() const;
     const std::string& plugin() const;
+    boost::shared_ptr<BoxInstanceModel> parent();
 
     void setName(const std::string& name);
     void setId(int id);

@@ -25,13 +25,13 @@ namespace qi {
   {
   }
 
-  BehaviorLayerModelPrivate::BehaviorLayerModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir)
+  BehaviorLayerModelPrivate::BehaviorLayerModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, boost::shared_ptr<BoxInstanceModel> parent)
   {
     elt->getAttribute("name", _name);
     elt->getAttribute("mute", _mute);
 
     AL::XmlElement::CList behaviorsKeyFrame = elt->children("BehaviorKeyframe", "");
-    _behaviorsKeyFrame = XmlUtils::constructObjects<BehaviorKeyFrameModel>(behaviorsKeyFrame, dir);
+    _behaviorsKeyFrame = XmlUtils::constructObjects<BehaviorKeyFrameModel>(behaviorsKeyFrame, dir, parent);
   }
 
   BehaviorLayerModel::BehaviorLayerModel(const std::string &name,
@@ -41,8 +41,8 @@ namespace qi {
   {
   }
 
-  BehaviorLayerModel::BehaviorLayerModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir) :
-    _p( new BehaviorLayerModelPrivate(elt, dir))
+  BehaviorLayerModel::BehaviorLayerModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, boost::shared_ptr<BoxInstanceModel> parent) :
+    _p( new BehaviorLayerModelPrivate(elt, dir, parent))
   {
   }
 

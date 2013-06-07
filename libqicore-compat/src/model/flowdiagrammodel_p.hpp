@@ -17,10 +17,11 @@ namespace qi {
    friend class FlowDiagramModel;
  public:
    FlowDiagramModelPrivate(const std::string &path,
-                      float scale,
-                      const std::string &formatVersion,
-                      const std::list<LinkModelPtr> &links,
-                      const std::list<BoxInstanceModelPtr> &boxsInstance);
+                           boost::shared_ptr<qi::BoxInstanceModel> parent,
+                           float scale,
+                           const std::string &formatVersion,
+                           const std::list<LinkModelPtr> &links,
+                           const std::list<BoxInstanceModelPtr> &boxsInstance);
 
    bool loadFromFile();
 
@@ -30,6 +31,7 @@ namespace qi {
    std::string _formatVersion;
    std::list<LinkModelPtr> _links;
    std::list<BoxInstanceModelPtr> _boxsInstance;
+   BoxInstanceModelPtr _parent;
  };
 }
 

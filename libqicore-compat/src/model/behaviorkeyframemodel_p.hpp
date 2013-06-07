@@ -10,6 +10,8 @@
 
 #include <alserial/alserial.h>
 #include <string>
+#include <qicore-compat/model/boxinstancemodel.hpp>
+#include <qicore-compat/model/flowdiagrammodel.hpp>
 
 namespace qi {
 
@@ -22,13 +24,15 @@ namespace qi {
                                  int index,
                                  const std::string &bitmap,
                                  const std::string &path);
-    BehaviorKeyFrameModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
+    BehaviorKeyFrameModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, boost::shared_ptr<BoxInstanceModel> parent);
 
   private:
     std::string _name;
     int _index;
     std::string _bitmap;
     std::string _path;
+    BoxInstanceModelPtr _parent;
+    FlowDiagramModelPtr _diagram;
   };
 }
 

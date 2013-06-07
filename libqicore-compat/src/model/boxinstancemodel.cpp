@@ -34,12 +34,13 @@ namespace qi {
     _path(interface->path()),
     _interface(interface),
     _parameters(),
-    _isValid(true)
+    _isValid(true),
+    _parent()
   {
   }
 
   BoxInstanceModelPrivate::BoxInstanceModelPrivate(boost::shared_ptr<const AL::XmlElement> elt,
-                                                   const std::string &dir)
+                                                   const std::string &dir, BoxInstanceModelPtr parent)
   {
     std::string path;
     _isValid = true;
@@ -49,6 +50,7 @@ namespace qi {
     elt->getAttribute("y",    _y);
     elt->getAttribute("path", path);
 
+    _parent = parent;
     _path = dir + "/" + path;
     qiLogDebug() << "BoxInterface path : " << _path;
     _interface = BoxInterfaceModelPtr(new BoxInterfaceModel(_path));
@@ -120,7 +122,6 @@ namespace qi {
                            << std::endl;
       return false;
     }
-
     _parameters.insert(std::pair<int, ParameterValueModelPtr>(value->id(), value));
     return true;
   }
@@ -130,8 +131,8 @@ namespace qi {
   {
   }
 
-  BoxInstanceModel::BoxInstanceModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir) :
-    _p( new BoxInstanceModelPrivate(elt, dir) )
+  BoxInstanceModel::BoxInstanceModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, BoxInstanceModelPtr parent) :
+    _p( new BoxInstanceModelPrivate(elt, dir, parent) )
   {
   }
 
@@ -226,6 +227,11 @@ namespace qi {
     return _p->_interface->plugin();
   }
 
+  boost::shared_ptr<BoxInstanceModel> BoxInstanceModel::parent()
+  {
+    return _p->_parent;
+  }
+
   void BoxInstanceModel::setName(const std::string& name)
   {
     _p->_name = name;
@@ -267,7 +273,7 @@ namespace qi {
       return AnyReference();
 
     qiLogDebug() << "Content found";
-    return content->content();
+    return content->content(shared_from_this());
   }
 
   bool BoxInstanceModel::isValid() const

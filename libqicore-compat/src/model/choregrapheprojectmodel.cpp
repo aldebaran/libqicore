@@ -61,7 +61,7 @@ namespace qi
       return false;
     }
 
-    _rootBox = BoxInstanceModelPtr(new BoxInstanceModel(rootBoxs.front(), _dir));
+    _rootBox = BoxInstanceModelPtr(new BoxInstanceModel(rootBoxs.front(), _dir, BoxInstanceModelPtr()));
 
     return _rootBox->isValid();
   }

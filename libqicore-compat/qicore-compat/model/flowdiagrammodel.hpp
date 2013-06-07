@@ -23,6 +23,7 @@ namespace qi {
   {
   public:
     FlowDiagramModel(const std::string &path = "",
+                     boost::shared_ptr<BoxInstanceModel> parent = boost::shared_ptr<BoxInstanceModel>(),
                      float scale = 1.0,
                      const std::string &formatVersion = "4",
                      const std::list<boost::shared_ptr<LinkModel> > &links = std::list<boost::shared_ptr<LinkModel> >(),

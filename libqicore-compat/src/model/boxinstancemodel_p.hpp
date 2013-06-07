@@ -13,6 +13,7 @@
 #include <alserial/alserial.h>
 #include <qicore-compat/model/parametervaluemodel.hpp>
 #include <qicore-compat/model/boxinterfacemodel.hpp>
+#include <qicore-compat/model/boxinstancemodel.hpp>
 
 namespace qi
 {
@@ -22,7 +23,7 @@ namespace qi
     friend class BoxInstanceModel;
   public:
     BoxInstanceModelPrivate();
-    BoxInstanceModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
+    BoxInstanceModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, BoxInstanceModelPtr parent);
     BoxInstanceModelPrivate(const std::string &name,
                             int id,
                             int x,
@@ -40,6 +41,7 @@ namespace qi
     BoxInterfaceModelPtr                  _interface;
     std::map<int, ParameterValueModelPtr> _parameters;
     bool _isValid;
+    BoxInstanceModelPtr _parent;
   };
 
 }

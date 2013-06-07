@@ -40,7 +40,7 @@ namespace qi
     const std::string& path() const;
     const std::string& checksum() const;
 
-    AnyReference content();
+    AnyReference content(boost::shared_ptr<BoxInstanceModel> parent);
 
     void setType(ContentType type);
     void setPath(const std::string& path);

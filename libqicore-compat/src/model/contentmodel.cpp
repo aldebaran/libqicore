@@ -109,7 +109,22 @@ namespace qi
     return AnyReference::fromPtr(ptr);
   }
 
-  AnyReference ContentModel::content()
+  template<class T>
+  AnyReference loadContent(const std::string &path, BoxInstanceModelPtr parent)
+  {
+    T *ptr = new T(path, parent);
+
+
+    if(!ptr->loadFromFile())
+    {
+
+      delete ptr;
+      return AnyReference();
+    }
+    return AnyReference::fromPtr(ptr);
+  }
+
+  AnyReference ContentModel::content(BoxInstanceModelPtr parent)
   {
     //if content is already loading return content
     if(_p->_content.isValid())
@@ -125,10 +140,10 @@ namespace qi
       content = loadContent<AnimationModel>(_p->_dir + "/" + _p->_path);
       break;
     case ContentType_BehaviorSequence:
-      content = loadContent<BehaviorSequenceModel>(_p->_dir + "/" + _p->_path);
+      content = loadContent<BehaviorSequenceModel>(_p->_dir + "/" + _p->_path, parent);
       break;
     case ContentType_FlowDiagram:
-      content = loadContent<FlowDiagramModel>(_p->_dir + "/" + _p->_path);
+      content = loadContent<FlowDiagramModel>(_p->_dir + "/" + _p->_path, parent);
       break;
     default:
       return AnyReference();

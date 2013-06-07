@@ -62,10 +62,8 @@ namespace qi
   ContentModelPtr ContentsModel::findContent(int type) const
   {
     foreach(ContentModelPtr content, _p->_contents)
-    {
       if(content->type() == type)
         return content;
-    }
 
     return ContentModelPtr();
   }

@@ -17,7 +17,7 @@ namespace qi {
     friend class BehaviorLayerModel;
   public:
     BehaviorLayerModelPrivate();
-    BehaviorLayerModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
+    BehaviorLayerModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, boost::shared_ptr<BoxInstanceModel> parent);
     BehaviorLayerModelPrivate(const std::string &name,
                               bool mute,
                               const std::list<BehaviorKeyFrameModelPtr> &keys);

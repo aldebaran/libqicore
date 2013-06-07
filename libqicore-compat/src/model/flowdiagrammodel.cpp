@@ -15,6 +15,7 @@ qiLogCategory("QiCore-Compat.FlowDiagramModel");
 
 namespace qi {
   FlowDiagramModelPrivate::FlowDiagramModelPrivate(const std::string &path,
+                                                   boost::shared_ptr<BoxInstanceModel> parent,
                                                    float scale, const std::string &formatVersion,
                                                    const std::list<LinkModelPtr> &links,
                                                    const std::list<BoxInstanceModelPtr> &boxsInstance) :
@@ -22,7 +23,8 @@ namespace qi {
     _scale(scale),
     _formatVersion(formatVersion),
     _links(links),
-    _boxsInstance(boxsInstance)
+    _boxsInstance(boxsInstance),
+    _parent(parent)
   {
   }
 
@@ -61,7 +63,8 @@ namespace qi {
     AL::XmlElement::CList boxsInstance = root->children("BoxInstance", "");
 
     boost::filesystem::path boxPath = boost::filesystem::path(_path);
-    _boxsInstance = XmlUtils::constructObjects<BoxInstanceModel>(boxsInstance, boxPath.parent_path().string());
+    _boxsInstance = XmlUtils::constructObjects<BoxInstanceModel>(boxsInstance, boxPath.parent_path().string(), _parent);
+
 
     bool isValid = true;
     isValid = XmlUtils::verifyObjects<BoxInstanceModel>(_boxsInstance);
@@ -70,15 +73,17 @@ namespace qi {
   }
 
   FlowDiagramModel::FlowDiagramModel(const std::string &path,
-                           float scale,
-                           const std::string &formatVersion,
-                           const std::list<LinkModelPtr> &links,
-                           const std::list<BoxInstanceModelPtr> &boxsInstance) :
+                                     boost::shared_ptr<BoxInstanceModel> parent,
+                                     float scale,
+                                     const std::string &formatVersion,
+                                     const std::list<LinkModelPtr> &links,
+                                     const std::list<BoxInstanceModelPtr> &boxsInstance) :
     _p( new FlowDiagramModelPrivate(path,
-                               scale,
-                               formatVersion,
-                               links,
-                               boxsInstance))
+                                    parent,
+                                    scale,
+                                    formatVersion,
+                                    links,
+                                    boxsInstance))
   {
   }
 

@@ -17,17 +17,19 @@ namespace qi {
 
   // ------------------------------ Private Class -------------------------------------//
   BehaviorSequenceModelPrivate::BehaviorSequenceModelPrivate(const std::string &path,
-                                                   int fps,
-                                                   int startFrame,
-                                                   int endFrame,
-                                                   int size,
-                                                   const std::string &formatVersion) :
+                                                             boost::shared_ptr<BoxInstanceModel> parent,
+                                                             int fps,
+                                                             int startFrame,
+                                                             int endFrame,
+                                                             int size,
+                                                             const std::string &formatVersion) :
     _path(path),
     _fps(fps),
     _startFrame(startFrame),
     _endFrame(endFrame),
     _size(size),
-    _formatVersion(formatVersion)
+    _formatVersion(formatVersion),
+    _parent(parent)
   {
   }
 
@@ -64,24 +66,26 @@ namespace qi {
     root->getAttribute("format_version", _formatVersion);
     boost::filesystem::path path(_path);
     AL::XmlElement::CList behaviorsLayer = root->children("BehaviorLayer", "");
-    _behaviorsLayer = XmlUtils::constructObjects<BehaviorLayerModel>(behaviorsLayer, path.parent_path().string());
+    _behaviorsLayer = XmlUtils::constructObjects<BehaviorLayerModel>(behaviorsLayer, path.parent_path().string(), _parent);
 
     return true;
   }
 
   // -------------------------------- Public Class ----------------------------------//
   BehaviorSequenceModel::BehaviorSequenceModel(const std::string &path,
-                                     int fps,
-                                     int startFrame,
-                                     int endFrame,
-                                     int size,
-                                     const std::string &formatVersion) :
+                                               boost::shared_ptr<BoxInstanceModel> parent,
+                                               int fps,
+                                               int startFrame,
+                                               int endFrame,
+                                               int size,
+                                               const std::string &formatVersion) :
     _p( new BehaviorSequenceModelPrivate(path,
-                                    fps,
-                                    startFrame,
-                                    endFrame,
-                                    size,
-                                    formatVersion))
+                                         parent,
+                                         fps,
+                                         startFrame,
+                                         endFrame,
+                                         size,
+                                         formatVersion))
   {
   }
 

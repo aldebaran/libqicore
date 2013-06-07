@@ -14,13 +14,14 @@
 namespace qi {
   class BehaviorLayerModelPrivate;
   class BehaviorKeyFrameModel;
+  class BoxInstanceModel;
 
   class QICORECOMPAT_API BehaviorLayerModel {
   public:
     BehaviorLayerModel(const std::string &name,
                        bool mute,
                        const std::list<boost::shared_ptr<BehaviorKeyFrameModel> > &keys = std::list<boost::shared_ptr<BehaviorKeyFrameModel> >());
-    BehaviorLayerModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
+    BehaviorLayerModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, boost::shared_ptr<BoxInstanceModel> parent);
     virtual ~BehaviorLayerModel();
 
     const std::string &name() const;

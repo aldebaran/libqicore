@@ -20,7 +20,7 @@ namespace qi {
   {
   public:
     BehaviorKeyFrameModel(const std::string &name, int index, const std::string &bitmap, const std::string &path);
-    BehaviorKeyFrameModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir);
+    BehaviorKeyFrameModel(boost::shared_ptr<const AL::XmlElement> elt, const std::string &dir, boost::shared_ptr<BoxInstanceModel> parent);
     virtual ~BehaviorKeyFrameModel();
 
     const std::string& name() const;
@@ -28,7 +28,7 @@ namespace qi {
     const std::string& bitmap() const;
     std::string path() const;
 
-    boost::shared_ptr<FlowDiagramModel> diagram() const;
+    boost::shared_ptr<FlowDiagramModel> diagram();
 
     void setName(const std::string& name);
     void setIndex(int index);

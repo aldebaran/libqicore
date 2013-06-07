@@ -17,10 +17,12 @@
 namespace qi {
   class BehaviorSequenceModelPrivate;
   class BehaviorLayerModel;
+  class BoxInstanceModel;
 
   class QICORECOMPAT_API BehaviorSequenceModel {
   public:
     BehaviorSequenceModel(const std::string &path = "",
+                          boost::shared_ptr<BoxInstanceModel> parent = boost::shared_ptr<BoxInstanceModel>(),
                           int fps = 25,
                           int startFrame = 0,
                           int endFrame = -1,
