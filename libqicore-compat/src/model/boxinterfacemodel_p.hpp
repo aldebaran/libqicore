@@ -36,8 +36,8 @@ namespace qi
                              const std::list<BitmapModelPtr> &bitmaps,
                              const std::list<ResourceModelPtr> &resources,
                              const std::list<ParameterModelPtr> &parameters,
-                             const std::list<InputModelPtr> &inputs,
-                             const std::list<OutputModelPtr> &outputs,
+                             const std::map<int, InputModelPtr> &inputs,
+                             const std::map<int, OutputModelPtr> &outputs,
                              const ContentsModelPtr &contents);
 
     bool loadFromFile();
@@ -53,8 +53,8 @@ namespace qi
     std::list<BitmapModelPtr> _bitmaps;
     std::list<ResourceModelPtr> _resources;
     std::list<ParameterModelPtr> _parameters;
-    std::list<InputModelPtr> _inputs;
-    std::list<OutputModelPtr> _outputs;
+    std::map<int, InputModelPtr> _inputs;
+    std::map<int, OutputModelPtr> _outputs;
     ContentsModelPtr _contents;
   };
 }

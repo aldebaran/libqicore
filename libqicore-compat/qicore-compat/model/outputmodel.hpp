@@ -53,6 +53,7 @@ namespace qi
     OutputModelPrivate* _p;
   };
   typedef boost::shared_ptr<OutputModel> OutputModelPtr;
+  typedef std::map<int, OutputModelPtr> OutputModelMap;
 }
 
 #endif /* !OUTPUT_H_ */

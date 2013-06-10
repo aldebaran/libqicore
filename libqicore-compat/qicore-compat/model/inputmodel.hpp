@@ -63,6 +63,7 @@ namespace qi
     InputModelPrivate* _p;
   };
   typedef boost::shared_ptr<InputModel> InputModelPtr;
+  typedef std::map<int, InputModelPtr> InputModelMap;
 }
 
 #endif /* !INPUT_H_ */

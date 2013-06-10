@@ -97,24 +97,24 @@ TEST(XmlParser, LoadXARFile)
   EXPECT_EQ(parameter->tooltip(),  "Path of the file (including its name) which is going to be sent on the box output.");
   EXPECT_EQ(parameter->metaProperty().uid(), 4);
 
-  std::list<qi::InputModelPtr> inputs = rootBoxInterface->inputs();
+  qi::InputModelMap inputs = rootBoxInterface->inputs();
   ASSERT_EQ(inputs.size(), 3);
 
-  qi::InputModelPtr input = inputs.front();
+  qi::InputModelPtr input = inputs.at(1);
   ASSERT_TRUE(input);
-  EXPECT_EQ(input->metaMethod().name(), "onStop");
+  EXPECT_EQ(input->metaMethod().name(), "onLoad");
   EXPECT_EQ(qi::Signature(input->metaMethod().parametersSignature()).isConvertibleTo(qi::Signature("_")), 0.95f);
-  EXPECT_EQ(input->nature(), qi::InputModel::InputNature_OnStop);
+  EXPECT_EQ(input->nature(), qi::InputModel::InputNature_OnLoad);
   EXPECT_EQ(input->stmValueName(), "");
-  EXPECT_EQ(input->inner(), false);
-  EXPECT_EQ(input->metaMethod().description(), "Box behavior stops when a signal is received on this input.");
-  EXPECT_EQ(input->metaMethod().uid(), 3);
+  EXPECT_EQ(input->inner(), true);
+  EXPECT_EQ(input->metaMethod().description(), "Signal sent when diagram is loaded.");
+  EXPECT_EQ(input->metaMethod().uid(), 1);
 
 
-  std::list<qi::OutputModelPtr> outputs = rootBoxInterface->outputs();
+  qi::OutputModelMap outputs = rootBoxInterface->outputs();
   ASSERT_EQ(outputs.size(), 1);
 
-  qi::OutputModelPtr output = outputs.front();
+  qi::OutputModelPtr output = outputs[4];
   ASSERT_TRUE(output);
   EXPECT_EQ(output->metaSignal().name(), "onStopped");
   EXPECT_EQ(qi::Signature(output->metaSignal().parametersSignature()).isConvertibleTo(qi::Signature("_")), 0.95f);

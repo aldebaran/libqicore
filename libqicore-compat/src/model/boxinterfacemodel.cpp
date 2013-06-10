@@ -4,6 +4,7 @@
 */
 
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 
 #include <alserial/alserial.h>
 
@@ -17,6 +18,8 @@
 #include <qi/log.hpp>
 qiLogCategory("QiCore-Compat.BoxInterfaceModel");
 
+#define foreach BOOST_FOREACH
+
 namespace qi {
   //------------------------------------Private Class---------------------------------------//
   BoxInterfaceModelPrivate::BoxInterfaceModelPrivate(const std::string &path,
@@ -29,8 +32,8 @@ namespace qi {
                                                      const std::list<BitmapModelPtr> &bitmaps,
                                                      const std::list<ResourceModelPtr> &resources,
                                                      const std::list<ParameterModelPtr> &parameters,
-                                                     const std::list<InputModelPtr> &inputs,
-                                                     const std::list<OutputModelPtr> &outputs,
+                                                     const std::map<int, InputModelPtr> &inputs,
+                                                     const std::map<int, OutputModelPtr> &outputs,
                                                      const ContentsModelPtr &contents) :
     _path(path),
     _uuid(uuid),
@@ -144,10 +147,16 @@ namespace qi {
                    << std::endl;
       return false;
     }
-    _inputs = XmlUtils::constructObjects<InputModel>(inputs);
+    std::list<InputModelPtr> oinputs = XmlUtils::constructObjects<InputModel>(inputs);
+
+    foreach(InputModelPtr input, oinputs)
+      _inputs[input->metaMethod().uid()] = input;
 
     AL::XmlElement::CList outputs = root->children("Output", "");
-    _outputs = XmlUtils::constructObjects<OutputModel>(outputs);
+    std::list<OutputModelPtr> ooutputs = XmlUtils::constructObjects<OutputModel>(outputs);
+
+    foreach(OutputModelPtr output, ooutputs)
+      _outputs[output->metaSignal().uid()] = output;
 
     AL::XmlElement::CList contents = root->children("Contents", "");
 
@@ -177,8 +186,8 @@ namespace qi {
                                        const std::list<BitmapModelPtr> &bitmaps,
                                        const std::list<ResourceModelPtr> &resources,
                                        const std::list<ParameterModelPtr> &parameters,
-                                       const std::list<InputModelPtr> &inputs,
-                                       const std::list<OutputModelPtr> &outputs,
+                                       const std::map<int, InputModelPtr> &inputs,
+                                       const std::map<int, OutputModelPtr> &outputs,
                                        const ContentsModelPtr &contents) :
     _p(new BoxInterfaceModelPrivate(path,
                                     uuid,
@@ -204,6 +213,21 @@ namespace qi {
   bool BoxInterfaceModel::loadFromFile()
   {
     return _p->loadFromFile();
+  }
+
+  bool BoxInterfaceModel::hasResource() const
+  {
+    return _p->_resources.size() > 0;
+  }
+
+  bool BoxInterfaceModel::hasAnimation() const
+  {
+    return _p->_contents->findContent(ContentModel::ContentType_Animation);
+  }
+
+  bool BoxInterfaceModel::hasFlowDiagram() const
+  {
+    return _p->_contents->findContent(ContentModel::ContentType_FlowDiagram);
   }
 
   //--------------------------------------------Getter------------------------------------//
@@ -258,12 +282,12 @@ namespace qi {
     return _p->_parameters;
   }
 
-  const std::list<InputModelPtr>& BoxInterfaceModel::inputs() const
+  const std::map<int, InputModelPtr>& BoxInterfaceModel::inputs() const
   {
     return _p->_inputs;
   }
 
-  const std::list<OutputModelPtr>& BoxInterfaceModel::outputs() const
+  const std::map<int, OutputModelPtr>& BoxInterfaceModel::outputs() const
   {
     return _p->_outputs;
   }
@@ -334,12 +358,12 @@ namespace qi {
 
   void BoxInterfaceModel::addInput(InputModelPtr input)
   {
-    _p->_inputs.push_front(input);
+    _p->_inputs[input->metaMethod().uid()] = input;
   }
 
   void BoxInterfaceModel::addOutput(OutputModelPtr output)
   {
-    _p->_outputs.push_front(output);
+    _p->_outputs[output->metaSignal().uid()] = output;
   }
 
   void BoxInterfaceModel::addContent(ContentModelPtr content)
@@ -369,4 +393,39 @@ namespace qi {
 
     return rest;
   }
+
+  std::string BoxInterfaceModel::findSignal(int id) const
+  {
+    //If the box is flowdiagram or behaviorsequence some input are also signal.
+    InputModelMap::const_iterator it = _p->_inputs.find(id);
+
+    if(it != _p->_inputs.end())
+      return it->second->metaMethod().name() + "Signal";
+
+    OutputModelMap::const_iterator ito = _p->_outputs.find(id);
+
+    if(ito != _p->_outputs.end())
+      return ito->second->metaSignal().name() + "Signal";
+
+    return std::string();
+  }
+
+  std::string BoxInterfaceModel::findMethod(int id) const
+  {
+    std::map<int, InputModelPtr>::const_iterator it = _p->_inputs.find(id);
+
+    //Realy method
+    if(it != _p->_inputs.end())
+      return std::string("onInput_") + it->second->metaMethod().name() + std::string("__");
+
+    //Is a signal so launch a method that stimulate the associated signal
+    OutputModelMap::const_iterator ito = _p->_outputs.find(id);
+
+    if(ito != _p->_outputs.end())
+      return ito->second->metaSignal().name();
+
+    return std::string();
+  }
+
+
 }

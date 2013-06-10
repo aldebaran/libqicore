@@ -10,6 +10,7 @@
 
 #include <string>
 #include <list>
+#include <map>
 #include <boost/shared_ptr.hpp>
 
 #include <qicore-compat/api.hpp>
@@ -35,11 +36,11 @@ namespace qi
                       const std::string &tooltip = "",
                       const std::string &formatVersion = "4",
                       const std::string &plugin = "None",
-                      const std::list<boost::shared_ptr<Bitmap> > &bitmaps    = std::list<boost::shared_ptr<Bitmap> >(),
-                      const std::list<boost::shared_ptr<ResourceModel> > &resources  = std::list<boost::shared_ptr<ResourceModel> >(),
+                      const std::list<boost::shared_ptr<Bitmap> > &bitmaps = std::list<boost::shared_ptr<Bitmap> >(),
+                      const std::list<boost::shared_ptr<ResourceModel> > &resources = std::list<boost::shared_ptr<ResourceModel> >(),
                       const std::list<boost::shared_ptr<ParameterModel> > &parameters = std::list<boost::shared_ptr<ParameterModel> >(),
-                      const std::list<boost::shared_ptr<InputModel> > &inputs     = std::list<boost::shared_ptr<InputModel> >(),
-                      const std::list<boost::shared_ptr<OutputModel> > &outputs    = std::list<boost::shared_ptr<OutputModel> >(),
+                      const std::map<int, boost::shared_ptr<InputModel> > &inputs = std::map<int, boost::shared_ptr<InputModel> >(),
+                      const std::map<int, boost::shared_ptr<OutputModel> > &outputs = std::map<int, boost::shared_ptr<OutputModel> >(),
                       const boost::shared_ptr<ContentsModel> &contents   = boost::shared_ptr<ContentsModel>()
         );
 
@@ -55,8 +56,8 @@ namespace qi
     const std::list<boost::shared_ptr<Bitmap> >& bitmaps() const;
     const std::list<boost::shared_ptr<ResourceModel> >& resources() const;
     const std::list<boost::shared_ptr<ParameterModel> >& parameters() const;
-    const std::list<boost::shared_ptr<InputModel> >& inputs() const;
-    const std::list<boost::shared_ptr<OutputModel> >& outputs() const;
+    const std::map<int, boost::shared_ptr<InputModel> >& inputs() const;
+    const std::map<int, boost::shared_ptr<OutputModel> >& outputs() const;
     boost::shared_ptr<ContentsModel> contents() const;
 
     void setPath(const std::string& path);
@@ -76,7 +77,13 @@ namespace qi
 
     bool loadFromFile();
 
+    bool hasResource() const;
+    bool hasAnimation() const;
+    bool hasFlowDiagram() const;
+
     boost::shared_ptr<ParameterModel> findParameter(unsigned int id) const;
+    std::string findSignal(int id) const;
+    std::string findMethod(int id) const;
 
   private:
     QI_DISALLOW_COPY_AND_ASSIGN(BoxInterfaceModel);
