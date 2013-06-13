@@ -30,8 +30,8 @@ class AnimationModel;
 class QICORECOMPAT_API Timeline
 {
   public:
-    /// Constructor, take a ALBroker to speak with the outside world
-    Timeline(AnyObject memory, AnyObject motion);
+    /// Constructor, take a memory and motion object
+  Timeline(AnyObject memory = AnyObject(), AnyObject motion = AnyObject());
     ~Timeline();
 
     /// Play the timeline
@@ -56,9 +56,12 @@ class QICORECOMPAT_API Timeline
     /// Wait untile the timeline execution is completed
     void waitForTimelineCompletion();
 
+    bool isValid() const;
+
   private:
     TimelinePrivate* _p;
 };
+QI_REGISTER_OBJECT(Timeline, play, pause, stop, goTo, setFPS);
 
 }
 

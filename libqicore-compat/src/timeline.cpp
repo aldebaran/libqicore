@@ -33,7 +33,8 @@ TimelinePrivate::TimelinePrivate(AnyObject memory, AnyObject motion)
     _name("Timeline"),
     _resourcesAcquisition(AnimationModel::MotionResourcesHandler_Passive),
     _methodMonitor(),
-    _framesFlagsMap()
+    _framesFlagsMap(),
+    _isValid(true)
 {
   try
   {
@@ -45,6 +46,7 @@ TimelinePrivate::TimelinePrivate(AnyObject memory, AnyObject motion)
   catch (AL::ALError& e)
   {
     qiLogError("Timeline") << "Cannot create proxy on ALMotion :" << std::endl << e.toString() << std::endl;
+    _isValid = false;
   }
 }
 
@@ -758,6 +760,11 @@ void Timeline::setAnimation(AnimationModelPtr anim)
 void Timeline::waitForTimelineCompletion()
 {
   _p->_executer->waitForExecuterCompletion();
+}
+
+bool Timeline::isValid() const
+{
+  return _p->_isValid;
 }
 
 }

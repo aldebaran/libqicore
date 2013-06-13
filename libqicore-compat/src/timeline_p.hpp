@@ -140,6 +140,7 @@ private:
 
   std::map<int, std::string>            _framesFlagsMap;
   boost::shared_ptr<AnimationModel>          _animation;
+  bool _isValid;
 };
 
 }
