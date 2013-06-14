@@ -3,13 +3,7 @@
 
 #include <src/logger.hpp>
 #include <src/logger_service.hpp>
-
-#ifndef WIN32
-#include <fnmatch.h>
-#else
-# include <Shlwapi.h>
-# pragma comment(lib, "shlwapi.lib")
-#endif
+#include <qi/os.hpp>
 
 #include "logprovider_proxy.hpp"
 
@@ -38,16 +32,6 @@ do {                                      \
 * Delegating all the work to the local logger of the service is tempting,
 * but the task is subtly different
 */
-
-
-inline bool globMatch(const std::string& pattern, const std::string& string)
-{
-  #ifdef WIN32
-  return ::PathMatchSpec(string.c_str(), pattern.c_str());
-  #else
-  return !fnmatch(pattern.c_str(), string.c_str(), 0);
-  #endif
-}
 
 
 bool set_verbosity(LogListener* ll,  qi::log::LogLevel& level,
@@ -101,7 +85,7 @@ void LogListener::log(const Message& msg)
   {
     const std::string& f = it->first;
     if (f == msg.category ||
-      ( f.find('*') != f.npos && globMatch(f, msg.category)))
+      ( f.find('*') != f.npos && qi::os::fnmatch(f, msg.category)))
       pass = msg.level <= it->second;
   }
   DEBUG("LL:log filter " << pass);
@@ -203,7 +187,7 @@ void Logger::recomputeCategories()
     for (FilterMap::iterator it2 = map.begin(); it2 != it; ++it2)
     {
       if (it2->first.find('*') != it2->first.npos
-        && globMatch(it2->first, it->first)
+        && qi::os::fnmatch(it2->first, it->first)
         && it2->second > it->second)
       {
         remove = true;
