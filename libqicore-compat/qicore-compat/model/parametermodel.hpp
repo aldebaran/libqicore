@@ -22,8 +22,6 @@ namespace qi
   class QICORECOMPAT_API ParameterModel
   {
   public:
-    static const Signature &Resource;
-
     ParameterModel(const std::string &name,
                    AutoGenericValuePtr defaultValue,
                    bool inheritsFromParent,
@@ -67,6 +65,8 @@ namespace qi
     bool checkInterval(boost::shared_ptr<ParameterValueModel> value) const;
 
     bool isValid() const;
+
+    static const Signature &signatureRessource();
 
   private:
     QI_DISALLOW_COPY_AND_ASSIGN(ParameterModel);

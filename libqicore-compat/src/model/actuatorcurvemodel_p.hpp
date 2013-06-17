@@ -24,7 +24,7 @@ namespace qi
                               bool recordable,
                               bool mute,
                               int unit,
-                              const std::map<int, KeyModelPtr> &keys);
+                              const KeyModelMap &keys);
     ActuatorCurveModelPrivate(boost::shared_ptr<const AL::XmlElement> elt);
 
   private:

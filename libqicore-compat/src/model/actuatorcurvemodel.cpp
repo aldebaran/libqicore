@@ -12,7 +12,7 @@
 
 namespace qi
 {
-  ActuatorCurveModelPrivate::ActuatorCurveModelPrivate(const std::string &name, const std::string &actuator, bool recordable, bool mute, int unit, const std::map<int, KeyModelPtr> &keys) :
+  ActuatorCurveModelPrivate::ActuatorCurveModelPrivate(const std::string &name, const std::string &actuator, bool recordable, bool mute, int unit, const KeyModelMap &keys) :
     _name(name),
     _actuator(actuator),
     _recordable(recordable),

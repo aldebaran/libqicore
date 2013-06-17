@@ -8,6 +8,7 @@
 #ifndef KEY_H_
 #define KEY_H_
 
+#include <map>
 #include <qicore-compat/api.hpp>
 #include <alserial/alserial.h>
 
@@ -46,6 +47,7 @@ namespace qi
   };
   typedef boost::shared_ptr<KeyModel> KeyModelPtr;
   typedef boost::shared_ptr<const KeyModel> CKeyModelPtr;
+  typedef std::map<int, KeyModelPtr> KeyModelMap;
 }
 
 #endif /* !KEY_H_ */

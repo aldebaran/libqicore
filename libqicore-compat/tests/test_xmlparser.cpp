@@ -89,7 +89,7 @@ TEST(XmlParser, LoadXARFile)
   ASSERT_TRUE(parameter);
   EXPECT_EQ(parameter->metaProperty().name(), "File path");
   EXPECT_EQ(parameter->inheritsFromParent(), true);
-  EXPECT_EQ(qi::Signature(parameter->metaProperty().signature()).isConvertibleTo(qi::ParameterModel::Resource), 1.0f);
+  EXPECT_EQ(qi::Signature(parameter->metaProperty().signature()).isConvertibleTo(qi::ParameterModel::signatureRessource()), 1.0f);
   EXPECT_EQ(parameter->defaultValue().toString().empty(), true);
   EXPECT_EQ(parameter->customChoice(), false);
   EXPECT_EQ(parameter->password(), false);
@@ -317,7 +317,7 @@ TEST(XmlParser, Parameter)
   //Test resource
   parameter.setMetaProperty(1, "Test", "s<Resource>");
   parameter.setValue("file.ext");
-  EXPECT_EQ(qi::Signature(parameter.metaProperty().signature()).toString(), qi::ParameterModel::Resource.toString());
+  EXPECT_EQ(qi::Signature(parameter.metaProperty().signature()).toString(), qi::ParameterModel::signatureRessource().toString());
   EXPECT_EQ(parameter.defaultValue().toString(), "file.ext");
 
   //Test other attribute
@@ -377,7 +377,7 @@ TEST(XmlParser, Choice)
   EXPECT_FALSE(boolChoice.value().to<bool>());
 
   boolChoice.setValue("file.ext");
-  EXPECT_EQ(qi::Signature(boolChoice.value().signature()).isConvertibleTo(qi::ParameterModel::Resource), 1.0f);
+  EXPECT_EQ(qi::Signature(boolChoice.value().signature()).isConvertibleTo(qi::ParameterModel::signatureRessource()), 1.0f);
   EXPECT_EQ(boolChoice.value().toString(), "file.ext");
 
 }
@@ -896,7 +896,7 @@ TEST(XmlParser, ParameterValue)
   EXPECT_EQ(value.value().toString(), "test");
 
   value.setValueDefault("file.ext");
-  EXPECT_EQ(qi::Signature(value.value().signature()).isConvertibleTo(qi::ParameterModel::Resource), 1.0f);
+  EXPECT_EQ(qi::Signature(value.value().signature()).isConvertibleTo(qi::ParameterModel::signatureRessource()), 1.0f);
   EXPECT_EQ(value.value().toString(), "file.ext");
 }
 

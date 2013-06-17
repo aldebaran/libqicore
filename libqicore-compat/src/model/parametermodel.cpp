@@ -43,7 +43,7 @@ namespace qi
     _defaultValue(defaultValue.clone())
   {
     if(resource)
-      _metaProperty = MetaProperty(id, name, "s<Resource>");
+      _metaProperty = MetaProperty(id, name, ParameterModel::signatureRessource());
 
     Signature signature(defaultValue.signature());
 
@@ -164,7 +164,7 @@ namespace qi
     //if value is bool string or Resource return true
     if(signature.isConvertibleTo(Signature::fromType(Signature::Type_Bool)) == 1.0f ||
        signature.isConvertibleTo(Signature::fromType(Signature::Type_String)) == 1.0f ||
-       signature.isConvertibleTo(ParameterModel::Resource) == 1.0f)
+       signature.isConvertibleTo(ParameterModel::signatureRessource()) == 1.0f)
       return true;
 
     qiLogDebug() << "Type of value is double or integer";
@@ -366,5 +366,9 @@ namespace qi
   }
 
   //Resource type
-  const Signature &ParameterModel::Resource = Signature("s<Resource>");
+  const Signature& ParameterModel::signatureRessource()
+  {
+    static Signature signatureResource("s<Resource>");
+    return signatureResource;
+  }
 }

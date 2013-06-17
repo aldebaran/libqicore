@@ -12,11 +12,11 @@
 
 #include <alserial/alserial.h>
 #include <qicore-compat/api.hpp>
+#include <qicore-compat/model/keymodel.hpp>
 
 namespace qi
 {
   class ActuatorCurveModelPrivate;
-  class KeyModel;
 
   class QICORECOMPAT_API ActuatorCurveModel {
   public:
@@ -32,7 +32,7 @@ namespace qi
                        bool recordable,
                        bool mute,
                        UnitType unit,
-                       const std::map<int, boost::shared_ptr<KeyModel> > &keys = std::map<int, boost::shared_ptr<KeyModel> >());
+                       const KeyModelMap &keys = KeyModelMap());
     ActuatorCurveModel(boost::shared_ptr<const AL::XmlElement> elt);
     virtual ~ActuatorCurveModel();
 
