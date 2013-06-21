@@ -59,6 +59,7 @@ public:
 
 
 public:
+  void setModel(const qi::BehaviorModel &model) { _model = model; }
   qi::Session&       session()     { return *_session;};
   qi::BehaviorModel& model()       { return _model; };
   ObjectMap&         objects()     { return _objects; };
@@ -78,7 +79,7 @@ private:
   qi::Session*      _session;
 };
 
-QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call, onTransition, model, objects, transitions);
+QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call, onTransition, model, objects, transitions, setModel);
 QI_REGISTER_OBJECT_FACTORY_BUILDER(Behavior);
 
 
