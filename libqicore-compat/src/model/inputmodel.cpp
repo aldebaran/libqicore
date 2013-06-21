@@ -38,12 +38,12 @@ namespace qi
     std::string name;
     std::string tooltip;
     elt->getAttribute("name",           name);
-    elt->getAttribute("type",           signature);
+    elt->getAttribute("signature",           signature);
     elt->getAttribute("tooltip",        tooltip);
     elt->getAttribute("id",             id);
     qiLogDebug() << "Construct InputModel from xml file with : "
                  << "name = " << name
-                 << " and id = " << id;
+                 << ", id = " << id << ", signature = " << signature;
 
     MetaMethodBuilder builder("v", name, signature, tooltip);
     builder.setUid(id);

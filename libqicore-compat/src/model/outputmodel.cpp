@@ -30,7 +30,7 @@ namespace qi
     std::string name;
     int id;
     elt->getAttribute("name",      name);
-    elt->getAttribute("type",      signature);
+    elt->getAttribute("signature",      signature);
     elt->getAttribute("id",        id);
     _metaSignal = MetaSignal(id, name, signature);
 
