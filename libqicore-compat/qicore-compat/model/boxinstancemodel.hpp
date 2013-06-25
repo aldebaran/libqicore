@@ -55,6 +55,7 @@ namespace qi {
     BoxInstanceModelPrivate *_p;
   };
   typedef boost::shared_ptr<BoxInstanceModel> BoxInstanceModelPtr;
+  typedef std::map<int, BoxInstanceModelPtr> BoxInstanceModelMap;
 }
 
 #endif /* !BOXINSTANCE_H_ */

@@ -191,9 +191,8 @@ TEST(XmlParser, LoadXARFile)
   EXPECT_EQ(link->outputTowner(), 26);
   EXPECT_EQ(link->indexOfOutput(), 4);
 
-  std::list<qi::BoxInstanceModelPtr> boxes = flowdiagram->boxsInstance();
+  qi::BoxInstanceModelMap boxes = flowdiagram->boxsInstance();
   EXPECT_EQ(boxes.size(), 2);
-  qi::BoxInstanceModelPtr box = boxes.front();
 
   qi::BehaviorSequenceModel *behaviorSequence = rootBox->content(qi::ContentModel::ContentType_BehaviorSequence).ptr<qi::BehaviorSequenceModel>();
   ASSERT_TRUE(behaviorSequence);

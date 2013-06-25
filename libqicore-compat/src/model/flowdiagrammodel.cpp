@@ -5,6 +5,7 @@
 
 #include <boost/filesystem.hpp>
 #include <alserial/alserial.h>
+#include <boost/foreach.hpp>
 
 #include <qicore-compat/model/flowdiagrammodel.hpp>
 #include "flowdiagrammodel_p.hpp"
@@ -13,12 +14,14 @@
 #include <qi/log.hpp>
 qiLogCategory("QiCore-Compat.FlowDiagramModel");
 
+#define foreach BOOST_FOREACH
+
 namespace qi {
   FlowDiagramModelPrivate::FlowDiagramModelPrivate(const std::string &path,
                                                    boost::shared_ptr<BoxInstanceModel> parent,
                                                    float scale, const std::string &formatVersion,
                                                    const std::list<LinkModelPtr> &links,
-                                                   const std::list<BoxInstanceModelPtr> &boxsInstance) :
+                                                   const std::map<int, BoxInstanceModelPtr> &boxsInstance) :
     _path(path),
     _scale(scale),
     _formatVersion(formatVersion),
@@ -63,11 +66,15 @@ namespace qi {
     AL::XmlElement::CList boxsInstance = root->children("BoxInstance", "");
 
     boost::filesystem::path boxPath = boost::filesystem::path(_path);
-    _boxsInstance = XmlUtils::constructObjects<BoxInstanceModel>(boxsInstance, boxPath.parent_path().string(), _parent);
-
+    std::list<BoxInstanceModelPtr> instances = XmlUtils::constructObjects<BoxInstanceModel>(boxsInstance, boxPath.parent_path().string(), _parent);
 
     bool isValid = true;
-    isValid = XmlUtils::verifyObjects<BoxInstanceModel>(_boxsInstance);
+    isValid = XmlUtils::verifyObjects<BoxInstanceModel>(instances);
+
+    foreach(BoxInstanceModelPtr instance, instances)
+    {
+      _boxsInstance[instance->id()] = instance;
+    }
 
     return isValid;
   }
@@ -77,7 +84,7 @@ namespace qi {
                                      float scale,
                                      const std::string &formatVersion,
                                      const std::list<LinkModelPtr> &links,
-                                     const std::list<BoxInstanceModelPtr> &boxsInstance) :
+                                     const std::map<int, BoxInstanceModelPtr> &boxsInstance) :
     _p( new FlowDiagramModelPrivate(path,
                                     parent,
                                     scale,
@@ -118,9 +125,22 @@ namespace qi {
     return _p->_links;
   }
 
-  const std::list<BoxInstanceModelPtr>& FlowDiagramModel::boxsInstance() const
+  const std::map<int, BoxInstanceModelPtr>& FlowDiagramModel::boxsInstance() const
   {
     return _p->_boxsInstance;
+  }
+
+  BoxInstanceModelPtr FlowDiagramModel::findInstance(int id) const
+  {
+    if(id == 0)
+      return _p->_parent;
+
+    BoxInstanceModelMap::const_iterator it = _p->_boxsInstance.find(id);
+
+    if(it == _p->_boxsInstance.end())
+      return BoxInstanceModelPtr();
+
+    return it->second;
   }
 
   void FlowDiagramModel::setPath(const std::string& path)
@@ -145,6 +165,6 @@ namespace qi {
 
   void FlowDiagramModel::addBoxInstance(BoxInstanceModelPtr boxInstance)
   {
-    _p->_boxsInstance.push_front(boxInstance);
+    _p->_boxsInstance[boxInstance->id()] = boxInstance;
   }
 }

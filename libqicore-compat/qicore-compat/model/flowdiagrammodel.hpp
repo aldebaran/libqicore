@@ -10,6 +10,7 @@
 
 #include <string>
 #include <list>
+#include <map>
 #include <boost/shared_ptr.hpp>
 
 #include <qicore-compat/api.hpp>
@@ -27,7 +28,7 @@ namespace qi {
                      float scale = 1.0,
                      const std::string &formatVersion = "4",
                      const std::list<boost::shared_ptr<LinkModel> > &links = std::list<boost::shared_ptr<LinkModel> >(),
-                     const std::list<boost::shared_ptr<BoxInstanceModel> > &boxsInstance = std::list<boost::shared_ptr<BoxInstanceModel> >());
+                     const std::map<int, boost::shared_ptr<BoxInstanceModel> > &boxsInstance = std::map<int, boost::shared_ptr<BoxInstanceModel> >());
 
     virtual ~FlowDiagramModel();
 
@@ -35,7 +36,9 @@ namespace qi {
     float scale() const;
     const std::string& formatVersion() const;
     const std::list<boost::shared_ptr<LinkModel> >& links() const;
-    const std::list<boost::shared_ptr<BoxInstanceModel> >& boxsInstance() const;
+    const std::map<int, boost::shared_ptr<BoxInstanceModel> >& boxsInstance() const;
+
+    boost::shared_ptr<BoxInstanceModel> findInstance(int id) const;
 
     void setPath(const std::string& path);
     void setScale(float scale);

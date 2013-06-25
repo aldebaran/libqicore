@@ -21,7 +21,7 @@ namespace qi {
                            float scale,
                            const std::string &formatVersion,
                            const std::list<LinkModelPtr> &links,
-                           const std::list<BoxInstanceModelPtr> &boxsInstance);
+                           const std::map<int, BoxInstanceModelPtr> &boxsInstance);
 
    bool loadFromFile();
 
@@ -30,7 +30,7 @@ namespace qi {
    float _scale;
    std::string _formatVersion;
    std::list<LinkModelPtr> _links;
-   std::list<BoxInstanceModelPtr> _boxsInstance;
+   std::map<int, BoxInstanceModelPtr> _boxsInstance;
    BoxInstanceModelPtr _parent;
  };
 }
