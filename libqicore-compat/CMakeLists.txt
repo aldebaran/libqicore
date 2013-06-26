@@ -91,11 +91,15 @@ qi_create_lib(qicore-compat SHARED SRC
   src/model/parametervaluemodel_p.hpp
   src/model/parametervaluemodel.cpp
   src/model/choregrapheprojectmodel.cpp
-  src/model/choregrapheprojectmodel_p.hpp)
+  src/model/choregrapheprojectmodel_p.hpp
+  src/python/pythonloader.hpp
+  src/python/pythonloader.cpp
+  src/python/pythonboxgenerator.hpp
+  src/python/pythonboxgenerator.cpp
 
-qi_use_lib(qicore-compat QI ALSERIAL ALMATHINTERNAL ALPROXIES PYTHON)
+qi_use_lib(qicore-compat QI QICORE ALSERIAL ALMATHINTERNAL ALPROXIES BOOST_PYTHON)
 qi_stage_lib(qicore-compat)
 
-add_subdirectory("python")
 add_subdirectory("tests")
 add_subdirectory("bin")
+add_subdirectory("python")
