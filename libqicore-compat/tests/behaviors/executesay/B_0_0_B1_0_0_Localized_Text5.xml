@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<BoxInterface uuid="639fd6fa-c2cd-4d60-b2ae-bfac042b19a0" box_version="1.0.0.0" name="Localized Text" localization="8" tooltip="Send on the output the text associated with the robot&apos;s current voice language.&#x0A;You can display and edit the text associated with any language by&#x0A;selecting the language in the combobox.&#x0A;&#x0A;!!Warning!! The text sent on the output is NOT the displayed one but the one&#x0A;associated with the robot&apos;s current voice language." plugin="localizationbox_plugin"  format_version="4" >
+    <Bitmap path="media/images/box/interaction/vocabulary.png" />
+    <Input name="onLoad" signature="()" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+    <Input name="onStart" signature="()" nature="2" inner="0" tooltip="Data is sent on the output when this input is stimulated." id="2" />
+    <Output name="onStopped" signature="(s)" nature="1" inner="0" tooltip="Data sent when asked." id="3" />
+    <Contents>
+        <Content type="0" path="B_0_0_B1_0_0_Localized_Text5.py" checksum="" />
+    </Contents>
+</BoxInterface>

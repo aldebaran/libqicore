@@ -11,3 +11,7 @@ qi_create_gtest(test_statemachine SRC test_statemachine.cpp DEPENDS qicore-compa
 qi_create_gtest(test_xmlparser SRC test_xmlparser.cpp
                 DEPENDS qicore-compat
                 ARGUMENTS "${CMAKE_CURRENT_SOURCE_DIR}/behaviors/xmlparser")
+
+qi_create_gtest(test_behaviorexecuter SRC test_behaviorexecuter.cpp
+                DEPENDS QICORE-COMPAT ALLAUNCHER
+                ARGUMENTS "${CMAKE_CURRENT_SOURCE_DIR}/behaviors/pythonregister")

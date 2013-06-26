@@ -29,7 +29,8 @@ set(PUBLIC_HEADERS
   qicore-compat/model/linkmodel.hpp
   qicore-compat/model/boxinstancemodel.hpp
   qicore-compat/model/parametervaluemodel.hpp
-  qicore-compat/model/choregrapheprojectmodel.hpp)
+  qicore-compat/model/choregrapheprojectmodel.hpp
+  qicore-compat/behaviorexecuter.hpp)
 
 qi_install_header(${PUBLIC_HEADERS})
 
@@ -96,6 +97,8 @@ qi_create_lib(qicore-compat SHARED SRC
   src/python/pythonloader.cpp
   src/python/pythonboxgenerator.hpp
   src/python/pythonboxgenerator.cpp
+  src/behaviorexecuter.cpp
+  src/behaviorexecuter_p.hpp)
 
 qi_use_lib(qicore-compat QI QICORE ALSERIAL ALMATHINTERNAL ALPROXIES BOOST_PYTHON)
 qi_stage_lib(qicore-compat)

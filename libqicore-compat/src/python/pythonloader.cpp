@@ -41,23 +41,6 @@ namespace qi
     Py_Initialize();
     PyEval_InitThreads();
 
-    //import python module
-    char ppath[5];
-    strcpy(ppath, "path");
-    PyObject* sysPath = PySys_GetObject(ppath);
-
-    std::string qisdkpython = boost::filesystem::path(qi::path::findLib("_qi")).parent_path().string();
-    std::string naoqisdkpython = boost::filesystem::path(qi::path::findLib("_inaoqi")).parent_path().string();
-
-    //TODO
-    std::string qicorecompatpath = "/home/camille/work/master/lib/libqicore/libqicore-compat/python/";
-    std::string qipath = "/home/camille/work/master/lib/qimessaging/python/";
-
-    PyList_Insert(sysPath, 0, PyString_FromString(qipath.c_str()));
-    PyList_Insert(sysPath, 0, PyString_FromString(qisdkpython.c_str()));
-    PyList_Insert(sysPath, 0, PyString_FromString(naoqisdkpython.c_str()));
-    PyList_Insert(sysPath, 0, PyString_FromString(qicorecompatpath.c_str()));
-
     //create main namespace
     _main = py::import("__main__");
     _mainNamespace = _main.attr("__dict__");

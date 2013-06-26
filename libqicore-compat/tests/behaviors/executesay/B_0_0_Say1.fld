@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<FlowDiagram format_version="4" >
+    <BoxInstance name="Say Text" id="2" x="422" y="65" path="B_0_0_B1_0_0_Say_Text2.xml" >
+        <ParameterValue id="5" value="100" />
+        <ParameterValue id="6" value="100" />
+    </BoxInstance>
+    <BoxInstance name="Localized Text" id="5" x="114" y="68" path="B_0_0_B1_0_0_Localized_Text5.xml" >
+        <PluginContent>
+            <chinese>你好</chinese>
+            <english>Hello</english>
+            <french>Bonjour</french>
+            <german>Hallo</german>
+            <italian>Ciao</italian>
+            <japanese>こんにちは</japanese>
+            <korean>안녕하세요</korean>
+            <portuguese>Olá</portuguese>
+            <brazilian>Olá</brazilian>
+            <spanish>Hola</spanish>
+            <arabic>مرحبا</arabic>
+            <polish>Cześć</polish>
+            <czech>Ahoj</czech>
+            <dutch>Hallo</dutch>
+            <danish>Hej</danish>
+            <finnish>Hei</finnish>
+            <swedish>Hallå</swedish>
+            <russian>Привет</russian>
+            <turkish>Merhaba</turkish>
+            <language>2</language>
+        </PluginContent>
+    </BoxInstance>
+    <Link inputowner="0" indexofinput="4" outputowner="2" indexofoutput="4" />
+    <Link inputowner="5" indexofinput="2" outputowner="0" indexofoutput="2" />
+    <Link inputowner="2" indexofinput="2" outputowner="5" indexofoutput="3" />
+</FlowDiagram>
