@@ -47,7 +47,7 @@ public:
   AnyObject makeObject(const std::string& model, const std::string& factory, const qi::BehaviorModel::ParameterMap& params);
   void loadObjects();
   void unloadObjects();
-  void setTransitions(bool debugmode);
+  void setTransitions(bool debugmode, qi::MetaCallType type = qi::MetaCallType_Auto);
   void removeTransitions();
   void loadFile(const std::string& path);
   void loadString(const std::string& data);
@@ -141,7 +141,7 @@ void Behavior::unloadObjects()
   _objects.clear();
 }
 
-void Behavior::setTransitions(bool debugmode)
+void Behavior::setTransitions(bool debugmode, qi::MetaCallType type)
 {
   qiLogDebug() << "setTransitions";
   if (!_transitions.empty())
@@ -209,7 +209,7 @@ void Behavior::setTransitions(bool debugmode)
     // If target is a property, we need to use our bouncer to invoke setProperty
     if (debugmode || best.second == PROP_MATCH)
       ptr.link = src->connect(srcSignals[best.first].uid(),
-        qi::AnyFunction::from((boost::function<void(qi::AnyValue)>) boost::bind(&Behavior::transition, this, _1, t.uid)));
+        qi::SignalSubscriber(qi::AnyFunction::from((boost::function<void(qi::AnyValue)>) boost::bind(&Behavior::transition, this, _1, t.uid)),type));
     else
       ptr.link = src->connect(srcSignals[best.first].uid(), qi::SignalSubscriber(dst, ptr.targetMethod));
   }
