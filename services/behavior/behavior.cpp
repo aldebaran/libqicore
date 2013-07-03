@@ -34,7 +34,7 @@ public:
   {
     AnyObject source;
     AnyObject target;
-    SignalLink      link;
+    SignalLink link;
     std::string property; // target property name
     unsigned int targetMethod; // or target method id
     bool debug;

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <qi/application.hpp>
 #include <qimessaging/session.hpp>
-#include <qitype/anyvalue.hpp>
+#include <qitype/anyobject.hpp>
 #include <qitype/objectfactory.hpp>
 
 #define STRING(a) std::string(#a)
