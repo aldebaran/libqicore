@@ -57,7 +57,7 @@ namespace qi
     TaskCall()
     : result(typeOf<T>()) {}
     // Accept an explicit type that overrides
-    TaskCall(AnyFunction f, Type* eff = 0)
+    TaskCall(AnyFunction f, TypeInterface* eff = 0)
     : result(eff?eff:typeOf<T>())
     , _f(f)
     , _live(new bool(true))

@@ -1,8 +1,12 @@
 #include <fstream>
 
 #include <qitype/objectfactory.hpp>
+#include <qitype/jsoncodec.hpp>
+
 #include <qimessaging/session.hpp>
+
 #include <boost/foreach.hpp>
+
 #include <qicore/behavior.hpp>
 #include <qicore/task-call.hpp>
 
@@ -80,7 +84,7 @@ private:
 private:
   typedef qi::SignalLink Link;
   // hooks on running/error
-  typedef std::map<std::string, std::pair<Link, Link> > ObjectLinks;
+  typedef std::map<std::string, std::pair<SignalLink, SignalLink> > ObjectLinks;
   ObjectLinks       _objectLinks;
   qi::BehaviorModel _model;
   ObjectMap         _objects;
