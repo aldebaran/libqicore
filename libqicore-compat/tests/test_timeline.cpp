@@ -14,8 +14,8 @@
 #include <qicore-compat/model/animationmodel.hpp>
 
 std::string file;
-qi::ObjectPtr motion;
-qi::ObjectPtr memory;
+qi::AnyObject motion;
+qi::AnyObject memory;
 
 TEST(QiTimeline, CreateTimeline)
 {

@@ -7,9 +7,9 @@
 
 #define foreach BOOST_FOREACH
 
-using qi::ObjectPtr;
+using qi::AnyObject;
 using qi::Signature;
-using qi::Link;
+using qi::SignalLink;
 
 qiLogCategory("service.behavior");
 
@@ -25,16 +25,16 @@ template<typename T> inline T find0Ptr(std::map<std::string, T>& m, const std::s
 class Behavior
 {
 public:
-  typedef std::map<std::string, ObjectPtr> ObjectMap;
+  typedef std::map<std::string, AnyObject> ObjectMap;
   /* Two transision modes:
    * - Direct: link is a link to a connect(source, target, targetMethod)
    * - Intercept: debug mode, link is a connect(source, &Behavior::transition)
    */
   struct TransitionPtr
   {
-    ObjectPtr source;
-    ObjectPtr target;
-    Link      link;
+    AnyObject source;
+    AnyObject target;
+    SignalLink      link;
     std::string property; // target property name
     unsigned int targetMethod; // or target method id
     bool debug;
@@ -44,7 +44,7 @@ public:
 public:
   Behavior(): _session(new qi::Session) {}
   ~Behavior() { delete _session;}
-  ObjectPtr makeObject(const std::string& model, const std::string& factory, const qi::BehaviorModel::ParameterMap& params);
+  AnyObject makeObject(const std::string& model, const std::string& factory, const qi::BehaviorModel::ParameterMap& params);
   void loadObjects();
   void unloadObjects();
   void setTransitions(bool debugmode);
@@ -52,10 +52,10 @@ public:
   void loadFile(const std::string& path);
   void loadString(const std::string& data);
   void connect(const std::string& url);
-  qi::GenericValue call(const std::string& objUid, const std::string& fun, std::vector<qi::GenericValue> args);
+  qi::AnyValue call(const std::string& objUid, const std::string& fun, std::vector<qi::AnyValue> args);
 
   /// Triggered when a transition occurrs, if transitions were set in debug mode.
-  qi::Signal<const std::string&, qi::GenericValue> onTransition;
+  qi::Signal<const std::string&, qi::AnyValue> onTransition;
 
 
 public:
@@ -69,7 +69,7 @@ public:
   //const TransitionMap&   transitions() const { return _transitions; };
 
 private:
-  void transition(qi::GenericValue argument, const std::string& transitionId);
+  void transition(qi::AnyValue argument, const std::string& transitionId);
 
 private:
   qi::BehaviorModel _model;
@@ -82,31 +82,31 @@ QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeT
 QI_REGISTER_OBJECT_FACTORY_BUILDER(Behavior);
 
 
-qi::GenericValue Behavior::call(const std::string& objUid, const std::string& fun,
-  std::vector<qi::GenericValue> args)
+qi::AnyValue Behavior::call(const std::string& objUid, const std::string& fun,
+  std::vector<qi::AnyValue> args)
 {
   qiLogDebug() << "Calling " << objUid << '.' << fun;
-  using qi::GenericValue;
-  ObjectPtr o = find0Ptr(_objects, objUid);
+  using qi::AnyValue;
+  AnyObject o = find0Ptr(_objects, objUid);
   if (!o)
     throw std::runtime_error("Object not found: " + objUid);
   // Don't want to reipmelemnt signature resolution? No problem!
   switch(args.size())
   {
   case 0:
-    return o->call<GenericValue>(fun);
+    return o->call<AnyValue>(fun);
     break;
   case 1:
-    return o->call<GenericValue>(fun, args[0]);
+    return o->call<AnyValue>(fun, args[0]);
     break;
   case 2:
-    return o->call<GenericValue>(fun, args[0], args[1]);
+    return o->call<AnyValue>(fun, args[0], args[1]);
     break;
   case 3:
-    return o->call<GenericValue>(fun, args[0], args[1], args[2]);
+    return o->call<AnyValue>(fun, args[0], args[1], args[2]);
     break;
   case 4:
-    return o->call<GenericValue>(fun, args[0], args[1], args[2], args[3]);
+    return o->call<AnyValue>(fun, args[0], args[1], args[2], args[3]);
     break;
   default:
     throw std::runtime_error("argument count not implemented");
@@ -127,7 +127,7 @@ void Behavior::loadObjects()
   foreach(qi::BehaviorModel::NodeMap::value_type& n, _model.nodes)
   {
     qiLogDebug() << "loading " << n.first << " from " <<n.second.factory;
-    ObjectPtr o = makeObject(n.second.interface, n.second.factory, n.second.parameters);
+    AnyObject o = makeObject(n.second.interface, n.second.factory, n.second.parameters);
     _objects[n.first] = o;
   }
   qiLogDebug() << "loadObjects finished";
@@ -148,8 +148,8 @@ void Behavior::setTransitions(bool debugmode)
   foreach(qi::BehaviorModel::TransitionMap::value_type& vt, _model.transitions)
   {
     qi::BehaviorModel::Transition& t = vt.second;
-    ObjectPtr src = find0Ptr(_objects, t.src.first);
-    ObjectPtr dst = find0Ptr(_objects, t.dst.first);
+    AnyObject src = find0Ptr(_objects, t.src.first);
+    AnyObject dst = find0Ptr(_objects, t.dst.first);
     if (!src)
       throw std::runtime_error("No object " + t.src.first);
     if (!dst)
@@ -208,7 +208,7 @@ void Behavior::setTransitions(bool debugmode)
     // If target is a property, we need to use our bouncer to invoke setProperty
     if (debugmode || best.second == PROP_MATCH)
       ptr.link = src->connect(srcSignals[best.first].uid(),
-        qi::makeGenericFunction((boost::function<void(qi::GenericValue)>) boost::bind(&Behavior::transition, this, _1, t.uid)));
+        qi::AnyFunction::from((boost::function<void(qi::AnyValue)>) boost::bind(&Behavior::transition, this, _1, t.uid)));
     else
       ptr.link = src->connect(srcSignals[best.first].uid(), qi::SignalSubscriber(dst, ptr.targetMethod));
   }
@@ -223,7 +223,7 @@ void Behavior::removeTransitions()
   _transitions.clear();
 }
 
-ObjectPtr Behavior::makeObject(const std::string& model, const std::string& factory,
+AnyObject Behavior::makeObject(const std::string& model, const std::string& factory,
   const qi::BehaviorModel::ParameterMap& parameters)
 {
   size_t p = factory.find_first_of(':');
@@ -238,7 +238,7 @@ ObjectPtr Behavior::makeObject(const std::string& model, const std::string& fact
       object = factory.substr(0, p);
       method = factory.substr(p+1);
     }
-    ObjectPtr s;
+    AnyObject s;
     try
     {
       s = session().service(object);
@@ -260,7 +260,7 @@ ObjectPtr Behavior::makeObject(const std::string& model, const std::string& fact
       method = "create";
     if (!method.empty())
     {
-      s = s->call<ObjectPtr>(method);
+      s = s->call<AnyObject>(method);
     }
     for (qi::BehaviorModel::ParameterMap::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
     {
@@ -291,7 +291,7 @@ void Behavior::loadString(const std::string& path)
   _model.load(is);
 }
 
-void Behavior::transition(qi::GenericValue arg, const std::string& transId)
+void Behavior::transition(qi::AnyValue arg, const std::string& transId)
 {
   TransitionPtr t = _transitions[transId];
   if (t.debug)
@@ -303,7 +303,7 @@ void Behavior::transition(qi::GenericValue arg, const std::string& transId)
   else
   {
     qi::GenericFunctionParameters args;
-    args.push_back(qi::GenericValuePtr(arg.type, arg.value));
+    args.push_back(qi::AnyReference(arg.type, arg.value));
     t.target->metaPost(t.targetMethod, args);
   }
 }

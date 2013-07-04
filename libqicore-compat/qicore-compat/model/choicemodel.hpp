@@ -9,7 +9,7 @@
 #define CHOICE_H_
 
 #include <alserial/alserial.h>
-#include <qitype/genericvalue.hpp>
+#include <qitype/anyvalue.hpp>
 
 #include <qicore-compat/api.hpp>
 #include <qicore-compat/model/parametermodel.hpp>
@@ -20,13 +20,13 @@ namespace qi
 
   class QICORECOMPAT_API ChoiceModel {
   public:
-    explicit ChoiceModel(AutoGenericValuePtr value);
+    explicit ChoiceModel(AutoAnyReference value);
     ChoiceModel(boost::shared_ptr<const AL::XmlElement> elt, const Signature &type);
     virtual ~ChoiceModel();
 
-    GenericValuePtr value() const;
+    AnyReference value() const;
 
-    void setValue(AutoGenericValuePtr value);
+    void setValue(AutoAnyReference value);
 
   private:
     QI_DISALLOW_COPY_AND_ASSIGN(ChoiceModel);

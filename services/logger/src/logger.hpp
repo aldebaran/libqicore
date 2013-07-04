@@ -2,7 +2,7 @@
 #define QICORE_LOGGER_HPP
 
 #include <qi/log.hpp>
-#include <qitype/type.hpp>
+#include <qitype/anyobject.hpp>
 #include <boost/shared_ptr.hpp>
 
 QI_TYPE_ENUM_REGISTER(qi::log::LogLevel)

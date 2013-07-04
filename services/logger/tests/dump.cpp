@@ -39,7 +39,7 @@ int main(int argc, char** argv)
   if (argc > 1)
     target = argv[1];
   s.connect(target);
-  qi::ObjectPtr glogger = s.service("LoggerService");
+  qi::AnyObject glogger = s.service("LoggerService");
   LoggerProxyPtr logger(new LoggerProxy(glogger));
   assert(logger);
   LogListenerProxyPtr listener = logger->getListener();

@@ -8,14 +8,14 @@
 # define QICORE_BEHAVIOR__H
 
 #include <qicore/api.hpp>
-#include <qitype/type.hpp>
+#include <qitype/anyvalue.hpp>
 
 namespace qi {
 
   struct QICORE_API BehaviorModel
   {
     typedef std::pair<std::string, std::string> Slot; // objectUid.methodName
-    typedef std::map<std::string, qi::GenericValue> ParameterMap;
+    typedef std::map<std::string, qi::AnyValue> ParameterMap;
 
     struct QICORE_API Node
     {

@@ -2,7 +2,7 @@
 #include <QApplication>
 #include <QThread>
 #include <qi/application.hpp>
-#include <qitype/genericobject.hpp>
+#include <qitype/anyobject.hpp>
 #include <qitype/objectfactory.hpp>
 #include <qimessaging/session.hpp>
 

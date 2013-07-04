@@ -34,23 +34,23 @@ do                                           \
 #define PERSIST(code, cond, msdelay)  \
  PERSIST_CHECK(code, cond, ,msdelay)
 
-std::vector<qi::GenericValue> arguments(qi::AutoGenericValuePtr v1 = qi::AutoGenericValuePtr(),
-  qi::AutoGenericValuePtr v2 = qi::AutoGenericValuePtr(),
-  qi::AutoGenericValuePtr v3 = qi::AutoGenericValuePtr(),
-  qi::AutoGenericValuePtr v4 = qi::AutoGenericValuePtr(),
-  qi::AutoGenericValuePtr v5 = qi::AutoGenericValuePtr())
+std::vector<qi::AnyValue> arguments(qi::AutoAnyReference v1 = qi::AutoAnyReference(),
+  qi::AutoAnyReference v2 = qi::AutoAnyReference(),
+  qi::AutoAnyReference v3 = qi::AutoAnyReference(),
+  qi::AutoAnyReference v4 = qi::AutoAnyReference(),
+  qi::AutoAnyReference v5 = qi::AutoAnyReference())
 {
-  std::vector<qi::GenericValue> res;
+  std::vector<qi::AnyValue> res;
   if (v1.value)
-    res.push_back(qi::GenericValue(v1));
+    res.push_back(qi::AnyValue(v1));
   if (v2.value)
-    res.push_back(qi::GenericValue(v2));
+    res.push_back(qi::AnyValue(v2));
   if (v3.value)
-    res.push_back(qi::GenericValue(v3));
+    res.push_back(qi::AnyValue(v3));
   if (v4.value)
-    res.push_back(qi::GenericValue(v4));
+    res.push_back(qi::AnyValue(v4));
   if (v5.value)
-    res.push_back(qi::GenericValue(v5));
+    res.push_back(qi::AnyValue(v5));
   return res;
 }
 
@@ -92,7 +92,7 @@ TEST(Behavior, testFactory)
 {
   TestSessionPair p;
   ASSERT_EQ(1u, p.server()->loadService("behavior").size());
-  qi::ObjectPtr b = p.client()->service("BehaviorService").value()->call<qi::ObjectPtr>("create");
+  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
   b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   std::string behavior = STRING(
     a Whatever TestObjectService.create;
@@ -124,7 +124,7 @@ TEST(Behavior, testService)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::ObjectPtr b = p.client()->service("BehaviorService").value()->call<qi::ObjectPtr>("create");
+  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
   b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   std::string behavior = STRING(
@@ -148,14 +148,14 @@ TEST(Behavior, testService)
   PERSIST(, 6 == b->call<int>("call", "c", "lastAdd", arguments()), 1000);
   ASSERT_EQ(6, b->call<int>("call", "c", "lastAdd", arguments()));
   // recheck by accessing the service
-  qi::ObjectPtr daC = p.client()->service("TestObject2");
+  qi::AnyObject daC = p.client()->service("TestObject2");
   ASSERT_EQ(6, daC->call<int>("lastAdd"));
 }
 
 
-std::string str(const qi::GenericValue& v)
+std::string str(const qi::AnyValue& v)
 {
-  if (v.kind() == qi::Type::String)
+  if (v.kind() == qi::TypeKind_String)
     return v.toString();
   else
     return boost::lexical_cast<std::string>(v.toDouble());
@@ -164,7 +164,7 @@ std::string str(const qi::GenericValue& v)
 void onTransition(
   std::vector<std::string>& transitionData,
   const std::string& transId,
-  qi::GenericValue payload)
+  qi::AnyValue payload)
 {
   transitionData.push_back(transId + " " + str(payload));
 }
@@ -174,7 +174,7 @@ TEST(Behavior, transitionTrack)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::ObjectPtr b = p.client()->service("BehaviorService").value()->call<qi::ObjectPtr>("create");
+  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
   b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   std::string behavior = STRING(
@@ -199,7 +199,7 @@ TEST(Behavior, transitionTrack)
   b->call<void>("setTransitions", true);
   std::vector<std::string> transitionData;
   b->connect("onTransition",
-    boost::function<void(const std::string&, qi::GenericValue)>
+    boost::function<void(const std::string&, qi::AnyValue)>
     (boost::bind(&onTransition, boost::ref(transitionData), _1, _2)));
   b->call<void>("call", "a", "setv", arguments(3));
   PERSIST(, 6 == b->call<int>("call", "c", "lastAdd", arguments()), 1000);
@@ -217,7 +217,7 @@ TEST(Behavior, targetPropertyDbgOn)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::ObjectPtr b = p.client()->service("BehaviorService").value()->call<qi::ObjectPtr>("create");
+  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
   b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   std::string behavior = STRING(
@@ -246,7 +246,7 @@ TEST(Behavior, targetPropertyDbgOff)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::ObjectPtr b = p.client()->service("BehaviorService").value()->call<qi::ObjectPtr>("create");
+  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
   b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   std::string behavior = STRING(

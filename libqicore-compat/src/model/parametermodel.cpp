@@ -16,7 +16,7 @@ qiLogCategory("QiCore-Compat.ParameterModel");
 
 namespace qi
 {
-  static bool isIntegerOrDouble(GenericValuePtr value)
+  static bool isIntegerOrDouble(AnyReference value)
   {
 
     Signature signature(value.signature());
@@ -26,7 +26,7 @@ namespace qi
 
   //--------------------------Private Class-------------------------------------//
   ParameterModelPrivate::ParameterModelPrivate(const std::string &name,
-                                               AutoGenericValuePtr defaultValue,
+                                               AutoAnyReference defaultValue,
                                                bool inheritsFromParent,
                                                bool customChoice,
                                                bool password,
@@ -56,9 +56,9 @@ namespace qi
   }
 
   ParameterModelPrivate::ParameterModelPrivate(const std::string &name,
-                                               AutoGenericValuePtr defaultValue,
-                                               AutoGenericValuePtr min,
-                                               AutoGenericValuePtr max,
+                                               AutoAnyReference defaultValue,
+                                               AutoAnyReference min,
+                                               AutoAnyReference max,
                                                bool inheritsFromParent,
                                                bool customChoice,
                                                bool password,
@@ -105,7 +105,7 @@ namespace qi
     {
       bool default_value_bool;
       elt->getAttribute("default_value",    default_value_bool);
-      _defaultValue = GenericValue(default_value_bool).clone();
+      _defaultValue = AnyValue(default_value_bool).clone();
     }
     else if(sig.isConvertibleTo(Signature::fromType(Signature::Type_Int32)) == 1.0f)
     {
@@ -113,9 +113,9 @@ namespace qi
       elt->getAttribute("default_value",    default_value_int);
       elt->getAttribute("min",              min_int, 0);
       elt->getAttribute("max",              max_int, 0);
-      _defaultValue  = GenericValue(default_value_int).clone();
-      _min           = GenericValue(min_int).clone();
-      _max           = GenericValue(max_int).clone();
+      _defaultValue  = AnyValue(default_value_int).clone();
+      _min           = AnyValue(min_int).clone();
+      _max           = AnyValue(max_int).clone();
     }
     else if(sig.isConvertibleTo(Signature::fromType(Signature::Type_Double)) == 1.0f )
     {
@@ -123,15 +123,15 @@ namespace qi
       elt->getAttribute("default_value",    default_value_double);
       elt->getAttribute("min",              min_double, 0.0);
       elt->getAttribute("max",              max_double, 0.0);
-      _defaultValue  = GenericValue(default_value_double).clone();
-      _min           = GenericValue(min_double).clone();
-      _max           = GenericValue(max_double).clone();
+      _defaultValue  = AnyValue(default_value_double).clone();
+      _min           = AnyValue(min_double).clone();
+      _max           = AnyValue(max_double).clone();
     }
     else if(sig.isConvertibleTo(Signature::fromType(Signature::Type_String)) == 1.0f)
     {
       std::string default_value_string;
       elt->getAttribute("default_value", default_value_string, std::string(""));
-      _defaultValue = GenericValue(default_value_string).clone();
+      _defaultValue = AnyValue(default_value_string).clone();
     }
     else
     {
@@ -155,7 +155,7 @@ namespace qi
     }
   }
 
-  bool ParameterModelPrivate::inInterval(GenericValuePtr value, GenericValuePtr min, GenericValuePtr max) const
+  bool ParameterModelPrivate::inInterval(AnyReference value, AnyReference min, AnyReference max) const
   {
     Signature signature(value.signature());
     qiLogDebug() << "Enter in inInterval";
@@ -178,7 +178,7 @@ namespace qi
 
   //------------------------------------Public Class-------------------------------//
   ParameterModel::ParameterModel(const std::string &name,
-                                 AutoGenericValuePtr defaultValue,
+                                 AutoAnyReference defaultValue,
                                  bool inheritsFromParent,
                                  bool customChoice,
                                  bool password,
@@ -190,9 +190,9 @@ namespace qi
   }
 
   ParameterModel::ParameterModel(const std::string &name,
-                 AutoGenericValuePtr defaultValue,
-                 AutoGenericValuePtr min,
-                 AutoGenericValuePtr max,
+                 AutoAnyReference defaultValue,
+                 AutoAnyReference min,
+                 AutoAnyReference max,
                  bool inheritsFromParent,
                  bool customChoice,
                  bool password,
@@ -223,17 +223,17 @@ namespace qi
     return _p->_inheritsFromParent;
   }
 
-  GenericValuePtr ParameterModel::defaultValue() const
+  AnyReference ParameterModel::defaultValue() const
   {
     return _p->_defaultValue;
   }
 
-  GenericValuePtr ParameterModel::min() const
+  AnyReference ParameterModel::min() const
   {
     return _p->_min;
   }
 
-  GenericValuePtr ParameterModel::max() const
+  AnyReference ParameterModel::max() const
   {
     return _p->_max;
   }
@@ -265,7 +265,7 @@ namespace qi
     _p->_inheritsFromParent = inherits_from_parent;
   }
 
-  bool ParameterModel::setValue(AutoGenericValuePtr value)
+  bool ParameterModel::setValue(AutoAnyReference value)
   {
     Signature signature(value.signature());
 
@@ -280,7 +280,7 @@ namespace qi
     return true;
   }
 
-  bool ParameterModel::setValue(AutoGenericValuePtr value, AutoGenericValuePtr min, AutoGenericValuePtr max)
+  bool ParameterModel::setValue(AutoAnyReference value, AutoAnyReference min, AutoAnyReference max)
   {
     Signature signature(value.signature());
 

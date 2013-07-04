@@ -16,7 +16,7 @@ LogListenerProxyPtr listener;
 
 void startClient(qi::Session& s, const std::string& serviceName)
 {
-  qi::ObjectPtr glogger = s.service(serviceName);
+  qi::AnyObject glogger = s.service(serviceName);
   ASSERT_TRUE(glogger);
   logger = LoggerProxyPtr(new LoggerProxy(glogger));
   listener = logger->getListener();

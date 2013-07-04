@@ -12,7 +12,7 @@
 qiLogCategory("QiCore-Compat.ParameterValueModel");
 
 namespace qi {
-  ParameterValueModelPrivate::ParameterValueModelPrivate(int id, AutoGenericValuePtr value) :
+  ParameterValueModelPrivate::ParameterValueModelPrivate(int id, AutoAnyReference value) :
     _id(id),
     _value(value.clone()),
     _isValid(true)
@@ -37,25 +37,25 @@ namespace qi {
     {
       bool valueBool;
       elt->getAttribute("value", valueBool);
-      _value = GenericValue(valueBool).clone();
+      _value = AnyValue(valueBool).clone();
     }
     else if(type.isConvertibleTo(Signature::fromType(Signature::Type_Int32)) == 1.0f)
     {
       int valueInt;
       elt->getAttribute("value", valueInt);
-      _value = GenericValue(valueInt).clone();
+      _value = AnyValue(valueInt).clone();
     }
     else if(type.isConvertibleTo(Signature::fromType(Signature::Type_Double)) == 1.0f)
     {
       double valueDouble;
       elt->getAttribute("value", valueDouble);
-      _value = GenericValue(valueDouble).clone();
+      _value = AnyValue(valueDouble).clone();
     }
     else if(type.isConvertibleTo(Signature::fromType(Signature::Type_String)) == 1.0f)
     {
       std::string valueString;
       elt->getAttribute("value", valueString);
-      _value = GenericValue(valueString).clone();
+      _value = AnyValue(valueString).clone();
     }
     else
     {
@@ -64,7 +64,7 @@ namespace qi {
     }
   }
 
-  ParameterValueModel::ParameterValueModel(int id, AutoGenericValuePtr value) :
+  ParameterValueModel::ParameterValueModel(int id, AutoAnyReference value) :
     _p(new ParameterValueModelPrivate(id, value))
   {
   }
@@ -84,7 +84,7 @@ namespace qi {
     return _p->_id;
   }
 
-  GenericValuePtr ParameterValueModel::value() const
+  AnyReference ParameterValueModel::value() const
   {
     return _p->_value;
   }
@@ -94,7 +94,7 @@ namespace qi {
     _p->_id = id;
   }
 
-  void ParameterValueModel::setValueDefault(AutoGenericValuePtr value)
+  void ParameterValueModel::setValueDefault(AutoAnyReference value)
   {
     _p->_value = value.clone();
   }

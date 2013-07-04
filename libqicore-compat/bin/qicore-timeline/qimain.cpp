@@ -74,8 +74,8 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  qi::ObjectPtr memory;
-  qi::ObjectPtr motion;
+  qi::AnyObject memory;
+  qi::AnyObject motion;
   try
   {
     memory = session.service("ALMemory");

@@ -11,7 +11,7 @@
 #include <qicore-compat/api.hpp>
 #include <alserial/alserial.h>
 #include <qitype/signature.hpp>
-#include <qitype/genericvalue.hpp>
+#include <qitype/anyvalue.hpp>
 
 namespace qi {
   class ParameterValueModelPrivate;
@@ -19,16 +19,16 @@ namespace qi {
 
   class QICORECOMPAT_API ParameterValueModel {
   public:
-    ParameterValueModel(int id, AutoGenericValuePtr value);
+    ParameterValueModel(int id, AutoAnyReference value);
     ParameterValueModel(boost::shared_ptr<const AL::XmlElement> elt, boost::shared_ptr<BoxInterfaceModel> interface);
 
     virtual ~ParameterValueModel();
 
     int id()                  const;
-    GenericValuePtr value() const;
+    AnyReference value() const;
 
     void setId(int id);
-    void setValueDefault(AutoGenericValuePtr value);
+    void setValueDefault(AutoAnyReference value);
 
     bool isValid() const;
 

@@ -9,7 +9,6 @@
 #define CONTENT_P_H_
 
 #include <alserial/alserial.h>
-#include <qitype/genericvalue.hpp>
 
 namespace qi
 {

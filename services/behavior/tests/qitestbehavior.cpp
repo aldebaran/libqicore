@@ -1,28 +1,28 @@
 #include <iostream>
 #include <qi/application.hpp>
 #include <qimessaging/session.hpp>
-#include <qitype/type.hpp>
+#include <qitype/anyvalue.hpp>
 #include <qitype/objectfactory.hpp>
 
 #define STRING(a) std::string(#a)
 
-std::vector<qi::GenericValue> arguments(qi::AutoGenericValuePtr v1 = qi::AutoGenericValuePtr(),
-  qi::AutoGenericValuePtr v2 = qi::AutoGenericValuePtr(),
-  qi::AutoGenericValuePtr v3 = qi::AutoGenericValuePtr(),
-  qi::AutoGenericValuePtr v4 = qi::AutoGenericValuePtr(),
-  qi::AutoGenericValuePtr v5 = qi::AutoGenericValuePtr())
+std::vector<qi::AnyValue> arguments(qi::AutoAnyReference v1 = qi::AutoAnyReference(),
+  qi::AutoAnyReference v2 = qi::AutoAnyReference(),
+  qi::AutoAnyReference v3 = qi::AutoAnyReference(),
+  qi::AutoAnyReference v4 = qi::AutoAnyReference(),
+  qi::AutoAnyReference v5 = qi::AutoAnyReference())
 {
-  std::vector<qi::GenericValue> res;
+  std::vector<qi::AnyValue> res;
   if (v1.value)
-    res.push_back(qi::GenericValue(v1));
+    res.push_back(qi::AnyValue(v1));
   if (v2.value)
-    res.push_back(qi::GenericValue(v2));
+    res.push_back(qi::AnyValue(v2));
   if (v3.value)
-    res.push_back(qi::GenericValue(v3));
+    res.push_back(qi::AnyValue(v3));
   if (v4.value)
-    res.push_back(qi::GenericValue(v4));
+    res.push_back(qi::AnyValue(v4));
   if (v5.value)
-    res.push_back(qi::GenericValue(v5));
+    res.push_back(qi::AnyValue(v5));
   return res;
 }
 
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
   ses->connect(url);
 
   ses->loadService("behavior").size();
-  qi::ObjectPtr b = ses->service("BehaviorService").value()->call<qi::ObjectPtr>("create");
+  qi::AnyObject b = ses->service("BehaviorService").value()->call<qi::AnyObject>("create");
   b->call<void>("connect", url);
   std::string behavior = STRING(
     a Whatever TestObjectService.create;

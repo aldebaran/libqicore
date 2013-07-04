@@ -22,7 +22,7 @@
 namespace qi
 {
 
-TimelinePrivate::TimelinePrivate(ObjectPtr memory, ObjectPtr motion)
+TimelinePrivate::TimelinePrivate(AnyObject memory, AnyObject motion)
   : _executer(new asyncExecuter(1000 / 25)),
     _fps(0),
     _enabled(false),
@@ -704,7 +704,7 @@ void TimelinePrivate::rebuildBezierAutoTangents(ActuatorCurveModelPtr curve)
 }
 
 /* -- Public -- */
-Timeline::Timeline(ObjectPtr memory, ObjectPtr motion)
+Timeline::Timeline(AnyObject memory, AnyObject motion)
   : _p (new TimelinePrivate(memory, motion))
 {
 }

@@ -14,7 +14,7 @@ namespace qi {
 
   //----------------------------------------Private Class------------------------------------------//
 
-  ChoiceModelPrivate::ChoiceModelPrivate(AutoGenericValuePtr value) :
+  ChoiceModelPrivate::ChoiceModelPrivate(AutoAnyReference value) :
     _value(value.clone()),
     _isValid(true)
   {
@@ -29,25 +29,25 @@ namespace qi {
     {
       bool valueBool;
       elt->getAttribute("value", valueBool);
-      _value = GenericValuePtr(&valueBool).clone();
+      _value = AnyReference(&valueBool).clone();
     }
     else if(type.isConvertibleTo(Signature::fromType(Signature::Type_Int32)))
     {
       int valueInt;
       elt->getAttribute("value", valueInt);
-      _value = GenericValuePtr(&valueInt).clone();
+      _value = AnyReference(&valueInt).clone();
     }
     else if(type.isConvertibleTo(Signature::fromType(Signature::Type_Double)))
     {
       double valueDouble;
       elt->getAttribute("value", valueDouble);
-      _value = GenericValuePtr(&valueDouble).clone();
+      _value = AnyReference(&valueDouble).clone();
     }
     else if(type.isConvertibleTo(Signature::fromType(Signature::Type_String)))
     {
       std::string valueString;
       elt->getAttribute("value", valueString);
-      _value = GenericValuePtr(&valueString).clone();
+      _value = AnyReference(&valueString).clone();
     }
     else
     {
@@ -57,7 +57,7 @@ namespace qi {
 
   //-----------------------------------------Public Class------------------------------------------//
 
-  ChoiceModel::ChoiceModel(AutoGenericValuePtr value) :
+  ChoiceModel::ChoiceModel(AutoAnyReference value) :
     _p(new ChoiceModelPrivate(value))
   {
   }
@@ -72,12 +72,12 @@ namespace qi {
     delete _p;
   }
 
-  GenericValuePtr ChoiceModel::value() const
+  AnyReference ChoiceModel::value() const
   {
     return _p->_value;
   }
 
-  void ChoiceModel::setValue(AutoGenericValuePtr value)
+  void ChoiceModel::setValue(AutoAnyReference value)
   {
     _p->_value = value.clone();
   }

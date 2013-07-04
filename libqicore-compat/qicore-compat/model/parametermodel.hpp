@@ -10,7 +10,7 @@
 
 #include <alserial/alserial.h>
 #include <qitype/metaproperty.hpp>
-#include <qitype/genericvalue.hpp>
+#include <qitype/anyvalue.hpp>
 #include <qicore-compat/api.hpp>
 
 namespace qi
@@ -23,7 +23,7 @@ namespace qi
   {
   public:
     ParameterModel(const std::string &name,
-                   AutoGenericValuePtr defaultValue,
+                   AutoAnyReference defaultValue,
                    bool inheritsFromParent,
                    bool customChoice,
                    bool password,
@@ -31,9 +31,9 @@ namespace qi
                    int id,
                    bool resource = false);
     ParameterModel(const std::string &name,
-                   AutoGenericValuePtr defaultValue,
-                   AutoGenericValuePtr min,
-                   AutoGenericValuePtr max,
+                   AutoAnyReference defaultValue,
+                   AutoAnyReference min,
+                   AutoAnyReference max,
                    bool inheritsFromParent,
                    bool customChoice,
                    bool password,
@@ -44,17 +44,17 @@ namespace qi
 
     const MetaProperty& metaProperty() const;
     bool inheritsFromParent() const;
-    GenericValuePtr defaultValue() const;
-    GenericValuePtr min() const;
-    GenericValuePtr max() const;
+    AnyReference defaultValue() const;
+    AnyReference min() const;
+    AnyReference max() const;
     bool customChoice() const;
     bool password() const;
     const std::string& tooltip() const;
 
     void setMetaProperty(unsigned int id, const std::string &name, const Signature &sig);
     void setInheritsFromParent(bool inheritsFromParent);
-    bool setValue(AutoGenericValuePtr value);
-    bool setValue(AutoGenericValuePtr value, AutoGenericValuePtr min, AutoGenericValuePtr max);
+    bool setValue(AutoAnyReference value);
+    bool setValue(AutoAnyReference value, AutoAnyReference min, AutoAnyReference max);
     void setCustomChoice(bool custom_choice);
     void setPassword(bool password);
     void setTooltip(const std::string& tooltip);

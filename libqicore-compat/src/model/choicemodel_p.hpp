@@ -8,7 +8,7 @@
 #ifndef CHOICE_P_H_
 #define CHOICE_P_H_
 
-#include <qitype/genericvalue.hpp>
+#include <qitype/anyvalue.hpp>
 #include <qicore-compat/model/parametermodel.hpp>
 
 namespace qi
@@ -17,11 +17,11 @@ namespace qi
   {
     friend class ChoiceModel;
   public:
-    ChoiceModelPrivate(AutoGenericValuePtr value);
+    ChoiceModelPrivate(AutoAnyReference value);
     ChoiceModelPrivate(boost::shared_ptr<const AL::XmlElement> elt, const Signature& type);
 
   private:
-    GenericValuePtr _value;
+    AnyReference _value;
     bool _isValid;
   };
 }

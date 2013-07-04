@@ -9,7 +9,7 @@
 # define PARAMETER_P_H_
 
 #include <qicore-compat/model/choicemodel.hpp>
-#include <qitype/genericvalue.hpp>
+#include <qitype/anyvalue.hpp>
 #include <qitype/signature.hpp>
 #include <qitype/metaproperty.hpp>
 #include <alserial/alserial.h>
@@ -20,13 +20,13 @@ namespace qi
   {
     friend class ParameterModel;
   public:
-    ParameterModelPrivate(const std::string &name, AutoGenericValuePtr defaultValue, bool inheritsFromParent, bool customChoice, bool password, const std::string &tooltip, unsigned int id, bool resource);
-    ParameterModelPrivate(const std::string &name, AutoGenericValuePtr defaultValue, AutoGenericValuePtr min, AutoGenericValuePtr max, bool inheritsFromParent, bool customChoice, bool password, const std::string &tooltip, unsigned int id);
+    ParameterModelPrivate(const std::string &name, AutoAnyReference defaultValue, bool inheritsFromParent, bool customChoice, bool password, const std::string &tooltip, unsigned int id, bool resource);
+    ParameterModelPrivate(const std::string &name, AutoAnyReference defaultValue, AutoAnyReference min, AutoAnyReference max, bool inheritsFromParent, bool customChoice, bool password, const std::string &tooltip, unsigned int id);
 
     ParameterModelPrivate(boost::shared_ptr<const AL::XmlElement> elt);
 
 
-    bool inInterval(GenericValuePtr value, GenericValuePtr min, GenericValuePtr max) const;
+    bool inInterval(AnyReference value, AnyReference min, AnyReference max) const;
 
   private:
     MetaProperty _metaProperty;
@@ -36,9 +36,9 @@ namespace qi
     std::string _tooltip;
     std::list<boost::shared_ptr<ChoiceModel> > _choices;
     bool _isValid;
-    GenericValuePtr _defaultValue;
-    GenericValuePtr _min;
-    GenericValuePtr _max;
+    AnyReference _defaultValue;
+    AnyReference _min;
+    AnyReference _max;
   };
 }
 #endif /* !PARAMETER_P_H_ */
