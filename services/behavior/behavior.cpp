@@ -18,6 +18,8 @@ using qi::SignalLink;
 
 qiLogCategory("service.behavior");
 
+QI_TYPE_ENUM_REGISTER(qi::MetaCallType);
+
 template<typename T> inline T find0Ptr(std::map<std::string, T>& m, const std::string& key)
 {
   typename std::map<std::string, T>::iterator it = m.find(key);
@@ -92,7 +94,7 @@ private:
   qi::Session*      _session;
 };
 
-QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call, onTransition, model, objects, transitions, setModel, onTaskRunning, onTaskError);
+QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call, onTransition, model, objects, transitions, setModel, onTaskRunning, onTaskError, object);
 QI_REGISTER_OBJECT_FACTORY_BUILDER(Behavior);
 
 

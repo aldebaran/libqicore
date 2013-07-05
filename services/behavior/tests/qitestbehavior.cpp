@@ -4,6 +4,8 @@
 #include <qitype/anyobject.hpp>
 #include <qitype/objectfactory.hpp>
 
+QI_TYPE_ENUM_REGISTER(qi::MetaCallType);
+
 #define STRING(a) std::string(#a)
 
 std::vector<qi::AnyValue> arguments(qi::AutoAnyReference v1 = qi::AutoAnyReference(),

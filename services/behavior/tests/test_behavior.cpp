@@ -14,6 +14,7 @@
 #include <qicore/task.hpp>
 #include <testsession/testsessionpair.hpp>
 
+QI_TYPE_ENUM_REGISTER(qi::MetaCallType);
 
 /* For asynchronous things where no synchronisation mechanism
  * is possible, loop the check and wait a small delay,
@@ -214,7 +215,7 @@ TEST(Behavior, testFactory)
   ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
   b->call<void>("call", "b", "setv", arguments(1));
   b->call<void>("call", "c", "setv", arguments(2));
-  b->call<void>("setTransitions", false);
+  b->call<void>("setTransitions", false, qi::MetaCallType_Auto);
   ASSERT_EQ(2, b->call<int>("call", "c", "getv", arguments()));
   b->call<void>("call", "a", "setv", arguments(3));
   qi::os::msleep(1000);
@@ -246,7 +247,7 @@ TEST(Behavior, testService)
   ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
   ASSERT_EQ(1, b->call<int>("call", "b", "getv", arguments()));
   ASSERT_EQ(2, b->call<int>("call", "c", "getv", arguments()));
-  b->call<void>("setTransitions", false);
+  b->call<void>("setTransitions", false, qi::MetaCallType_Auto);
   b->call<void>("call", "a", "setv", arguments(3));
   PERSIST(, 6 == b->call<int>("call", "c", "lastAdd", arguments()), 1000);
   ASSERT_EQ(6, b->call<int>("call", "c", "lastAdd", arguments()));
@@ -299,7 +300,7 @@ TEST(Behavior, transitionTrack)
   ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
   b->call<void>("call", "b", "setv", arguments(1));
   b->call<void>("call", "c", "setv", arguments(2));
-  b->call<void>("setTransitions", true);
+  b->call<void>("setTransitions", true, qi::MetaCallType_Auto);
   std::vector<std::string> transitionData;
   b->connect("onTransition",
     boost::function<void(const std::string&, qi::AnyValue)>
@@ -338,7 +339,7 @@ TEST(Behavior, targetPropertyDbgOn)
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
   b->call<void>("loadObjects", false);
-  b->call<void>("setTransitions", true);
+  b->call<void>("setTransitions", true, qi::MetaCallType_Auto);
   b->call<void>("call", "a", "setv", arguments(55));
   PERSIST(, 55 == b->call<int>("call", "d", "getv", arguments()), 1000);
   ASSERT_EQ(55, b->call<int>("call", "d", "getv", arguments()));
@@ -367,7 +368,7 @@ TEST(Behavior, targetPropertyDbgOff)
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
   b->call<void>("loadObjects", false);
-  b->call<void>("setTransitions", false);
+  b->call<void>("setTransitions", false, qi::MetaCallType_Auto);
   b->call<void>("call", "a", "setv", arguments(55));
   PERSIST(, 55 == b->call<int>("call", "d", "getv", arguments()), 1000);
   ASSERT_EQ(55, b->call<int>("call", "d", "getv", arguments()));
@@ -433,7 +434,7 @@ TEST(Behavior, Filter)
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
   b->call<void>("loadObjects", false);
-  b->call<void>("setTransitions", false);
+  b->call<void>("setTransitions", false, qi::MetaCallType_Auto);
   propInt.set(12);
   qi::os::msleep(100);
   EXPECT_EQ(0, testObject->call<int>("lastAdd"));
@@ -489,7 +490,7 @@ TEST(Behavior, Task)
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
   b->call<void>("loadObjects", true);
-  b->call<void>("setTransitions", true);
+  b->call<void>("setTransitions", true, qi::MetaCallType_Auto);
   std::vector<std::string> store;
   qi::SignalLink l1 =  b->connect("onTaskError",   (boost::function<void(const std::string&, const std::string&)>)boost::bind(&pushError, boost::ref(store), _1, _2));
   qi::SignalLink l2 = b->connect("onTaskRunning", (boost::function<void(const std::string&, bool)>)boost::bind(&pushState, boost::ref(store), _1, _2));
@@ -537,7 +538,7 @@ TEST(Behavior, TaskCall)
   std::cerr << "INPUT: " << behavior << std::endl;
   b->call<void>("loadString", behavior);
   b->call<void>("loadObjects", true);
-  b->call<void>("setTransitions", true);
+  b->call<void>("setTransitions", true, qi::MetaCallType_Auto);
   std::vector<std::string> store;
   qi::SignalLink l1 =  b->connect("onTaskError",   (boost::function<void(const std::string&, const std::string&)>)boost::bind(&pushError, boost::ref(store), _1, _2));
   qi::SignalLink l2 = b->connect("onTaskRunning", (boost::function<void(const std::string&, bool)>)boost::bind(&pushState, boost::ref(store), _1, _2));
