@@ -14,6 +14,10 @@
 #include <qitype/anyvalue.hpp>
 #include <qicore-compat/model/contentmodel.hpp>
 
+#ifdef interface
+  #undef interface
+#endif
+
 namespace qi {
   class BoxInstanceModelPrivate;
   class BoxInterfaceModel;

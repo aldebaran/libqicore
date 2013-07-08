@@ -10,6 +10,10 @@
 #include <qicore/api.hpp>
 #include <qitype/anyvalue.hpp>
 
+#ifdef interface
+  #undef interface
+#endif
+
 namespace qi {
 
   struct QICORE_API BehaviorModel
