@@ -10,6 +10,6 @@
 
 #include <qi/macro.hpp>
 
-#  define QICORECOMPAT_API QI_LIB_API(qicore-compat)
+#  define QICORECOMPAT_API QI_LIB_API(qicore_compat)
 
 #endif  /* !QICORECOMPAT_API_H_ */

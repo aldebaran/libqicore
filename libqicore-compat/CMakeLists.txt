@@ -34,7 +34,7 @@ set(PUBLIC_HEADERS
 
 qi_install_header(${PUBLIC_HEADERS})
 
-qi_create_lib(qicore-compat SHARED SRC
+qi_create_lib(qicore_compat SHARED SRC
   ${PUBLIC_HEADERS}
   src/timeline_p.hpp
   src/timeline.cpp
@@ -100,8 +100,8 @@ qi_create_lib(qicore-compat SHARED SRC
   src/behaviorexecuter.cpp
   src/behaviorexecuter_p.hpp)
 
-qi_use_lib(qicore-compat QI QICORE ALSERIAL ALMATHINTERNAL ALPROXIES BOOST_PYTHON)
-qi_stage_lib(qicore-compat)
+qi_use_lib(qicore_compat QI QICORE ALSERIAL ALMATHINTERNAL ALPROXIES BOOST_PYTHON)
+qi_stage_lib(qicore_compat)
 
 add_subdirectory("tests")
 add_subdirectory("bin")

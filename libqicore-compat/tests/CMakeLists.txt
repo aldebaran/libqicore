@@ -3,15 +3,15 @@
 cmake_minimum_required(VERSION 2.8)
 
 qi_create_gtest(test_timeline SRC test_timeline.cpp
-                DEPENDS QICORE-COMPAT ALCOMMON ALLAUNCHER
+                DEPENDS QICORE_COMPAT ALCOMMON ALLAUNCHER
                 ARGUMENTS "${CMAKE_CURRENT_SOURCE_DIR}/behaviors/timeline/behavior.xar")
 
-qi_create_gtest(test_statemachine SRC test_statemachine.cpp DEPENDS qicore-compat)
+qi_create_gtest(test_statemachine SRC test_statemachine.cpp DEPENDS qicore_compat)
 
 qi_create_gtest(test_xmlparser SRC test_xmlparser.cpp
-                DEPENDS qicore-compat
+                DEPENDS qicore_compat
                 ARGUMENTS "${CMAKE_CURRENT_SOURCE_DIR}/behaviors/xmlparser")
 
 qi_create_gtest(test_behaviorexecuter SRC test_behaviorexecuter.cpp
-                DEPENDS QICORE-COMPAT ALLAUNCHER
+                DEPENDS QICORE_COMPAT ALLAUNCHER
                 ARGUMENTS "${CMAKE_CURRENT_SOURCE_DIR}/behaviors/pythonregister")
