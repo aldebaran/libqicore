@@ -14,8 +14,8 @@
 #include <qi/path.hpp>
 #include <qitype/objectfactory.hpp>
 
-#include <qicore-compat/model/boxinstancemodel.hpp>
 #include <qicore-compat/model/boxinterfacemodel.hpp>
+#include <qicore-compat/model/boxinstancemodel.hpp>
 #include <qicore-compat/model/contentmodel.hpp>
 #include <qicore-compat/model/contentsmodel.hpp>
 #include <qicore-compat/model/parametermodel.hpp>
