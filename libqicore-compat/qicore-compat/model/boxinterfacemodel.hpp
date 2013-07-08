@@ -29,6 +29,9 @@ namespace qi
   class QICORECOMPAT_API BoxInterfaceModel
   {
   public:
+    typedef std::map<int, boost::shared_ptr<InputModel> > InputModelMap;
+    typedef std::map<int, boost::shared_ptr<OutputModel> > OutputModelMap;
+
     BoxInterfaceModel(const std::string &path,
                       const std::string &uuid = "",
                       const std::string &boxVersion = "",
@@ -39,8 +42,8 @@ namespace qi
                       const std::list<boost::shared_ptr<Bitmap> > &bitmaps = std::list<boost::shared_ptr<Bitmap> >(),
                       const std::list<boost::shared_ptr<ResourceModel> > &resources = std::list<boost::shared_ptr<ResourceModel> >(),
                       const std::list<boost::shared_ptr<ParameterModel> > &parameters = std::list<boost::shared_ptr<ParameterModel> >(),
-                      const std::map<int, boost::shared_ptr<InputModel> > &inputs = std::map<int, boost::shared_ptr<InputModel> >(),
-                      const std::map<int, boost::shared_ptr<OutputModel> > &outputs = std::map<int, boost::shared_ptr<OutputModel> >(),
+                      const InputModelMap &inputs = InputModelMap(),
+                      const OutputModelMap &outputs = OutputModelMap(),
                       const boost::shared_ptr<ContentsModel> &contents   = boost::shared_ptr<ContentsModel>()
         );
 

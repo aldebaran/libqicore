@@ -20,15 +20,18 @@ namespace qi {
   class BoxInstanceModel;
   class LinkModel;
 
+
   class QICORECOMPAT_API FlowDiagramModel
   {
   public:
+    typedef std::map<int, boost::shared_ptr<BoxInstanceModel> > BoxInstanceModelMap;
+
     FlowDiagramModel(const std::string &path = "",
                      boost::shared_ptr<BoxInstanceModel> parent = boost::shared_ptr<BoxInstanceModel>(),
                      float scale = 1.0,
                      const std::string &formatVersion = "4",
                      const std::list<boost::shared_ptr<LinkModel> > &links = std::list<boost::shared_ptr<LinkModel> >(),
-                     const std::map<int, boost::shared_ptr<BoxInstanceModel> > &boxsInstance = std::map<int, boost::shared_ptr<BoxInstanceModel> >());
+                     const BoxInstanceModelMap &boxsInstance = BoxInstanceModelMap());
 
     virtual ~FlowDiagramModel();
 
