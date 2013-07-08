@@ -12,7 +12,7 @@ void ping()
   while (true)
   {
     qiLogInfo("test.dump") << "ping";
-    ::usleep(900000);
+    qi::os::msleep(900);
   }
 }
 
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
   LogListenerProxyPtr listener = logger->getListener();
   assert(listener);
   listener->onMessage.connect(&onMessage2);
-  listener->setVerbosity(::qi::log::info);
+  listener->setVerbosity(::qi::LogLevel_Info);
   //listener->asObject()->connect("onMessage", &onMessage);
   registerToLogger(logger);
   boost::thread t (&ping);

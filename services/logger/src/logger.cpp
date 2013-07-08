@@ -34,26 +34,26 @@ do {                                      \
 */
 
 
-bool set_verbosity(LogListener* ll,  qi::log::LogLevel& level,
-  const qi::log::LogLevel& newvalue)
+bool set_verbosity(LogListener* ll,  qi::LogLevel& level,
+  const qi::LogLevel& newvalue)
 {
   DEBUG("LL verbosity prop " << level);
-  qi::log::LogLevel old = level;
+  qi::LogLevel old = level;
   level = newvalue;
   ll->_logger.recomputeVerbosities(old, newvalue);
   return true;
 }
 
 LogListener::LogListener(Logger& l)
- : verbosity(qi::Property<qi::log::LogLevel>::Getter(),
+ : verbosity(qi::Property<qi::LogLevel>::Getter(),
              boost::bind(&set_verbosity, this, _1, _2))
  , _logger(l)
  {
-   verbosity.set(qi::log::debug);
+   verbosity.set(qi::LogLevel_Debug);
    onMessage.setCallType(qi::MetaCallType_Queued);
  }
 
-void LogListener::setVerbosity(qi::log::LogLevel level)
+void LogListener::setVerbosity(qi::LogLevel level)
 {
   DEBUG("LL verbosity " << level);
   verbosity.set(level);
@@ -65,7 +65,7 @@ void LogListener::clearFilters()
   _logger.recomputeCategories();
 }
 
-void LogListener::setCategory(const std::string& cat, qi::log::LogLevel level)
+void LogListener::setCategory(const std::string& cat, qi::LogLevel level)
 {
   _filters[cat] = level;
   _logger.recomputeCategories();
@@ -99,7 +99,7 @@ LoggerPtr make_LoggerPtr()
 }
 
 Logger::Logger()
-: _maxLevel(qi::log::silent)
+: _maxLevel(qi::LogLevel_Silent)
 {
   DEBUG("Logger instanciating");
 }
@@ -118,11 +118,11 @@ LogListenerPtr Logger::getListener()
   return ptr;
 }
 
-void Logger::recomputeVerbosities(qi::log::LogLevel from, qi::log::LogLevel to)
+void Logger::recomputeVerbosities(qi::LogLevel from, qi::LogLevel to)
 {
   if (_maxLevel >= from && _maxLevel >= to)
     return;
-  qi::log::LogLevel newMax = qi::log::silent;
+  qi::LogLevel newMax = qi::LogLevel_Silent;
   for (unsigned i=0; i< _listeners.size(); ++i)
     newMax = std::max(newMax, _listeners[i]->verbosity.get());
   DEBUG("recomputed verbosity " << newMax);

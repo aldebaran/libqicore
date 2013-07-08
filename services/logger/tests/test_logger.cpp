@@ -74,10 +74,10 @@ TEST(Logger, test)
   registerToLogger(LoggerProxyPtr(new LoggerProxy(s2.service(loggerName))));
   
   listener->clearFilters();
-  listener->setCategory("qi*", silent);
-  listener->setCategory("qi.ThreadPool", silent);
-  listener->setCategory("foo", debug);
-  listener->setVerbosity(qi::log::info);
+  listener->setCategory("qi*", qi::LogLevel_Silent);
+  listener->setCategory("qi.ThreadPool", qi::LogLevel_Silent);
+  listener->setCategory("foo", qi::LogLevel_Debug);
+  listener->setVerbosity(qi::LogLevel_Info);
   listener->onMessage.connect(&onMessage);
   qi::os::msleep(200);
   messagesCount = 0;

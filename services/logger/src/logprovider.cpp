@@ -15,7 +15,6 @@
 
 qiLogCategory("logger.provider");
 
-using namespace qi::log;
 
 static LogProviderPtr instance;
 
@@ -41,22 +40,22 @@ void registerToLogger(LoggerProxyPtr logger)
 LogProvider::LogProvider(LoggerProxyPtr logger)
 : _logger(logger)
 {
-  _subscriber = addLogHandler("remoteLogger",
+  _subscriber = qi::log::addLogHandler("remoteLogger",
     boost::bind(&LogProvider::log, this, _1, _2, _3, _4, _5, _6, _7));
   DEBUG("Logprovider subscribed " << _subscriber);
   // Safety: avoid infinite loop
-  ::qi::log::setCategory(_subscriber, "qimessaging.*", silent);
-  ::qi::log::setCategory(_subscriber, "qitype.*", silent);
+  ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
+  ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, _subscriber);
 }
 
 LogProvider::~LogProvider()
 {
   DEBUG("~LogProvider");
-  removeLogHandler("remoteLogger");
+  qi::log::removeLogHandler("remoteLogger");
 }
 
 
-void LogProvider::log(qi::log::LogLevel level, qi::os::timeval tv, const char* file,
+void LogProvider::log(qi::LogLevel level, qi::os::timeval tv, const char* file,
                       const char* function, const char* category, const char* message, int line)
 {
   DEBUG("logprovider log callback");
@@ -76,25 +75,25 @@ void LogProvider::log(qi::log::LogLevel level, qi::os::timeval tv, const char* f
   DEBUG("LogProvider log done");
 }
 
-void LogProvider::setVerbosity(qi::log::LogLevel level)
+void LogProvider::setVerbosity(qi::LogLevel level)
 {
   DEBUG("LogProvider verb " << level);
-  ::qi::log::setVerbosity(_subscriber, level);
+  ::qi::log::setVerbosity(level, _subscriber);
 }
 
-void LogProvider::setCategory(const std::string& cat, qi::log::LogLevel level)
+void LogProvider::setCategory(const std::string& cat, qi::LogLevel level)
 {
   _setCategories.insert(cat);
-  ::qi::log::setCategory(_subscriber, cat, level);
+  ::qi::log::setCategory(cat, level, _subscriber);
 }
 
-void LogProvider::clearAndSet(const std::vector<std::pair<std::string, LogLevel> >& data)
+void LogProvider::clearAndSet(const std::vector<std::pair<std::string, qi::LogLevel> >& data)
 {
   for (std::set<std::string>::iterator it = _setCategories.begin(); it != _setCategories.end(); ++it)
-    ::qi::log::setCategory(_subscriber, *it, debug);
+    ::qi::log::setCategory(*it, qi::LogLevel_Debug, _subscriber);
   _setCategories.clear();
   for (unsigned i=0; i< data.size(); ++i)
     setCategory(data[i].first, data[i].second);
-  ::qi::log::setCategory(_subscriber, "qimessaging.*", silent);
+  ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
 }
 

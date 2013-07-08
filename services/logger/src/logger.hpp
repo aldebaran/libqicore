@@ -5,12 +5,12 @@
 #include <qitype/anyobject.hpp>
 #include <boost/shared_ptr.hpp>
 
-QI_TYPE_ENUM_REGISTER(qi::log::LogLevel)
+QI_TYPE_ENUM_REGISTER(qi::LogLevel)
 
 struct Message
 {
   std::string source;
-  qi::log::LogLevel level;
+  qi::LogLevel level;
   qi::os::timeval timestamp;
   std::string category;
   std::string location;

@@ -20,11 +20,11 @@ class LogProvider
 public:
   LogProvider(LoggerProxyPtr logger);
   ~LogProvider();
-  void setVerbosity(qi::log::LogLevel level);
-  void setCategory(const std::string& cat, qi::log::LogLevel level);
-  void clearAndSet(const std::vector<std::pair<std::string, qi::log::LogLevel> >& data);
+  void setVerbosity(qi::LogLevel level);
+  void setCategory(const std::string& cat, qi::LogLevel level);
+  void clearAndSet(const std::vector<std::pair<std::string, qi::LogLevel> >& data);
 private:
-  void log(qi::log::LogLevel level, qi::os::timeval tv, const char* file, const char* function, const char* category, const char* message, int line);
+  void log(qi::LogLevel level, qi::os::timeval tv, const char* file, const char* function, const char* category, const char* message, int line);
   std::set<std::string> _setCategories;
   LoggerProxyPtr  _logger;
   qi::log::Subscriber _subscriber;
@@ -39,20 +39,20 @@ class LogListener
 {
 public:
   explicit LogListener(Logger& l);
-  void setVerbosity(qi::log::LogLevel level);
-  void setCategory(const std::string& cat, qi::log::LogLevel level);
+  void setVerbosity(qi::LogLevel level);
+  void setCategory(const std::string& cat, qi::LogLevel level);
   /// Remove all filters set by setCategory
   void clearFilters();
   qi::Signal<Message> onMessage;
-  qi::Property<qi::log::LogLevel> verbosity;
+  qi::Property<qi::LogLevel> verbosity;
 private:
   void log(const Message& m);
-  typedef std::map<std::string, qi::log::LogLevel> FilterMap;
+  typedef std::map<std::string, qi::LogLevel> FilterMap;
   FilterMap _filters;
   Logger& _logger;
   friend class Logger;
-  friend bool set_verbosity(LogListener* ll,  qi::log::LogLevel& level,
-  const qi::log::LogLevel& newvalue);
+  friend bool set_verbosity(LogListener* ll,  qi::LogLevel& level,
+  const qi::LogLevel& newvalue);
 };
 
 QI_TYPE_NOT_CLONABLE(LogListener);
@@ -70,15 +70,15 @@ public:
   void addProvider(LogProviderProxyPtr provider);
 private:
   void recomputeCategories();
-  void recomputeVerbosities(qi::log::LogLevel from, qi::log::LogLevel to);
-  qi::log::LogLevel _maxLevel;
-  std::vector<std::pair<std::string, qi::log::LogLevel> > _filters;
+  void recomputeVerbosities(qi::LogLevel from, qi::LogLevel to);
+  qi::LogLevel _maxLevel;
+  std::vector<std::pair<std::string, qi::LogLevel> > _filters;
   std::vector<LogProviderProxyPtr> _providers;
   /// FIXME keep a week-ptr
   std::vector<LogListenerPtr> _listeners;
   friend class LogListener;
-  friend bool set_verbosity(LogListener* ll,  qi::log::LogLevel& level,
-  const qi::log::LogLevel& newvalue);
+  friend bool set_verbosity(LogListener* ll,  qi::LogLevel& level,
+  const qi::LogLevel& newvalue);
 };
 #endif
 

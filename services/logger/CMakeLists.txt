@@ -12,7 +12,7 @@ if(_doxygen AND NOT QI_NO_DOXYGEN)
     SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/logger_service.hpp
     CLASSES LogListener Logger LogProvider
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/share/idl
-    TYPE_MAP qi::log::LogLevel=i<qi::log::LogLevel>
+    TYPE_MAP qi::LogLevel=i<qi::LogLevel>
   )
   set(IDL_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 else()
