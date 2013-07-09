@@ -86,6 +86,7 @@ TEST(Logger, test)
   ASSERT_TRUE(waitMessage(1, true));
   qiLogWarning("foo") << "bar";
   ASSERT_TRUE(waitMessage(2, true));
+  listener.reset();
 }
 
 
