@@ -74,8 +74,8 @@ TEST(Logger, test)
   registerToLogger(LoggerProxyPtr(new LoggerProxy(s2.service(loggerName))));
   
   listener->clearFilters();
-  listener->setCategory("qi*", qi::LogLevel_Silent);
-  listener->setCategory("qi.ThreadPool", qi::LogLevel_Silent);
+  //listener->setCategory("qi*", qi::LogLevel_Silent);
+  //listener->setCategory("qi.ThreadPool", qi::LogLevel_Silent);
   listener->setCategory("foo", qi::LogLevel_Debug);
   listener->setVerbosity(qi::LogLevel_Info);
   listener->onMessage.connect(&onMessage);
