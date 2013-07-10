@@ -1,9 +1,9 @@
 #ifndef QICORE_LOGGER_HPP
-#define QICORE_LOGGER_HPP
+# define QICORE_LOGGER_HPP
 
-#include <qi/log.hpp>
-#include <qitype/anyobject.hpp>
-#include <boost/shared_ptr.hpp>
+# include <qi/log.hpp>
+# include <qitype/anyobject.hpp>
+# include <boost/shared_ptr.hpp>
 
 QI_TYPE_ENUM_REGISTER(qi::LogLevel)
 
@@ -25,6 +25,4 @@ typedef boost::shared_ptr<LoggerProxy> LoggerProxyPtr;
 // Register local logger to service
 void registerToLogger(LoggerProxyPtr logger);
 
-
-
-#endif
+#endif // !QICORE_LOGGER_HPP

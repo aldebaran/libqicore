@@ -1,6 +1,5 @@
 #include <boost/make_shared.hpp>
 
-
 #include <src/logger.hpp>
 #include <src/logger_service.hpp>
 #include <qi/os.hpp>
@@ -8,50 +7,53 @@
 #include "logprovider_proxy.hpp"
 
 static bool debug = getenv("LOGGER_DEBUG");
-#define DEBUG(a)                          \
-do {                                      \
-  if (debug) std::cerr << a << std::endl; \
-} while(0)
+#define DEBUG(a)                                \
+  do {                                          \
+    if (debug) std::cerr << a << std::endl;     \
+  } while(0)
+
 /* We have multiple inputs: logproviders that push messages and that we
-* must configure to avoid them wasting bandwidth. They all have the same conf
-*
-* We have multiple outputs: logsubscribers on which we push messages, each
-* with its own configuration
-*
-* So we must configure all providers with the most verbose combination of
-* subscriber settings
-*
-* This is tricky with globbing.
-* a: -foo.bar  b: +foo.*  <- we must drop rule -foo.bar
-* This we can handle quite easily if we restrict globbing to terminating-star
-* a: -foo.bar b: +foo.*-foo.bar
-* Here we can keep the -foo.bar, but this is becoming tricky to track.
-* a: foo.*baz=verbose, fo*z=debug, b: f*o*z=info
-* Haha...no.
-*
-* Delegating all the work to the local logger of the service is tempting,
-* but the task is subtly different
-*/
+ * must configure to avoid them wasting bandwidth. They all have the same conf
+ *
+ * We have multiple outputs: logsubscribers on which we push messages, each
+ * with its own configuration
+ *
+ * So we must configure all providers with the most verbose combination of
+ * subscriber settings
+ *
+ * This is tricky with globbing.
+ * a: -foo.bar  b: +foo.*  <- we must drop rule -foo.bar
+ * This we can handle quite easily if we restrict globbing to terminating-star
+ * a: -foo.bar b: +foo.*-foo.bar
+ * Here we can keep the -foo.bar, but this is becoming tricky to track.
+ * a: foo.*baz=verbose, fo*z=debug, b: f*o*z=info
+ * Haha...no.
+ *
+ * Delegating all the work to the local logger of the service is tempting,
+ * but the task is subtly different
+ */
 
-
-bool set_verbosity(LogListener* ll,  qi::LogLevel& level,
-  const qi::LogLevel& newvalue)
+bool set_verbosity(LogListener* ll,
+                   qi::LogLevel& level,
+                   const qi::LogLevel& newvalue)
 {
   DEBUG("LL verbosity prop " << level);
   qi::LogLevel old = level;
   level = newvalue;
   ll->_logger.recomputeVerbosities(old, newvalue);
+
   return true;
 }
 
+// LogListener Class
 LogListener::LogListener(Logger& l)
- : verbosity(qi::Property<qi::LogLevel>::Getter(),
-             boost::bind(&set_verbosity, this, _1, _2))
- , _logger(l)
- {
-   verbosity.set(qi::LogLevel_Debug);
-   onMessage.setCallType(qi::MetaCallType_Queued);
- }
+  : verbosity(qi::Property<qi::LogLevel>::Getter(),
+              boost::bind(&set_verbosity, this, _1, _2))
+  , _logger(l)
+{
+  verbosity.set(qi::LogLevel_Debug);
+  onMessage.setCallType(qi::MetaCallType_Queued);
+}
 
 void LogListener::setVerbosity(qi::LogLevel level)
 {
@@ -65,7 +67,8 @@ void LogListener::clearFilters()
   _logger.recomputeCategories();
 }
 
-void LogListener::setCategory(const std::string& cat, qi::LogLevel level)
+void LogListener::setCategory(const std::string& cat,
+                              qi::LogLevel level)
 {
   _filters[cat] = level;
   _logger.recomputeCategories();
@@ -76,6 +79,7 @@ void LogListener::log(const Message& msg)
   DEBUG("LL:log");
   if (msg.level > verbosity.get())
     return;
+
   // Check filters.
   // map ordering will give us more generic globbing filter first
   // so we must not stop on first negative filter, but go on
@@ -85,21 +89,27 @@ void LogListener::log(const Message& msg)
   {
     const std::string& f = it->first;
     if (f == msg.category ||
-      ( f.find('*') != f.npos && qi::os::fnmatch(f, msg.category)))
+        (f.find('*') != f.npos && qi::os::fnmatch(f, msg.category)))
+    {
       pass = msg.level <= it->second;
+    }
   }
+
   DEBUG("LL:log filter " << pass);
   if (pass)
     onMessage(msg);
 }
+
+
 
 LoggerPtr make_LoggerPtr()
 {
   return boost::make_shared<Logger>();
 }
 
+// Logger Class
 Logger::Logger()
-: _maxLevel(qi::LogLevel_Silent)
+  : _maxLevel(qi::LogLevel_Silent)
 {
   DEBUG("Logger instanciating");
 }
@@ -107,30 +117,42 @@ Logger::Logger()
 void Logger::log(const Message& msg)
 {
   DEBUG("Logger::log " << _listeners.size());
-  for (unsigned i=0; i<_listeners.size(); ++i)
+  for (unsigned i = 0; i < _listeners.size(); ++i)
+  {
     _listeners[i]->log(msg);
+  }
 }
 
 LogListenerPtr Logger::getListener()
 {
   LogListenerPtr ptr = boost::make_shared<LogListener>(boost::ref(*this));
   _listeners.push_back(ptr);
+
   return ptr;
 }
 
-void Logger::recomputeVerbosities(qi::LogLevel from, qi::LogLevel to)
+void Logger::recomputeVerbosities(qi::LogLevel from,
+                                  qi::LogLevel to)
 {
   if (_maxLevel >= from && _maxLevel >= to)
+  {
     return;
+  }
+
   qi::LogLevel newMax = qi::LogLevel_Silent;
-  for (unsigned i=0; i< _listeners.size(); ++i)
+  for (unsigned i = 0; i < _listeners.size(); ++i)
+  {
     newMax = std::max(newMax, _listeners[i]->verbosity.get());
+  }
+
   DEBUG("recomputed verbosity " << newMax);
   if (newMax != _maxLevel)
   {
     _maxLevel = newMax;
-    for (unsigned i=0; i< _providers.size(); ++i)
+    for (unsigned i = 0; i < _providers.size(); ++i)
+    {
       _providers[i]->setVerbosity(_maxLevel);
+    }
   }
 }
 
@@ -143,7 +165,8 @@ void Logger::addProvider(LogProviderProxyPtr provider)
 }
 
 void Logger::recomputeCategories()
-{ // Soon you will know why this function is at the end of the source file...
+{
+  // Soon you will know why this function is at the end of the source file...
   // Merge requests in one big map, keeping most verbose, ignoring globbing
   // Then, make a second pass that removes rules that overrides others and reduce verbosity
   if (_listeners.size() == 1)
@@ -151,28 +174,38 @@ void Logger::recomputeCategories()
     // easy case
     _filters.clear();
     _filters.insert(_filters.begin(), _listeners.front()->_filters.begin(), _listeners.front()->_filters.end());
-    for (unsigned i=0; i< _providers.size(); ++i)
+    for (unsigned i = 0; i < _providers.size(); ++i)
+    {
       _providers[i]->clearAndSet(_filters).async();
+    }
     return;
   }
+
   _filters.clear();
   typedef LogListener::FilterMap FilterMap;
   FilterMap map;
-  for (unsigned i=0; i< _listeners.size(); ++i)
+  for (unsigned i = 0; i < _listeners.size(); ++i)
   {
     for (FilterMap::iterator it = _listeners[i]->_filters.begin();
-      it != _listeners[i]->_filters.end(); ++i)
+         it != _listeners[i]->_filters.end();
+         ++i)
     {
       // If we find a glob that has an other pattern than 'foo*', bailout
       size_t star = it->first.find('*');
-      if (star != it->first.npos && star < it->first.length()-1)
+      if (star != it->first.npos && star < it->first.length() - 1)
+      {
         goto bailout;
+      }
 
       FilterMap::iterator found = map.find(it->first);
       if (found == map.end())
+      {
         map[it->first] = it->second;
+      }
       else
+      {
         found->second = std::max(found->second, it->second);
+      }
     }
   }
 
@@ -187,13 +220,14 @@ void Logger::recomputeCategories()
     for (FilterMap::iterator it2 = map.begin(); it2 != it; ++it2)
     {
       if (it2->first.find('*') != it2->first.npos
-        && qi::os::fnmatch(it2->first, it->first)
-        && it2->second > it->second)
+          && qi::os::fnmatch(it2->first, it->first)
+          && it2->second > it->second)
       {
         remove = true;
         break;
       }
     }
+
     if (remove)
     {
       FilterMap::iterator tmp = it;
@@ -202,13 +236,17 @@ void Logger::recomputeCategories()
       it = tmp;
     }
     else
+    {
       ++it;
+    }
   }
-  _filters.insert(_filters.end(), map.begin(), map.end());
-bailout:
-  for (unsigned i=0; i< _providers.size(); ++i)
-    _providers[i]->clearAndSet(_filters).async();
-}
 
+  _filters.insert(_filters.end(), map.begin(), map.end());
+ bailout:
+  for (unsigned i = 0; i < _providers.size(); ++i)
+  {
+    _providers[i]->clearAndSet(_filters).async();
+  }
+}
 
 #include "logger_bind.hpp"
