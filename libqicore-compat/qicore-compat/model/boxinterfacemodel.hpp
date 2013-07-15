@@ -14,6 +14,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <qicore-compat/api.hpp>
+#include <qicore-compat/model/inputmodel.hpp>
 
 namespace qi
 {
@@ -22,7 +23,6 @@ namespace qi
   class ResourceModel;
   class ParameterModel;
   class OutputModel;
-  class InputModel;
   class ContentsModel;
   class ContentModel;
 
@@ -81,12 +81,13 @@ namespace qi
     bool loadFromFile();
 
     bool hasResource() const;
-    bool hasAnimation() const;
+    bool hasTimeline() const;
     bool hasFlowDiagram() const;
 
     boost::shared_ptr<ParameterModel> findParameter(unsigned int id) const;
     std::string findSignal(int id) const;
     std::string findMethod(int id) const;
+    std::string findInput(InputModel::InputNature nature) const;
 
   private:
     QI_DISALLOW_COPY_AND_ASSIGN(BoxInterfaceModel);

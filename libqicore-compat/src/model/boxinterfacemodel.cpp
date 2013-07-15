@@ -220,9 +220,10 @@ namespace qi {
     return _p->_resources.size() > 0;
   }
 
-  bool BoxInterfaceModel::hasAnimation() const
+  bool BoxInterfaceModel::hasTimeline() const
   {
-    return _p->_contents->findContent(ContentModel::ContentType_Animation);
+    return _p->_contents->findContent(ContentModel::ContentType_Animation) ||
+           _p->_contents->findContent(ContentModel::ContentType_BehaviorSequence);
   }
 
   bool BoxInterfaceModel::hasFlowDiagram() const
@@ -427,5 +428,28 @@ namespace qi {
     return std::string();
   }
 
+  std::string BoxInterfaceModel::findInput(InputModel::InputNature nature) const
+  {
+    const std::map<int, InputModelPtr> &inputs = _p->_inputs;
 
+    int inputid = -1;
+    float best = 0.0;
+    foreach(const InputModelMap::value_type &input, inputs)
+    {
+      const qi::MetaMethod &method = input.second->metaMethod();
+      const qi::Signature &sigInput = method.parametersSignature();
+      float score = sigInput.isConvertibleTo(qi::Signature("()"));
+
+      if(input.second->nature() == nature && score > best)
+      {
+        best = score;
+        inputid = input.first;
+      }
+    }
+
+    if(inputid == -1)
+      return std::string();
+
+    return findMethod(inputid);
+  }
 }

@@ -34,7 +34,7 @@ namespace qi
     InputModelMap inputs = interface->inputs();
     std::stringstream input;
 
-    if(interface->hasAnimation() || interface->hasFlowDiagram())
+    if(interface->hasTimeline() || interface->hasFlowDiagram())
     {
       foreach(InputModelMap::value_type &inp, inputs)
       {
@@ -135,7 +135,7 @@ namespace qi
       }
     }
 
-    if(interface->hasAnimation() || interface->hasResource())
+    if(interface->hasTimeline() || interface->hasResource())
       if(inp->nature() == InputModel::InputNature_OnStart || inp->nature() == InputModel::InputNature_OnStop)
         input << "    self._lastCommand" << " = "
               << (inp->nature() == InputModel::InputNature_OnStart ? 1 : 2)
@@ -151,9 +151,9 @@ namespace qi
     input << "      self.releaseResource()\n"
           << "      return\n";
 
-    if(interface->hasAnimation() || interface->hasFlowDiagram())
+    if(interface->hasTimeline() || interface->hasFlowDiagram())
     {
-      input << specialInputNatureAction(inp->nature(), interface->hasAnimation(), interface->hasResource())
+      input << specialInputNatureAction(inp->nature(), interface->hasTimeline(), interface->hasResource())
             << "    self.stimulateIO('" << inp->metaMethod().name() << "', p)\n";
     }
     return input.str();
@@ -170,7 +170,7 @@ namespace qi
       if(hasAnimation)
       {
         specialAction << "      if(self._lastCommand in [0, 1]):\n"
-                      << "        self.getTimeline().play()\n";
+                      << "         self.getTimeline().play()\n";
       }
       break;
 
@@ -222,10 +222,10 @@ namespace qi
       if(interface->hasResource())
         output << "      self.releaseResource()\n";
 
-      if(interface->hasAnimation())
+      if(interface->hasTimeline())
         output << "      self.getTimeline().stop()\n";
 
-      if(interface->hasAnimation() || interface->hasResource())
+      if(interface->hasTimeline() || interface->hasResource())
         output << "      self._lastCommand = " << out->nature() << "\n";
 
       if(!output.str().empty())
@@ -260,7 +260,7 @@ namespace qi
                << "        self.onResourceLost(None)\n"
                << "      expect:\n"
                << "        bExists = False\n";
-      if(interface->hasAnimation())
+      if(interface->hasTimeline())
         resource << "    self.getTimeline.stop()\n";
 
       resource << "    self.releaseResource()\n"
@@ -275,14 +275,14 @@ namespace qi
       break;
 
     case ResourceModel::LockType_PauseOnDemand://BETA
-      if(interface->hasAnimation())
+      if(interface->hasTimeline())
         resource << "    self.getTimeline.pause()\n";
 
       resource << "    self.releaseResource()\n"
                << "    self.waitResourceFree()\n"
                << "    self.waitResources()\n";
 
-      if(interface->hasAnimation())
+      if(interface->hasTimeline())
         resource << "    self.getTimeline.play()\n";
       break;
 
@@ -317,7 +317,7 @@ namespace qi
                    << initParameter(instance) << "\n"
                    << initInput(instance) << "\n";
 
-    if(interface->hasAnimation())
+    if(interface->hasTimeline())
     {
       qi::AnyReference animation = instance->content(ContentModel::ContentType_Animation);
       generatedClass << "    self.timeline = Timeline(" << animation.ptr<AnimationModel>()->fps() << ")\n"
@@ -360,7 +360,7 @@ namespace qi
     }
 
     // deprecated method since 1.14 to control the associated timeline
-    if(interface->hasAnimation())
+    if(interface->hasTimeline())
     {
       generatedClass << "\n"
                      << "  def playTimeline(self):\n"
@@ -387,7 +387,7 @@ namespace qi
                      << "    return self.timeline\n";
     }
 
-    if(instance->parent() && instance->parent()->interface()->hasAnimation())
+    if(instance->parent() && instance->parent()->interface()->hasTimeline())
     {
       generatedClass << "\n"
                      << "  def setTimelineParent(self, timeline, frames):\n"
