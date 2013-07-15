@@ -12,19 +12,36 @@
 #include <qitype/objectfactory.hpp>
 
 qi::Session* session;
-std::string dir;
-
-TEST(BehaviorExecuter, ExecuteBehavior)
+std::string behaviorWithoutTimeline;
+std::string behaviorWithTimeline;
+/*
+TEST(BehaviorExecuter, ExecuteBehaviorWithoutTimeline)
 {
-  qi::compat::BehaviorExecuter exec(dir, *session, false);
+  qi::compat::BehaviorExecuter exec(behaviorWithoutTimeline, *session, false);
 
   ASSERT_TRUE(exec.load());
   exec.execute();
 }
 
+TEST(BehaviorExecuter, ExecuteDebugWithoutTimeline)
+{
+  qi::compat::BehaviorExecuter exec(behaviorWithoutTimeline, *session, true);
+
+  ASSERT_TRUE(exec.load());
+  exec.execute();
+}
+*//*
+TEST(BehaviorExecuter, ExecuteBehavior)
+{
+  qi::compat::BehaviorExecuter exec(behaviorWithTimeline, *session, false);
+
+  ASSERT_TRUE(exec.load());
+  exec.execute();
+}*/
+
 TEST(BehaviorExecuter, ExecuteDebug)
 {
-  qi::compat::BehaviorExecuter exec(dir, *session, true);
+  qi::compat::BehaviorExecuter exec(behaviorWithTimeline, *session, true);
 
   ASSERT_TRUE(exec.load());
   exec.execute();
@@ -35,9 +52,10 @@ int main(int argc, char **argv)
   qi::Application app(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
 
-  if(argc < 2)
+  if(argc < 3)
   {
-    std::cerr << "Usage: test_behaviorexecuter /path/to/behavior/directory"
+    std::cerr << "Usage: test_behaviorexecuter /path/to/behavior/directory/without/timeline "
+              << "/path/to/behavior/directory/with/timeline"
               << std::endl;
 
     return 2;
@@ -57,7 +75,10 @@ int main(int argc, char **argv)
     AL::Launcher launcher(broker);
     launcher.loadLibrary("albase");
     launcher.loadLibrary("alresourcemanager");
+    launcher.loadLibrary("motion");
     launcher.loadLibrary("audioout");
+    launcher.loadLibrary("robotmodel");
+    launcher.loadLibrary("leds");
     session = &(broker->session());
     session->registerService("BehaviorService", qi::createObject("BehaviorService"));
   }
@@ -69,8 +90,8 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  dir = std::string(argv[1]);
-
+  behaviorWithoutTimeline = std::string(argv[1]);
+  behaviorWithTimeline = std::string(argv[2]);
   return RUN_ALL_TESTS();
 }
 

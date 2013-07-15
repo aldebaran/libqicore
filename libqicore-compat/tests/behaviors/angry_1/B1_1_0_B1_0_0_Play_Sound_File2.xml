@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<BoxInterface uuid="7c701476-ae7c-4d20-8eda-b93db3600544" box_version="1.0.0.0" name="Play Sound File" tooltip="Play the sound."  format_version="4" >
+    <Bitmap path="media/images/box/interaction/play_music.png" />
+    <Input name="onLoad" signature="()" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" />
+    <Input name="onStart" signature="(s)" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" />
+    <Input name="onStop" signature="()" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" />
+    <Output name="onStopped" signature="()" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" />
+    <Parameter name="Begin position (s)" inherits_from_parent="1" type="d" default_value="0" min="0" max="600" tooltip="Position in seconds where the playing must start." id="5" />
+    <Parameter name="Volume (%)" inherits_from_parent="1" type="i" default_value="100" min="0" max="100" tooltip="Volume the file is played with." id="6" />
+    <Parameter name="Panorama" inherits_from_parent="1" type="d" default_value="0" min="-1" max="1" tooltip="Value which determines if the sound is played more on NAO&apos;s left or right.&#x0A;You can particularly set it to:&#x0A;- -1 to play only on the left loudspeaker.&#x0A;- 0 to play on both loudspeakers.&#x0A;- 1 to play only on the right loudspeaker." id="7" />
+    <Parameter name="Play in loop" inherits_from_parent="1" type="b" default_value="0" tooltip="This parameter allows to play the file in loop. The playing will start each time at&#x0A;the beginning of the file." id="8" />
+    <Contents>
+        <Content type="0" path="B1_1_0_B1_0_0_Play_Sound_File2.py" checksum="" />
+    </Contents>
+</BoxInterface>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<FlowDiagram scale="100" format_version="4" >
+    <BoxInstance name="Light_AngryEyes" id="1" x="155" y="130" path="B1_0_0_Light_AngryEyes1.xml" />
+    <Link inputowner="1" indexofinput="2" outputowner="0" indexofoutput="1" />
+</FlowDiagram>

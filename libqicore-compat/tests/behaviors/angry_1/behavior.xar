@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ChoregrapheProject name="/home/camille/work/platform/behaviors/naoqi/nao/animations/Sit/Emotions/Negative/Angry_1" format_version="4" >
+    <BoxInstance name="root" id="1" x="306" y="90" path="root1.xml" >
+        <ParameterValue id="5" value="100" />
+    </BoxInstance>
+</ChoregrapheProject>

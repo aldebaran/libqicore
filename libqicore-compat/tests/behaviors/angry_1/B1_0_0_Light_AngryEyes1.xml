@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<BoxInterface uuid="6d2b84f6-bfeb-440c-92d7-01e6108d7446" box_version="1.0.0.0" name="Light_AngryEyes" tooltip="Set An Animated Gaze Which Expresses Anger&#x0A;*** state: se/Leds/Light_AngryEyes/Light_AngryEyes.x ***&#x0A;*** ref box in: .//5a_release/Leds/Light_AngryEyes/Light_AngryEyes.xar ***&#x0A;*** last modification date(svn): 2009-04-17 15:49:52 +0200 ***"  format_version="4" >
+    <Bitmap path="media/images/box/interaction/LED.png" />
+    <Input name="onLoad" signature="()" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+    <Input name="onStart" signature="()" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+    <Input name="onStop" signature="()" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+    <Output name="onStopped" signature="()" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
+    <Contents>
+        <Content type="0" path="B1_0_0_Light_AngryEyes1.py" checksum="" />
+    </Contents>
+</BoxInterface>

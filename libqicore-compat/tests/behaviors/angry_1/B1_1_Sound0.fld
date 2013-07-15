@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<FlowDiagram scale="100" format_version="4" >
+    <BoxInstance name="Play Sound" id="1" x="85" y="31" path="B1_1_0_Play_Sound1.xml" >
+        <ParameterValue id="5" value="/angry2.wav" />
+        <ParameterValue id="6" value="0" />
+        <ParameterValue id="7" value="100" />
+        <ParameterValue id="8" value="0" />
+        <ParameterValue id="9" value="0" />
+    </BoxInstance>
+    <Link inputowner="1" indexofinput="2" outputowner="0" indexofoutput="1" />
+</FlowDiagram>

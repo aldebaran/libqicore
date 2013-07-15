@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<BoxInterface uuid="20519167-2225-4353-91fe-392ac185c874" box_version="1.0.0.0" name="Get File Path" tooltip="Use this box to choose a resource file in its parameters. The filepath will be sent on&#x0A;the output when the input is stimulated."  format_version="4" >
+    <Bitmap path="media/images/box/folder.png" />
+    <Input name="onLoad" signature="()" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+    <Input name="onStart" signature="()" nature="1" inner="0" tooltip="To send the filepath on the output." id="2" />
+    <Output name="onStopped" signature="(s)" nature="2" inner="0" tooltip="The filepath of the selected resource file." id="3" />
+    <Parameter name="File path" inherits_from_parent="1" type="s&lt;Resource&gt;" default_value="" tooltip="Path of the file (including its name) which is going to be sent on the box output.&#x0A;&#x0A;Note: You can click on the folder icon to browse the project resources and import&#x0A;files in the resources." id="4" />
+    <Contents>
+        <Content type="0" path="B1_1_0_B1_0_0_Get_File_Path1.py" checksum="" />
+    </Contents>
+</BoxInterface>

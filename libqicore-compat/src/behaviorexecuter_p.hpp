@@ -24,11 +24,19 @@ namespace qi
     public:
       BehaviorExecuterPrivate(const std::string &dir, qi::Session &session, bool debug);
 
-      bool loadFlowDiagram(FlowDiagramModel *diagram);
+      bool loadFlowDiagram(FlowDiagramModel *diagram, bool behaviorsequence = false, int index = 0);
+      bool loadBehaviorSequence(BehaviorSequenceModel *behaviorSequence);
       bool declaredBox(BoxInstanceModelPtr instance);
       bool declaredPythonBox(BoxInstanceModelPtr instance);
-      bool initialiseBox(BoxInstanceModelPtr instance);
-      bool initialiseFlowDiagram(FlowDiagramModel* diagram);
+      void initialiseBox(BoxInstanceModelPtr instance);
+      void initialiseFlowDiagram(FlowDiagramModel* diagram);
+      std::map<std::string, int> initialiseBehaviorSequence(BehaviorSequenceModel* seq,
+                                                            const std::string &uid);
+      void addTransition(BehaviorModel::Transition &t);
+      void connect(qi::AnyObject src,
+                   qi::AnyObject dst,
+                   const std::string &signal,
+                   const std::string &method);
 
     private:
       ChoregrapheProjectModel _project;
@@ -36,10 +44,14 @@ namespace qi
       qi::PythonBoxLoader _pythonCreator;
       qi::AnyObject _behaviorService;
       qi::AnyObject _alresourcemanager;
+      qi::AnyObject _almotion;
+      qi::AnyObject _almemory;
       boost::mutex _waiter;
       boost::condition_variable _waitcondition;
+      std::map<std::string, qi::AnyObject> _timelines;
       bool _debug;
     };
+    typedef std::map<std::string, qi::AnyObject> TimlineMap;
   }
 }
 
