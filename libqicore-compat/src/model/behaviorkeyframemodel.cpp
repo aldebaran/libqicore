@@ -78,7 +78,7 @@ namespace qi {
     if(_p->_diagram)
       return _p->_diagram;
 
-    _p->_diagram = FlowDiagramModelPtr(new FlowDiagramModel(_p->_path));
+    _p->_diagram = FlowDiagramModelPtr(new FlowDiagramModel(_p->_path, _p->_parent));
 
     if(!_p->_diagram->loadFromFile())
       _p->_diagram = FlowDiagramModelPtr();
