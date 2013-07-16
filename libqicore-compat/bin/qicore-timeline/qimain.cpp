@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 
 
   qi::Timeline timeline(memory, motion);
-  qi::AnimationModelPtr anim(new qi::AnimationModel(animation_path));
+  qi::AnimationModel*anim = new qi::AnimationModel(animation_path);
 
   if(!anim->loadFromFile())
   {
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   timeline.setAnimation(anim);
   timeline.play();
   timeline.waitForTimelineCompletion();
-
+  delete anim;
   session.close();
 
   return 0;

@@ -13,16 +13,20 @@
 #include <qi/log.hpp>
 
 #include "timeline_p.hpp"
+#include "python/pyregisterthread.hpp"
 #include <qicore-compat/timeline.hpp>
 #include <qicore-compat/model/actuatorlistmodel.hpp>
 #include <qicore-compat/model/actuatorcurvemodel.hpp>
 #include <qicore-compat/model/keymodel.hpp>
 #include <qicore-compat/model/tangentmodel.hpp>
 
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
+
 namespace qi
 {
 
-TimelinePrivate::TimelinePrivate(AnyObject memory, AnyObject motion)
+TimelinePrivate::TimelinePrivate(AnyObject memory, AnyObject motion, Timeline *timeline, PyInterpreterState *mainInterpreterState)
   : _executer(new asyncExecuter(1000 / 25)),
     _fps(0),
     _enabled(false),
@@ -34,6 +38,8 @@ TimelinePrivate::TimelinePrivate(AnyObject memory, AnyObject motion)
     _resourcesAcquisition(AnimationModel::MotionResourcesHandler_Passive),
     _methodMonitor(),
     _framesFlagsMap(),
+    _timeline(timeline),
+    _mainInterpreterState(mainInterpreterState),
     _isValid(true)
 {
   try
@@ -45,7 +51,7 @@ TimelinePrivate::TimelinePrivate(AnyObject memory, AnyObject motion)
   }
   catch (AL::ALError& e)
   {
-    qiLogError("Timeline") << "Cannot create proxy on ALMotion :" << std::endl << e.toString() << std::endl;
+    qiLogError("Timeline") << "Cannot create proxy on ALMotion :" << std::endl << e.what() << std::endl;
     _isValid = false;
   }
 }
@@ -81,7 +87,7 @@ void TimelinePrivate::killMotionOrders()
   }
   catch(AL::ALError& e)
   {
-    qiLogError("Timeline") << _name << e.toString() << std::endl;
+    qiLogError("Timeline") << _name << e.what() << std::endl;
   }
 }
 
@@ -153,7 +159,7 @@ int TimelinePrivate::getFPS() const
   return _fps;
 }
 
-void TimelinePrivate::setAnimation(boost::shared_ptr<AnimationModel> anim)
+void TimelinePrivate::setAnimation(AnimationModel* anim)
 {
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
@@ -200,18 +206,37 @@ void TimelinePrivate::setAnimation(boost::shared_ptr<AnimationModel> anim)
     _endFrame = _lastFrame;
 }
 
+void TimelinePrivate::startFlowdiagram(int index)
+{
+   PyRegisterThread pyThread(_mainInterpreterState);
+  _timeline->startFlowdiagram(index);
+}
+
+void TimelinePrivate::startFlowdiagramAsync(int index)
+{
+  qiLogDebug("qiCore.Timeline") << "Start Flowdiagram, frames : " << index;
+  boost::thread* t = new boost::thread(boost::bind(&TimelinePrivate::startFlowdiagram, this, index));
+
+  _flowdiagrams.push_back(t);
+}
+
+void TimelinePrivate::stopFlowdiagram()
+{
+  {
+  PyRegisterThread pyThread(_mainInterpreterState);
+  _timeline->stopFlowdiagram(-1);
+  }
+
+  foreach(boost::thread *t, _flowdiagrams)
+  {
+    t->join();
+    delete t;
+  }
+}
+
 bool TimelinePrivate::update(void)
 {
   boost::unique_lock<boost::recursive_mutex> _lock(_methodMonitor);
-
-  /* Send commands to the StateMachine if needed */
-  /*if (_stateMachine)
-  {
-    std::map<int, std::string>::const_iterator it = _framesFlagsMap.find(_currentFrame);
-
-    if (it != _framesFlagsMap.end())
-      _stateMachine->goToStateName(it->second);
-  }*/
 
   if (_enabled == false)
   {
@@ -219,11 +244,20 @@ bool TimelinePrivate::update(void)
     return true;
   }
 
+  /* Send commands to the Flowdiagram if needed */
+  std::map<int, std::string>::const_iterator it = _framesFlagsMap.find(_currentFrame);
+
+  //Todo launch signal in a boost::thread
+  if (it != _framesFlagsMap.end())
+    startFlowdiagramAsync(it->first);
+
+
+
   // if on the end frame
   if ( ((_endFrame >= 1) && (_currentFrame >= _endFrame))
     || (_currentFrame < _startFrame))
   {
-    updateFrameInSTM();
+    stopFlowdiagram();
     _currentFrame = _startFrame;
     killMotionOrders();
 
@@ -239,22 +273,6 @@ bool TimelinePrivate::update(void)
   if(motionWorked && _executer->isPlaying())
     ++_currentFrame;
   return true;
-}
-
-void TimelinePrivate::updateFrameInSTM()
-{
-  // set the value of the current frame for this timeline in the stm
-  if(!_name.empty())
-  {
-    try
-    {
-      _memoryProxy->raiseMicroEvent(_name, (int) _currentFrame);
-    }
-    catch(AL::ALError& e)
-    {
-      qiLogError("Timeline") << _name << " Error During STM access : Error #=" << e.toString() << std::endl;
-    }
-  }
 }
 
 bool TimelinePrivate::executeCurveMotionCommand()
@@ -274,6 +292,7 @@ bool TimelinePrivate::executeCurveMotionCommand()
 
   return isprepared;
 }
+
 
 bool TimelinePrivate::singleInterpolationCommand(int currentFrame)
 {
@@ -305,7 +324,7 @@ bool TimelinePrivate::singleInterpolationCommand(int currentFrame)
   }
   catch(const AL::ALError& e)
   {
-    qiLogError("Timeline") << _name << " Error during .postAngleInterpolationWithSpeed in motion : Error #= " << e.toString() << std::endl;
+    qiLogError("Timeline") << _name << " Error during .postAngleInterpolationWithSpeed in motion : Error #= " << e.what() << std::endl;
   }
   return true;
 }
@@ -413,7 +432,7 @@ bool TimelinePrivate::sendInterpolationCommand(const std::vector<std::string>& n
     catch(AL::ALError& e)
     {
       // do nothing, just keep reading the timeline !
-      qiLogError("Timeline") << _name << ":sendInterpolationCommand failed with the error:\n" << e.toString() << std::endl;
+      qiLogError("Timeline") << _name << ":sendInterpolationCommand failed with the error:\n" << e.what() << std::endl;
     }
   }
 
@@ -423,7 +442,7 @@ bool TimelinePrivate::sendInterpolationCommand(const std::vector<std::string>& n
   }
   catch(AL::ALError& e)
   {
-    qiLogError("Timeline") << _name << " Error during .angleInterpolationBezier in motion : Error #= " << e.toString() << std::endl;
+    qiLogError("Timeline") << _name << " Error during .angleInterpolationBezier in motion : Error #= " << e.what() << std::endl;
   }
 
   return true;
@@ -463,7 +482,7 @@ void TimelinePrivate::setName(const std::string& var)
     }
     catch(AL::ALError& e)
     {
-      qiLogError("Timeline") << _name << " Error During STM access : Error #=" << e.toString() << std::endl;
+      qiLogError("Timeline") << _name << " Error During STM access : Error #=" << e.what() << std::endl;
     }
   }
 }
@@ -706,8 +725,8 @@ void TimelinePrivate::rebuildBezierAutoTangents(ActuatorCurveModelPtr curve)
 }
 
 /* -- Public -- */
-Timeline::Timeline(AnyObject memory, AnyObject motion)
-  : _p (new TimelinePrivate(memory, motion))
+Timeline::Timeline(AnyObject memory, AnyObject motion, PyInterpreterState *mainInterpreterState)
+  : _p (new TimelinePrivate(memory, motion, this, mainInterpreterState))
 {
 }
 
@@ -752,9 +771,14 @@ void Timeline::setFPS(const int fps)
   _p->setFPS(fps);
 }
 
-void Timeline::setAnimation(AnimationModelPtr anim)
+void Timeline::setAnimation(AnimationModel* anim)
 {
   _p->setAnimation(anim);
+}
+
+void Timeline::setFrames(const std::map<int, std::string> &frames)
+{
+  _p->_framesFlagsMap = frames;
 }
 
 void Timeline::waitForTimelineCompletion()
@@ -766,5 +790,5 @@ bool Timeline::isValid() const
 {
   return _p->_isValid;
 }
-
+QI_REGISTER_OBJECT(Timeline, play, pause, stop, goTo, setFPS, setFrames, setAnimation, startFlowdiagram, stopFlowdiagram, waitForTimelineCompletion);
 }

@@ -25,27 +25,29 @@ TEST(QiTimeline, CreateTimeline)
 TEST(QiTimeline, OpenFile)
 {
   qi::Timeline t(memory, motion);
-  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
   t.setAnimation(anim);
+  delete anim;
 }
 
 TEST(QiTimeline, OpenFileAndPlay)
 {
   qi::Timeline t(memory, motion);
-  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
   t.setAnimation(anim);
   t.play();
 
   t.waitForTimelineCompletion();
+  delete anim;
 }
 
 TEST(QiTimeline, PlayAndPause)
 {
   qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
-  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
   t.setAnimation(anim);
   t.play();
@@ -54,24 +56,26 @@ TEST(QiTimeline, PlayAndPause)
   t.play();
 
   t.waitForTimelineCompletion();
+  delete anim;
 }
 
 TEST(QiTimeline, PlayAndStop)
 {
   qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
-  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
   t.setAnimation(anim);
   t.play();
   t.stop();
+  delete anim;
 }
 
 TEST(QiTimeline, modifyFPSBeforeStart)
 {
   qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
-  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
   t.setAnimation(anim);
 
@@ -81,13 +85,14 @@ TEST(QiTimeline, modifyFPSBeforeStart)
   t.play();
 
   t.waitForTimelineCompletion();
+  delete anim;
 }
 
 TEST(QiTimeline, modifyFPSAfterStart)
 {
   qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
-  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
   t.setAnimation(anim);
 
@@ -96,13 +101,14 @@ TEST(QiTimeline, modifyFPSAfterStart)
   EXPECT_EQ(t.getFPS(), 15);
 
   t.waitForTimelineCompletion();
+  delete anim;
 }
 
 TEST(QiTimeline, goToBeforeStart)
 {
   qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
-  qi::AnimationModelPtr anim(new qi::AnimationModel(file));
+  qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
   t.setAnimation(anim);
 
@@ -110,13 +116,14 @@ TEST(QiTimeline, goToBeforeStart)
   t.play();
 
   t.waitForTimelineCompletion();
+  delete anim;
 }
 
 TEST(QiTimeline, goToAfterStart)
 {
   qi::Timeline t(memory, motion);
   //t.loadFromFile(file);
-  qi::AnimationModelPtr anim(new qi::AnimationModel (file));
+  qi::AnimationModel* anim = new qi::AnimationModel (file);
   anim->loadFromFile();
   t.setAnimation(anim);
 
@@ -124,6 +131,7 @@ TEST(QiTimeline, goToAfterStart)
   t.goTo(44);
 
   t.waitForTimelineCompletion();
+  delete anim;
 }
 
 int main(int argc, char** argv)

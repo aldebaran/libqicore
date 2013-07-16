@@ -11,7 +11,7 @@
 #include <string>
 
 #include <boost/shared_ptr.hpp>
-
+#include <boost/python.hpp>
 #include <qicore-compat/api.hpp>
 #include <qitype/anyobject.hpp>
 
@@ -31,7 +31,7 @@ class QICORECOMPAT_API Timeline
 {
   public:
     /// Constructor, take a memory and motion object
-  Timeline(AnyObject memory = AnyObject(), AnyObject motion = AnyObject());
+  Timeline(AnyObject memory = AnyObject(), AnyObject motion = AnyObject(), PyInterpreterState *mainInterpreterState = 0);
     ~Timeline();
 
     /// Play the timeline
@@ -51,17 +51,21 @@ class QICORECOMPAT_API Timeline
     /// Change the FPS
     void setFPS(const int fps);
     /// Change the animation
-    void setAnimation(boost::shared_ptr<AnimationModel> anim);
+    void setAnimation(AnimationModel* anim);
+    /// Set frames label
+    void setFrames(const std::map<int, std::string> &frames);
 
     /// Wait untile the timeline execution is completed
     void waitForTimelineCompletion();
 
     bool isValid() const;
 
+    qi::Signal<int> startFlowdiagram;
+    qi::Signal<int> stopFlowdiagram;
+
   private:
     TimelinePrivate* _p;
 };
-QI_REGISTER_OBJECT(Timeline, play, pause, stop, goTo, setFPS);
 
 }
 

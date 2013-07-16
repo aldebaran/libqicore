@@ -39,7 +39,7 @@ class TimelinePrivate
 public:
   friend class Timeline;
 
-  TimelinePrivate(AnyObject memory, AnyObject motion);
+  TimelinePrivate(AnyObject memory, AnyObject motion, Timeline* timeline, PyInterpreterState *mainInterpreterState);
   virtual ~TimelinePrivate(void);
 
   /**
@@ -56,7 +56,7 @@ public:
   int getSize() const;
   int getFPS(void) const;
   void setFPS(int pFps);
-  void setAnimation(boost::shared_ptr<AnimationModel> anim);
+  void setAnimation(AnimationModel *anim);
 
   bool getEnabled() const;
   int getCurrentFrame() const;
@@ -111,6 +111,9 @@ private:
   static float getMotionValue(const ActuatorCurveModel& curve, float value);
   static void rebuildBezierAutoTangents(ActuatorCurveModelPtr curve);
   static bool updateBezierAutoTangents(const int &currentIndex, KeyModelPtr key, const int& leftIndex, CKeyModelPtr& lNeighbor, const int& rightIndex, CKeyModelPtr& rNeighbor);
+  void startFlowdiagram(int index);
+  void startFlowdiagramAsync(int index);
+  void stopFlowdiagram();
 
   asyncExecuter*                        _executer;
   boost::shared_ptr<AL::ALMemoryProxy>  _memoryProxy;
@@ -139,8 +142,12 @@ private:
   mutable boost::recursive_mutex        _methodMonitor;
 
   std::map<int, std::string>            _framesFlagsMap;
-  boost::shared_ptr<AnimationModel>          _animation;
+  AnimationModel* _animation;
+  Timeline* _timeline;
+  PyInterpreterState *_mainInterpreterState;
   bool _isValid;
+
+  std::vector<boost::thread*> _flowdiagrams;
 };
 
 }
