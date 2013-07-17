@@ -5,9 +5,6 @@ include_directories(".")
 set(PUBLIC_HEADERS
   qicore-compat/api.hpp
   qicore-compat/timeline.hpp
-  qicore-compat/statemachine.hpp
-  qicore-compat/box.hpp
-  qicore-compat/transition.hpp
   qicore-compat/model/bitmapmodel.hpp
   qicore-compat/model/boxinterfacemodel.hpp
   qicore-compat/model/choicemodel.hpp
@@ -39,16 +36,8 @@ qi_create_lib(qicore_compat SHARED SRC
   src/timeline_p.hpp
   src/timeline.cpp
   src/model/xmlutils.hpp
-  src/statemachine_p.hpp
-  src/statemachine.cpp
-  src/transition_p.hpp
-  src/transition.cpp
   src/asyncexecuter.hpp
   src/asyncexecuter.cpp
-  src/box_p.hpp
-  src/box.cpp
-  src/pythoncallback.hpp
-  src/pythoncallback.cpp
   src/model/bitmapmodel_p.hpp
   src/model/bitmapmodel.cpp
   src/model/boxinterfacemodel_p.hpp
