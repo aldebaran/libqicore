@@ -98,7 +98,9 @@ qi_create_lib(qicore_compat SHARED SRC
   src/python/pythonboxgenerator.hpp
   src/python/pythonboxgenerator.cpp
   src/behaviorexecuter.cpp
-  src/behaviorexecuter_p.hpp)
+  src/behaviorexecuter_p.hpp
+  src/python/pyregisterthread.cpp
+  src/python/pyregisterthread.hpp)
 
 qi_use_lib(qicore_compat QI QICORE ALSERIAL ALMATHINTERNAL ALPROXIES BOOST_PYTHON)
 qi_stage_lib(qicore_compat)
