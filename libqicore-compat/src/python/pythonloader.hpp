@@ -20,11 +20,15 @@ namespace qi
     PythonBoxLoader();
 
     bool registerPythonClass(BoxInstanceModelPtr instance);
-    void initPython(const std::string &ip, const std::string &port);
+    void initPython(const std::string &ip, const std::string &port, const std::string &dir);
+    PyInterpreterState *getInterpreter();
+    void switchMainThread();
+    void terminate();
 
   private:
     py::object _main;
     py::object _mainNamespace;
+    PyThreadState *_mainThread;
   };
 }
 

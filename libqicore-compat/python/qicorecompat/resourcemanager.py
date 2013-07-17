@@ -43,4 +43,4 @@ class ResourceManager:
   def waitResources(self):
     if not self.resources:
       return
-    self.resourceManager.waitForResourcesTree(self.resources, self.owner, self.timeout)
+    self.resourceManager.waitForResourcesTree(self.resources, self.owner, "", self.timeout)

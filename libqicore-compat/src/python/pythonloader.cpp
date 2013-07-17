@@ -36,11 +36,11 @@ namespace qi
   {
   }
 
-  void PythonBoxLoader::initPython(const std::string &ip, const std::string &port)
+  void PythonBoxLoader::initPython(const std::string &ip, const std::string &port, const std::string &dir)
   {
-    Py_Initialize();
     PyEval_InitThreads();
-
+    Py_Initialize();
+    _mainThread = PyThreadState_Get();
     //create main namespace
     _main = py::import("__main__");
     _mainNamespace = _main.attr("__dict__");
@@ -73,6 +73,50 @@ namespace qi
     {
       PyErr_Print();
     }
+
+    std::stringstream initalframemanger;
+    initalframemanger << "ALFrameManager.setBehaviorPath('" << dir << "')\n";
+    try {
+      py::exec(py::str(initalframemanger.str().c_str()), _mainNamespace);
+    }
+    catch(py::error_already_set const&)
+    {
+      PyErr_Print();
+    }
+
+    try {
+      py::exec(py::str(std::string("global ALLeds\nALLeds = ALProxy('ALLeds')\n")), _mainNamespace);
+    }
+    catch(py::error_already_set const&)
+    {
+      PyErr_Print();
+    }
+  }
+
+  void PythonBoxLoader::terminate()
+  {
+    std::stringstream delalbroker;
+    delalbroker << "del al\n";
+
+    try {
+      py::exec(py::str(delalbroker.str().c_str()), _mainNamespace);
+    }
+    catch(py::error_already_set const&)
+    {
+      PyErr_Print();
+    }
+
+    Py_Finalize();
+  }
+
+  PyInterpreterState *PythonBoxLoader::getInterpreter()
+  {
+    return _mainThread->interp;
+  }
+
+  void PythonBoxLoader::switchMainThread()
+  {
+    PyThreadState_Swap(_mainThread);
   }
 
   bool PythonBoxLoader::registerPythonClass(BoxInstanceModelPtr instance)

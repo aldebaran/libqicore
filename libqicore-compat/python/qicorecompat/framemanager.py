@@ -17,7 +17,7 @@ class FrameManager:
     raise BaseException("timeline " + name + " not found")
 
   def setTimelineFps(self, name, fps):
-    if name in timeline:
+    if name in self.timeline:
       self.timeline[name].setFPS(fps)
     else:
       raise BaseException("timeline " + name + " not found")
@@ -25,3 +25,9 @@ class FrameManager:
   def addTimeline(self, name, fps, timeline):
     self.timeline[name] = timeline
     self.fps[name] = fps
+
+  def getBehaviorPath(self, behaviorId):
+    return self.behaviorPath
+
+  def setBehaviorPath(self, behaviorPath):
+    self.behaviorPath = behaviorPath

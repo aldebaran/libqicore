@@ -312,6 +312,7 @@ namespace qi
                    << "    self.id = '" << instance->uid() << "'\n"
                    << "    self.boxName = '" << instance->name() << "'\n"
                    << "    self.behaviorPath = '" << instance->behaviorPath() << "'\n"
+                   << "    self.behaviorId = ''\n"//compat
                    << initOutput(instance) << "\n"
                    << initParameter(instance) << "\n"
                    << initInput(instance) << "\n";

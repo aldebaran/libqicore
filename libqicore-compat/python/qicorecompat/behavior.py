@@ -20,7 +20,7 @@ class BehaviorLogHandler(logging.Handler):
       logging.CRITICAL: allog.fatal,
     }
     function = level_to_function.get(record.levelno, allog.debug)
-    function(record.name + ": " + record.getMessage(),
+    function(record.name + " " + record.pathname + " " + str(record.lineno) + ": " + record.getMessage(),
              "behavior.box",
              "",   # record.filename in this case is simply '<string>'
              record.funcName,
@@ -42,8 +42,10 @@ class Behavior(object):
 
   def getParameter(self, name):
     if(name in self.parameters):
+      self.logger.debug("Parmater " + self.name + "." + name + " = " + str(self.parameters[name].value()))
       return self.parameters[name].value()
-    raise BaseException("Parmeter " + self.name + "." + name + " not found")
+    else:
+      self.logger.error("Parmeter " + self.name + "." + name + " not found")
 
   def setParameter(self, name, value):
     if(name in self.parameters):
@@ -52,17 +54,18 @@ class Behavior(object):
   def stimulateIO(self, name, *args):
     if name + "Signal" in dir(self):
       signal = getattr(self, name + "Signal")
-      self.logger.debug("Send signal " + self.name + "." + name)
+      self.logger.debug("Send signal " + self.name + "." + name + " beginning")
       if None in args:
         signal("None")
       else:
-        signal(args)
-      self.logger.debug("Signal " + self.name + "." + name + " sending")
+        signal(*args)
+      self.logger.debug("Signal " + self.name + "." + name + " end")
     else:
       self.logger.error("Signal " + name + " not found")
 
   def _safeCallOfUserMethod(self, functionName, functionArg):
     try:
+      self.logger.debug("Call of user methods " + self.name + "." + functionName)
       if(functionName in dir(self)):
         func = getattr(self, functionName)
         if(func.im_func.func_code.co_argcount == 2):
@@ -70,7 +73,7 @@ class Behavior(object):
         else:
           func()
       else:
-        self.logger.error("Method " + self.name + "." + functionName + " not found")
+        self.logger.warning("Method " + self.name + "." + functionName + " not found")
       return True
     except BaseException, err:
       self.logger.error(str(err))
