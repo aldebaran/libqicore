@@ -26,7 +26,7 @@
 namespace qi
 {
 
-TimelinePrivate::TimelinePrivate(AnyObject memory, AnyObject motion, Timeline *timeline, PyInterpreterState *mainInterpreterState)
+TimelinePrivate::TimelinePrivate(AnyObject motion, Timeline *timeline, PyInterpreterState *mainInterpreterState)
   : _executer(new asyncExecuter(1000 / 25)),
     _fps(0),
     _enabled(false),
@@ -44,9 +44,7 @@ TimelinePrivate::TimelinePrivate(AnyObject memory, AnyObject motion, Timeline *t
 {
   try
   {
-    boost::shared_ptr<AL::ALProxy> proxyMemory(new AL::ALProxy(memory, "ALMemory"));
     boost::shared_ptr<AL::ALProxy> proxyMotion(new AL::ALProxy(motion, "ALMotion"));
-    _memoryProxy = boost::shared_ptr<AL::ALMemoryProxy>(new AL::ALMemoryProxy(proxyMemory));
     _motionProxy = boost::shared_ptr<AL::ALMotionProxy>(new AL::ALMotionProxy(proxyMotion));
   }
   catch (AL::ALError& e)
@@ -61,13 +59,6 @@ TimelinePrivate::~TimelinePrivate(void)
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
   stop();
-  try
-  {
-    _memoryProxy->removeMicroEvent(_name);
-  }
-  catch(AL::ALError&)
-  {
-  }
 
   delete _executer;
 }
@@ -468,25 +459,6 @@ void TimelinePrivate::setCurrentFrame(int pFrame)
   _currentFrame = pFrame;
 }
 
-void TimelinePrivate::setName(const std::string& var)
-{
-  boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
-  _name = var;
-
-  // insert value of frame = -1 in the stm (used by choregraphe)
-  if(_name != "")
-  {
-    try
-    {
-      _memoryProxy->raiseMicroEvent(_name, (int) -1);
-    }
-    catch(AL::ALError& e)
-    {
-      qiLogError("Timeline") << _name << " Error During STM access : Error #=" << e.what() << std::endl;
-    }
-  }
-}
-
 std::string TimelinePrivate::getName() const
 {
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
@@ -725,8 +697,8 @@ void TimelinePrivate::rebuildBezierAutoTangents(ActuatorCurveModelPtr curve)
 }
 
 /* -- Public -- */
-Timeline::Timeline(AnyObject memory, AnyObject motion, PyInterpreterState *mainInterpreterState)
-  : _p (new TimelinePrivate(memory, motion, this, mainInterpreterState))
+Timeline::Timeline( AnyObject motion, PyInterpreterState *mainInterpreterState)
+  : _p (new TimelinePrivate(motion, this, mainInterpreterState))
 {
 }
 

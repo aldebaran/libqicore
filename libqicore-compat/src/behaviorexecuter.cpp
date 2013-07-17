@@ -202,7 +202,7 @@ namespace qi
       if(behaviorAnimation.isValid())
       {
         qi::AnyObject timeline;
-        qi::Timeline* t = new qi::Timeline(_almemory, _almotion, _pythonCreator.getInterpreter());
+        qi::Timeline* t = new qi::Timeline(_almotion, _pythonCreator.getInterpreter());
         timeline = qi::AnyReference::fromPtr(t).toObject();
         timeline->call<void>("setAnimation",
                              behaviorAnimation.ptr<AnimationModel>());
@@ -314,7 +314,7 @@ namespace qi
       else
       {
         //create timeline
-        timeline = qi::AnyReference::fromPtr(new qi::Timeline(_almemory, _almotion)).toObject();
+        timeline = qi::AnyReference::fromPtr(new qi::Timeline(_almotion, _pythonCreator.getInterpreter())).toObject();
         _timelines[uid] = timeline;
       }
       std::map<std::string, int> ret;

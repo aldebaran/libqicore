@@ -89,7 +89,7 @@ int main(int argc, char **argv)
   }
 
 
-  qi::Timeline timeline(memory, motion);
+  qi::Timeline timeline(motion);
   qi::AnimationModel*anim = new qi::AnimationModel(animation_path);
 
   if(!anim->loadFromFile())

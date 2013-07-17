@@ -39,7 +39,7 @@ class TimelinePrivate
 public:
   friend class Timeline;
 
-  TimelinePrivate(AnyObject memory, AnyObject motion, Timeline* timeline, PyInterpreterState *mainInterpreterState);
+  TimelinePrivate(AnyObject motion, Timeline* timeline, PyInterpreterState *mainInterpreterState);
   virtual ~TimelinePrivate(void);
 
   /**
@@ -66,7 +66,6 @@ public:
    * setName will also insert an empty frame number in the STM, so Choregraphe
    * does not complaing about not finding a value.
    */
-  void setName(const std::string& var);
   std::string getName() const;
 
 private:

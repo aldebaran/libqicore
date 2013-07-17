@@ -19,12 +19,12 @@ qi::AnyObject memory;
 
 TEST(QiTimeline, CreateTimeline)
 {
-  qi::Timeline t(memory, motion);
+  qi::Timeline t(motion);
 }
 
 TEST(QiTimeline, OpenFile)
 {
-  qi::Timeline t(memory, motion);
+  qi::Timeline t(motion);
   qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
   t.setAnimation(anim);
@@ -33,7 +33,7 @@ TEST(QiTimeline, OpenFile)
 
 TEST(QiTimeline, OpenFileAndPlay)
 {
-  qi::Timeline t(memory, motion);
+  qi::Timeline t(motion);
   qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
   t.setAnimation(anim);
@@ -45,7 +45,7 @@ TEST(QiTimeline, OpenFileAndPlay)
 
 TEST(QiTimeline, PlayAndPause)
 {
-  qi::Timeline t(memory, motion);
+  qi::Timeline t(motion);
   //t.loadFromFile(file);
   qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
@@ -61,7 +61,7 @@ TEST(QiTimeline, PlayAndPause)
 
 TEST(QiTimeline, PlayAndStop)
 {
-  qi::Timeline t(memory, motion);
+  qi::Timeline t(motion);
   //t.loadFromFile(file);
   qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
@@ -73,7 +73,7 @@ TEST(QiTimeline, PlayAndStop)
 
 TEST(QiTimeline, modifyFPSBeforeStart)
 {
-  qi::Timeline t(memory, motion);
+  qi::Timeline t(motion);
   //t.loadFromFile(file);
   qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
@@ -90,7 +90,7 @@ TEST(QiTimeline, modifyFPSBeforeStart)
 
 TEST(QiTimeline, modifyFPSAfterStart)
 {
-  qi::Timeline t(memory, motion);
+  qi::Timeline t(motion);
   //t.loadFromFile(file);
   qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
@@ -106,7 +106,7 @@ TEST(QiTimeline, modifyFPSAfterStart)
 
 TEST(QiTimeline, goToBeforeStart)
 {
-  qi::Timeline t(memory, motion);
+  qi::Timeline t(motion);
   //t.loadFromFile(file);
   qi::AnimationModel* anim = new qi::AnimationModel(file);
   anim->loadFromFile();
@@ -121,7 +121,7 @@ TEST(QiTimeline, goToBeforeStart)
 
 TEST(QiTimeline, goToAfterStart)
 {
-  qi::Timeline t(memory, motion);
+  qi::Timeline t(motion);
   //t.loadFromFile(file);
   qi::AnimationModel* anim = new qi::AnimationModel (file);
   anim->loadFromFile();
