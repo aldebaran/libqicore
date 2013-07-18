@@ -336,6 +336,11 @@ namespace qi
                    << initParameter(instance) << "\n"
                    << initInput(instance) << "\n";
 
+    if(instance->parent())
+      generatedClass << "    self.parentBoxName = '"
+                     << instance->parent()->uid() << "'\n";
+
+
     if(interface->hasTimeline())
     {
       int fps;
