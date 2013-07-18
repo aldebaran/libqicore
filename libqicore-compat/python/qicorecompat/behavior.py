@@ -94,3 +94,10 @@ class Behavior(object):
 
   def log(self, p):
     self.logger.info(p)
+
+  def handleSTM(self, pDataName, pValue):
+    if pDataName in self.stminput:
+      self.logger.debug("STM Input " + pDataName + " in " + self.name + " launch signal")
+      self.stminput[pDataName](pValue)
+    else:
+      self.logger.error("STM Input " + pDataName + " in " + self.name + "not found")
