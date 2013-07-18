@@ -82,14 +82,17 @@ namespace qi
         const std::list<BehaviorKeyFrameModelPtr> &keys = layer->behaviorsKeyFrame();
         foreach(BehaviorKeyFrameModelPtr key, keys)
         {
-          if(!loadFlowDiagram(key->diagram().get(), true, key->index()))
+          if(!loadFlowDiagram(key->diagram().get(), true, key->index(), key->name()))
             return false;
         }
       }
       return true;
     }
 
-    bool BehaviorExecuterPrivate::loadFlowDiagram(FlowDiagramModel *diagram, bool behaviorsequence, int index)
+    bool BehaviorExecuterPrivate::loadFlowDiagram(FlowDiagramModel *diagram,
+                                                  bool behaviorsequence,
+                                                  int index,
+                                                  const std::string &prefix)
     {
 
       //Construct a ControlFlow
@@ -107,19 +110,29 @@ namespace qi
 
       //Loading box
       BoxInstanceModelMap instances = diagram->boxsInstance();
-      foreach(BoxInstanceModelMap::value_type &instance, instances)
+      foreach(BoxInstanceModelMap::value_type &val, instances)
       {
-        if(!declaredBox(instance.second))
+        BoxInstanceModelPtr instance = val.second;
+
+        if(!prefix.empty())
+          instance->setName(prefix + "_" + instance->name());
+
+        instance->setName(diagram->findInstance(0)->uid() + "_" + instance->name());
+
+        if(!declaredBox(instance))
           return false;
 
         qi::BehaviorModel::Node node;
 
-        node.uid = instance.second->uid();
-        node.factory = instance.second->uid();
+        node.uid = instance->uid();
+        node.factory = instance->uid();
         node.interface = "";//not use
         //TODO node.parameters
 
         _model.nodes[node.uid] = node;
+
+        if(instance->uid() == "root_1_Diagnostic_20_diagnostic_Crouch_8")
+        qiLogError() << node.uid << " " << node.factory;
       }
 
       //Linking box
@@ -141,6 +154,25 @@ namespace qi
         std::string method = dst->interface()->findMethod(methodid);
         if(method.empty())
           return false;
+
+        //If signalid is STM input
+        const InputModelMap &inputs = src->interface()->inputs();
+        InputModelMap::const_iterator it = inputs.find(methodid);
+        if( it != inputs.end())
+        {
+          InputModelPtr input = it->second;
+          if( input->nature() == InputModel::InputNature_STMValue)
+          {
+            //Connect QiCoreMemoryWatcher.almemoryEvent to srcid.handleSTM
+            qi::BehaviorModel::Transition tEvent;
+            tEvent.src = BehaviorModel::Slot("QiCoreMemoryWatcher", "almemoryEvent");
+            tEvent.dst = BehaviorModel::Slot(src->uid(), "handleSTM");
+            addTransition(tEvent);
+
+            //add STMValue in the subscriber list
+            _stmvalues.push_back(input->stmValueName());
+          }
+        }
 
         //If srcid == 0 (srcid is the parent object) and this flowdiagram is part of behavior sequence
         //then connect this flowdiagram with ControlFlowdiagram
@@ -416,8 +448,14 @@ namespace qi
       node.uid = root->uid();
       node.factory = root->uid();
       node.interface = "";//not use
-
       _p->_model.nodes[node.uid] = node;
+
+      //Register QiCoreMemoryWatcher
+      BehaviorModel::Node nodeal;
+      nodeal.uid = "QiCoreMemoryWatcher";
+      nodeal.factory = "QiCoreMemoryWatcher";
+      nodeal.interface = "";
+      _p->_model.nodes[nodeal.uid] = nodeal;
 
       if(!_p->declaredBox(root))
         return false;
@@ -426,13 +464,20 @@ namespace qi
       _p->_behaviorService->call<void>("loadObjects", _p->_debug);
       _p->_behaviorService->call<void>("setTransitions", _p->_debug, (int)qi::MetaCallType_Direct);
 
+      //QiCoreMemoryWatcher set watching value
+      ObjectMap objects = _p->_behaviorService->call<ObjectMap>("objects");
+      qi::AnyObject qiCoreMemoryWatcher = objects["QiCoreMemoryWatcher"];
+      foreach(std::string const &s, _p->_stmvalues)
+      {
+        qiCoreMemoryWatcher->call<void>("subscribe", s);
+      }
+
       _p->initialiseBox(root);
 
       //Set ObjectThreadingModel to prevent deadlock.
       //Infact, A.method trigger A.signal (so A is locked)
       //        B.method is a callback of A.signal and B.method trigger B.signal
       //        A.method2 is a callback of B.signal but A is already lock so deadlock
-      ObjectMap objects = _p->_behaviorService->call<ObjectMap>("objects");
       foreach(ObjectMap::value_type const &val, objects)
       {
         qi::AnyObject obj = val.second;

@@ -24,7 +24,10 @@ namespace qi
     public:
       BehaviorExecuterPrivate(const std::string &dir, qi::Session &session, bool debug);
 
-      bool loadFlowDiagram(FlowDiagramModel *diagram, bool behaviorsequence = false, int index = 0);
+      bool loadFlowDiagram(FlowDiagramModel *diagram,
+                           bool behaviorsequence = false,
+                           int index = 0,
+                           const std::string &prefix = "");
       bool loadBehaviorSequence(BehaviorSequenceModel *behaviorSequence);
       bool declaredBox(BoxInstanceModelPtr instance);
       bool declaredPythonBox(BoxInstanceModelPtr instance);
@@ -49,6 +52,7 @@ namespace qi
       boost::mutex _waiter;
       boost::condition_variable _waitcondition;
       std::map<std::string, qi::AnyObject> _timelines;
+      std::vector<std::string> _stmvalues;
       bool _debug;
     };
     typedef std::map<std::string, qi::AnyObject> TimlineMap;
