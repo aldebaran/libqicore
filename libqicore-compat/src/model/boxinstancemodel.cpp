@@ -160,7 +160,13 @@ namespace qi {
       oss << 1;
 
     std::string uniqueId = this->name() + std::string("_") + oss.str();
+    //TODO use a regexp
     boost::replace_all(uniqueId, " ", "_");
+    boost::erase_all(uniqueId, "(");
+    boost::erase_all(uniqueId, ")");
+    boost::erase_all(uniqueId, ">");
+    boost::erase_all(uniqueId, ".");
+    boost::erase_all(uniqueId, "?");
     return uniqueId;
   }
 
