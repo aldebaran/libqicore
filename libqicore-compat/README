@@ -1,0 +1,127 @@
+QiCore-Compat Readme
+========================================================================================
+
+This lib is a fork of the "frameManager", it aims to execute behaviors that
+was previous executed with the frameManager but with much more flexibility.
+
+QiCore-Compat is only a compatibility layer.
+
+QiCore-Compat and the frameManager are independant, meaning that you can execute behaviors
+with both of us.
+
+========================================================================================
+Getting Started:
+-----------------
+
+Let's suppose you want to execute a behavior stored in a xar file.
+First of all, correctly set your PYTHONPATH to collect all python modules needed.
+
+1/ Convert the behavior:
+python2 xar_converter.py path/to/behavior/behavior.xar output_folder/
+
+2/ Execute the behavior:
+Use qicore-behavior to execute a behavior
+  Example:
+    To execute a behavior on local naoqi with default port (9559)
+    qicore-behavior path/to/output_folder/
+
+    To execute a behavior on remote naoqi
+    qicore-behavior path/to/output_folde tcp://HOST:PORT/
+
+=======================================================================================
+Architecture of executor:
+--------------------------
+
+ - qicorecompat python bendings:
+     Behavior : Base class for boxes.
+     ControlFlowdiagram : This class help timeline to launch and stop Flowdiagram.
+     FrameManager : Reimplement ALFrameManager python bindings for compat.
+     ResourceManager : Handle resources (with the proxy ALResourceManager).
+     Timeline : Link between c++ Timeline and python box.
+     QiCoreMemoryWatcher : module to watching event in ALMemory
+
+ - C++ class of the executer :
+     AsyncExecuter : Executer for timeline
+     BehaviorExecuter : Load models for construct the BehaviorModel for that the BehaviorService instanciate all box.
+     Timeline : Send command to ALMotion to execute Animation and start/stop flowdiagram inside a BehaviorSequence.
+     PythonLoader : Initialise python world and load box in factory
+     PythonBoxGenerator : Generate the GeneratedClass
+     PyRegisterThread : Register and unregister thread inside python interpreter
+
+Python box and no script box
+------------------------------
+  Python box and no script box is the only box supported by qicore-compat.
+  All box is based on qicorecompat.Behavior
+  A python box is generate from xml models (xml models is used to generate
+  GeneratedClass) and MyClass when py file exist.
+  A python box no script box is simply instantiate with GeneratedClass.
+
+How to qicore-compat load Box and Flowdiagram
+------------------------------------------------
+  Qicore use BehaviorService to instantiate and link boxes.
+  So BehaviorExecuter fill a qi::BehaviorModel with informations stocked in a
+  Flowdiagram (in BehaviorExecuterPrivate is the role of the function loadFlowDiagram)
+  For instantiate boxes BehaviorService use the qitype factory, then BehaviorExecuter
+  register the boxes in the factory with PythonLoader.
+
+How to qicore-compat handle BehaviorSequence
+---------------------------------------------
+  A BehaviorSequence contains flowdiagram that must be launch with a delay.
+  So timeline handle the start of this flowdiagram and for this purpose the input of a
+  the Flowdiagram is connected with the signal startFlowdiagram of the
+  ControlFlowdiagram and the output of the flowdiagram is connected with the signal
+  stopFlowdiagram of the ControlFlowdiagram, one ControlFlowdiagram is use for
+  one BehaviorSequence.
+  ControlFlowdiagram is connected by BehaviorService in the input of the flowdiagram
+  but ControlFlowdiagram and Timeline is connected manualy.
+
+How to qicore-compat handle STMValue
+--------------------------------------
+  QiCoreMemoryWatcher is a naoqi module written in python. When a box input is type STMValue
+  QiCoreMemoryWatcher subscribe on the ALMemory's event and send a qi.Signal on
+  all box (with a input STMValue of course) when the event is raise. This signal is connected
+  with box.handleSTM this method trigger the real input attached in this STMValue.
+
+XML Model
+-----------
+  The model is an implementation of the class diagram of Guillaume Schweitzer
+
+=======================================================================================
+TODO :
+--------
+
+  - Create a compatibility layer for naoqi python bindings (to remove ALBroker in python world).
+
+  - Catch SIGINT signal and call on_stop input to all boxes to quit elegantly.
+
+  - Connect all box inside a BehaviorSequence with ControlFlowdiagram.stopFlowdiagram
+
+  - In embedded python, load GeneratedClass and MyClass in a namespace.
+
+  - Improve qicore-behavior with a debug mode.
+
+  - Add missing method in FrameManger (qicorecompat python bindings).
+
+  - A lot of fixes to execute behaviors exactly as frameManager.
+
+  - Set the parent timeline in boxes.
+
+  - Use qi.Signal in timeline to actions : play, stop, pause, goTo, setFPS.
+
+  - Fix bug : after the behavior execution qicore-behavior don't exit.
+
+  - Use timeline and ControlFlowidagram only to handle all Flowdiagrams. At this time only
+    flowdiagrams inside a BehaviorSequence is handle by the timeline.
+
+  - When timeline is terminate, call on_stop input in all boxes inside of the Flowdiagrams handle by timeline.
+
+  - Use qi.Property inside box to represent parameter
+
+  - include timeline in factory and remove ControlFlowdiagram connect timeline and
+flowdiagram directly with BehaviorService
+
+  - At this time QiCore-Compat can'not execute aldebaran_auto_diagnostic because
+boxes is not load in global scope (fix it)
+
+  - Model : Remove all part for editing
+
