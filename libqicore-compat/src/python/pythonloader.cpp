@@ -123,6 +123,8 @@ namespace qi
   {
     std::string code = generatedClass(instance);
 
+    if(instance->uid() == "root_1_Diagnostic_20_init_Bumpers_2")
+      std::cout << code;
     //Execute generated code
     try {
       py::exec(py::str(code.c_str()), _mainNamespace);
@@ -136,6 +138,7 @@ namespace qi
     //Replace GeneratedClass by real name
     ContentModelPtr pyContent = instance->interface()->contents()->findContent(ContentModel::ContentType_PythonScript);
     std::string myclass;
+    bool pyfile = false;
     if(pyContent)
     {
       std::string pythonFileName = pyContent->path();
@@ -145,12 +148,17 @@ namespace qi
       buffer << file.rdbuf();
       file.close();
       myclass = buffer.str();
-      boost::replace_all(myclass, "GeneratedClass", "GeneratedClass_" + instance->uid());
+
+      //If py file is not empty
+      if(boost::algorithm::contains(myclass, "MyClass")) {
+        pyfile = true;
+        boost::replace_all(myclass, "GeneratedClass", "GeneratedClass_" + instance->uid());
+      }
     }
 
     //Execute py file
     try {
-      if(pyContent)
+      if(pyfile)
       {
         py::exec(py::str(myclass.c_str()), _mainNamespace);
       }
@@ -164,7 +172,7 @@ namespace qi
     std::string unique_id = instance->uid();
     std::string script;
 
-    if(pyContent)
+    if(pyfile)
     {
     script = std::string("qi.registerObjectFactory('")
         + unique_id
