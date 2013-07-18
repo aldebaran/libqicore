@@ -8,6 +8,7 @@
 #include <qicore-compat/model/parametermodel.hpp>
 #include <qicore-compat/model/resourcemodel.hpp>
 #include <qicore-compat/model/animationmodel.hpp>
+#include <qicore-compat/model/behaviorsequencemodel.hpp>
 
 #include <qi/log.hpp>
 
@@ -33,6 +34,24 @@ namespace qi
     //Input signal
     InputModelMap inputs = interface->inputs();
     std::stringstream input;
+
+    foreach(InputModelMap::value_type &inp, inputs)
+    {
+      if(inp.second->nature() == InputModel::InputNature_STMValue)
+      {
+        std::string name = inp.second->metaMethod().name();
+        std::string sig = inp.second->metaMethod().parametersSignature().toString();
+        if(sig.empty())
+          sig = "(m)";
+        if(inp.second->metaMethod().parametersSignature().isConvertibleTo("()"))
+          sig = "(m)";
+
+        input << "    self." << name << "Signal = qi.Signal('" << sig << "')\n";
+
+        //Add input in self.stminput
+        input << "    self.stminput = self." << name << "Signal\n";
+      }
+    }
 
     if(interface->hasTimeline() || interface->hasFlowDiagram())
     {
@@ -319,9 +338,17 @@ namespace qi
 
     if(interface->hasTimeline())
     {
+      int fps;
       qi::AnyReference animation = instance->content(ContentModel::ContentType_Animation);
-      generatedClass << "    self.timeline = Timeline(" << animation.ptr<AnimationModel>()->fps() << ")\n"
-                     << "    ALFrameManager.addTimeline(self.name, " << animation.ptr<AnimationModel>()->fps() << ", self.timeline)\n";
+      if(animation.isValid())
+        fps = animation.ptr<AnimationModel>()->fps();
+      else
+      {
+        qi::AnyReference behaviorSequence = instance->content(ContentModel::ContentType_BehaviorSequence);
+        fps = behaviorSequence.ptr<BehaviorSequenceModel>()->fps();
+      }
+      generatedClass << "    self.timeline = Timeline(" << fps << ")\n"
+                     << "    ALFrameManager.addTimeline(self.name, " << fps << ", self.timeline)\n";
     }
 
     if(interface->hasResource())
