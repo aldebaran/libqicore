@@ -31,6 +31,7 @@ ENTITIES = {
     '\"': "&quot;", '\'': "&apos;"
 }
 
+writer_linesep = u"\n"  # used to ease file comparing with Choregraphe's output
 
 def write_box_interface(f, node):
     """ Write meta informations about a box
@@ -42,7 +43,7 @@ def write_box_interface(f, node):
         node.tooltip = ""
 
     # XML header
-    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
+    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + writer_linesep)
 
     # Root tag and attributes
     f.write((u"<BoxInterface uuid=\"{}\" box_version=\"{}\" name=\"{}\"")
@@ -57,13 +58,13 @@ def write_box_interface(f, node):
             .format(saxutils.escape(node.tooltip, entities=ENTITIES)))
     if node.plugin:
         f.write((u" plugin=\"{}\"").format(node.plugin))
-    f.write((u"  format_version=\"{}\" >{}").format(u"4", os.linesep))
+    f.write((u" format_version=\"{}\">{}").format(u"4", writer_linesep))
 
     # bitmap elements
     for bitmap in node.bitmaps:
         f.write((u"    <Bitmap path=\"{}\" />{}")
                 .format(bitmap.path,
-                        os.linesep))
+                        writer_linesep))
 
     for inp in node.inputs:
         if not inp.tooltip:
@@ -79,7 +80,7 @@ def write_box_interface(f, node):
                             inp.inner,
                             saxutils.escape(inp.tooltip, entities=ENTITIES),
                             inp.id,
-                            os.linesep))
+                            writer_linesep))
         else:
             f.write((u"    <Input name=\"{}\" signature=\"{}\""
                     + u" nature=\"{}\" inner=\"{}\" tooltip=\"{}\""
@@ -90,7 +91,7 @@ def write_box_interface(f, node):
                             inp.inner,
                             saxutils.escape(inp.tooltip, entities=ENTITIES),
                             inp.id,
-                            os.linesep))
+                            writer_linesep))
 
     for output in node.outputs:
         if not output.tooltip:
@@ -104,7 +105,7 @@ def write_box_interface(f, node):
                         output.inner,
                         saxutils.escape(output.tooltip, entities=ENTITIES),
                         output.id,
-                        os.linesep))
+                        writer_linesep))
 
     for parameter in node.parameters:
         if not parameter.tooltip:
@@ -135,15 +136,15 @@ def write_box_interface(f, node):
                                         entities=ENTITIES),
                         parameter.id))
         if parameter.choices:
-            f.write(u">" + os.linesep)
+            f.write(u">" + writer_linesep)
             for choice in parameter.choices:
                 f.write((u"        <Choice value=\"{}\" />{}")
                         .format(saxutils.escape(choice.value,
                                                 entities=ENTITIES),
-                                os.linesep))
-            f.write(u"    </Parameter>" + os.linesep)
+                                writer_linesep))
+            f.write(u"    </Parameter>" + writer_linesep)
         else:
-            f.write(u" />" + os.linesep)
+            f.write(u" />" + writer_linesep)
 
     for resource in node.resources:
         f.write((u"    <Resource name=\"{}\" lock_type=\"{}\""
@@ -151,10 +152,10 @@ def write_box_interface(f, node):
                 .format(resource.name,
                         resource.lock_type,
                         resource.timeout,
-                        os.linesep))
+                        writer_linesep))
 
     # and the link to box implementation
-    f.write(u"    <Contents>" + os.linesep)
+    f.write(u"    <Contents>" + writer_linesep)
 
     # does this box embed a script ?
     if node.script:
@@ -163,13 +164,13 @@ def write_box_interface(f, node):
                     + u" checksum=\"\" />{}")
                     .format(xar_types.ContentType.PYTHON_SCRIPT,
                             node.script.node_path + ".py",
-                            os.linesep))
+                            writer_linesep))
         else:
             f.write((u"        <Content type=\"{}\" path=\"{}\""
                     + u" checksum=\"\" />{}")
                     .format(xar_types.ContentType.QICHAT_SCRIPT,
                             node.script.node_path + ".top",
-                            os.linesep))
+                            writer_linesep))
 
     # does this box embed a flow diagram ?
     if node.timeline and node.timeline.enable == "0":
@@ -177,7 +178,7 @@ def write_box_interface(f, node):
                 + u" checksum=\"\" />{}")
                 .format(xar_types.ContentType.FLOW_DIAGRAM,
                         node.timeline.node_path + ".fld",
-                        os.linesep))
+                        writer_linesep))
 
     # does this box embed a behaviorSequence
     if (node.timeline
@@ -187,7 +188,7 @@ def write_box_interface(f, node):
                 + u" checksum=\"\" />{}")
                 .format(xar_types.ContentType.BEHAVIOR_SEQUENCE,
                         node.timeline.node_path + ".bhs",
-                        os.linesep))
+                        writer_linesep))
 
     # does this box embed an animation
     if node.timeline and node.timeline.actuator_list:
@@ -195,11 +196,11 @@ def write_box_interface(f, node):
                 + u" checksum=\"\" />{}")
                 .format(xar_types.ContentType.ANIMATION,
                         node.timeline.actuator_list.node_path + ".anim",
-                        os.linesep))
+                        writer_linesep))
 
-    f.write(u"    </Contents>" + os.linesep)
+    f.write(u"    </Contents>" + writer_linesep)
 
-    f.write(u"</BoxInterface>" + os.linesep)
+    f.write(u"</BoxInterface>" + writer_linesep)
 
 
 def write_behavior_sequence(f, timeline):
@@ -210,7 +211,7 @@ def write_behavior_sequence(f, timeline):
     """
 
     # XML Header
-    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
+    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + writer_linesep)
 
     # BehaviorSequence root tag
     f.write((u"<BehaviorSequence fps=\"{}\" "
@@ -224,14 +225,14 @@ def write_behavior_sequence(f, timeline):
         f.write((u" resources_acquisition=\"{}\"")
                 .format(timeline.resources_acquisition))
 
-    f.write((u" format_version=\"{}\" >{}")
+    f.write((u" format_version=\"{}\">{}")
             .format(u"4",
-                    os.linesep))
+                    writer_linesep))
 
     for layer in timeline.behavior_layers:
         _write_behavior_layer(f, layer, "    ")
 
-    f.write(u"</BehaviorSequence>" + os.linesep)
+    f.write(u"</BehaviorSequence>" + writer_linesep)
 
 
 def _write_behavior_layer(f, layer, indent):
@@ -241,13 +242,13 @@ def _write_behavior_layer(f, layer, indent):
     if layer.mute:
         f.write((u" mute=\"{}\"")
                 .format(layer.mute))
-    f.write((u" >{}").format(os.linesep))
+    f.write((u" >{}").format(writer_linesep))
 
     for keyframe in layer.behavior_keyframes:
         _write_behavior_keyframe(f, keyframe, indent + "    ")
 
     f.write((u"{}</BehaviorLayer>{}").format(indent,
-                                             os.linesep))
+                                             writer_linesep))
 
 
 def _write_behavior_keyframe(f, keyframe, indent):
@@ -262,7 +263,7 @@ def _write_behavior_keyframe(f, keyframe, indent):
 
     f.write((u" path=\"{}\" />{}")
             .format(keyframe.node_path + ".fld",
-                    os.linesep))
+                    writer_linesep))
 
 
 def write_flow_diagram(f, flow_diagram):
@@ -272,7 +273,7 @@ def write_flow_diagram(f, flow_diagram):
         :param flow_diagram: diagram node to write
     """
     # XML header
-    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
+    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + writer_linesep)
 
     # Root tag
     f.write(u"<FlowDiagram")
@@ -281,9 +282,9 @@ def write_flow_diagram(f, flow_diagram):
         f.write((u" scale=\"{}\"")
                 .format(flow_diagram.scale))
 
-    f.write((u" format_version=\"{}\" >{}")
+    f.write((u" format_version=\"{}\">{}")
             .format(u"4",
-                    os.linesep))
+                    writer_linesep))
 
     # instances of boxes used
     for box in flow_diagram.boxes:
@@ -293,7 +294,7 @@ def write_flow_diagram(f, flow_diagram):
     for link in flow_diagram.links:
         _write_link(f, link, "    ")
 
-    f.write(u"</FlowDiagram>" + os.linesep)
+    f.write(u"</FlowDiagram>" + writer_linesep)
 
 
 def _write_box_instance(f, instance, indent):
@@ -308,11 +309,11 @@ def _write_box_instance(f, instance, indent):
 
     # if no content, close the beacon
     if not instance.parameters and not instance.plugin_content:
-        f.write(u" />" + os.linesep)
+        f.write(u" />" + writer_linesep)
         return
 
     # else
-    f.write(u" >" + os.linesep)
+    f.write(u">" + writer_linesep)
 
     if instance.parameters:
         for parameter in instance.parameters:
@@ -321,7 +322,7 @@ def _write_box_instance(f, instance, indent):
     if instance.plugin_content:
         _write_plugin_content(f, instance.plugin_content, indent + "    ")
 
-    f.write((u"{}</BoxInstance>{}").format(indent, os.linesep))
+    f.write((u"{}</BoxInstance>{}").format(indent, writer_linesep))
 
 
 def _write_parameter_value(f, parameter, indent):
@@ -329,7 +330,7 @@ def _write_parameter_value(f, parameter, indent):
             .format(indent,
                     parameter.id,
                     parameter.value,
-                    os.linesep))
+                    writer_linesep))
 
 
 def _write_plugin_content(f, pluginContent, indent):
@@ -343,12 +344,12 @@ def _write_plugin_content(f, pluginContent, indent):
 
     f.write((u"{}<{}>{}").format(indent,
                                  pluginContent.beacon(),
-                                 os.linesep))
+                                 writer_linesep))
     for subnode in pluginContent.subnodes:
         _write_plugin_subnode(f, subnode, indent + "    ")
     f.write((u"{}</{}>{}").format(indent,
                                   pluginContent.beacon(),
-                                  os.linesep))
+                                  writer_linesep))
 
 
 def _write_plugin_subnode(f, subnode, indent):
@@ -360,20 +361,20 @@ def _write_plugin_subnode(f, subnode, indent):
                                            str(subnode.attributes[key])))
 
     if subnode.subnodes:
-        f.write(u">" + os.linesep)
+        f.write(u">" + writer_linesep)
         for subsubnode in subnode.subnodes:
             _write_plugin_subnode(f, subsubnode, indent + "    ")
         f.write((u"{}</{}>{}").format(indent,
                                       subnode.beacon(),
-                                      os.linesep))
+                                      writer_linesep))
 
     elif subnode.content:
         f.write((u">{}</{}>{}").format(subnode.content,
                                        subnode.beacon(),
-                                       os.linesep))
+                                       writer_linesep))
 
     else:
-        f.write(u"/>" + os.linesep)
+        f.write(u"/>" + writer_linesep)
 
 
 def _write_link(f, link, indent):
@@ -384,7 +385,7 @@ def _write_link(f, link, indent):
                     link.indexofinput,
                     link.receiverID,
                     link.indexofoutput,
-                    os.linesep))
+                    writer_linesep))
 
 
 def write_animation(f, actuator_list):
@@ -394,7 +395,7 @@ def write_animation(f, actuator_list):
         :param timeline: the timeline containing the motion layer
     """
     # XML Header
-    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
+    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + writer_linesep)
 
     # root tag
     f.write((u"<Animation fps=\"{}\""
@@ -410,56 +411,61 @@ def write_animation(f, actuator_list):
 
     f.write((u" format_version=\"{}\" >{}")
             .format(u"4",
-                    os.linesep))
+                    writer_linesep))
 
     f.write((u"    <ActuatorList model=\"{}\" >{}")
             .format(actuator_list.model,
-                    os.linesep))
+                    writer_linesep))
 
     for curve in actuator_list.curves:
         _write_actuator_curve(f, curve, "        ")
 
-    f.write(u"    </ActuatorList>" + os.linesep)
-    f.write(u"</Animation>" + os.linesep)
+    f.write(u"    </ActuatorList>" + writer_linesep)
+    f.write(u"</Animation>" + writer_linesep)
 
 
 def _write_actuator_curve(f, curve, indent):
     f.write((u"{}<ActuatorCurve name=\"{}\" actuator=\"{}\""
-            + u" recordable=\"{}\" mute=\"{}\" unit=\"{}\" >{}")
+            + u" recordable=\"{}\" mute=\"{}\" unit=\"{}\">{}")
             .format(indent,
                     curve.name,
                     curve.actuator,
                     curve.recordable,
                     curve.mute,
                     curve.unit,
-                    os.linesep))
+                    writer_linesep))
 
     for key in curve.keys:
         _write_actuator_key(f, key, indent + "    ")
 
     f.write((u"{}</ActuatorCurve>{}")
             .format(indent,
-                    os.linesep))
+                    writer_linesep))
 
 
 def _write_actuator_key(f, key, indent):
-    f.write((u"{}<Key frame=\"{}\" value=\"{}\""
-            + u" smooth=\"{}\" symmetrical=\"{}\"")
+    f.write((u"{}<Key frame=\"{}\" value=\"{}\"")
             .format(indent,
                     key.frame,
-                    key.value,
-                    key.smooth,
-                    key.symmetrical))
+                    key.value))
+
+    if key.smooth:
+        f.write((u" smooth=\"{}\"")
+                .format(key.smooth))
+
+    if key.symmetrical:
+        f.write((u" symmetrical=\"{}\"")
+                .format(key.symmetrical))
 
     if key.tangents:
-        f.write(u" >" + os.linesep)
+        f.write(u" >" + writer_linesep)
         for tangent in key.tangents:
             _write_tangent(f, tangent, indent + "    ")
         f.write((u"{}</Key>{}")
                 .format(indent,
-                        os.linesep))
+                        writer_linesep))
     else:
-        f.write(u" />" + os.linesep)
+        f.write(u" />" + writer_linesep)
 
 
 def _write_tangent(f, tangent, indent):
@@ -470,7 +476,7 @@ def _write_tangent(f, tangent, indent):
                     tangent.interpType,
                     tangent.abscissaParam,
                     tangent.ordinateParam,
-                    os.linesep))
+                    writer_linesep))
 
 
 def write_entry_point(f, node, name):
@@ -481,12 +487,12 @@ def write_entry_point(f, node, name):
     """
 
     # XML Header
-    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + os.linesep)
+    f.write(u"<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + writer_linesep)
 
     # root tag
     f.write((u"<ChoregrapheProject name=\"{}\" format_version=\"{}\" >{}")
-            .format(name, u"4", os.linesep))
+            .format(name, u"4", writer_linesep))
 
     _write_box_instance(f, node, '    ')
 
-    f.write(u"</ChoregrapheProject>" + os.linesep)
+    f.write(u"</ChoregrapheProject>" + writer_linesep)
