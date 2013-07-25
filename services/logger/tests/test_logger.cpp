@@ -32,7 +32,7 @@ std::string startService(qi::Session& s)
   return services.front();
 }
 
-qi::atomic<int> messagesCount(0);
+qi::Atomic<int> messagesCount(0);
 Message* messages = new Message[100];
 
 void onMessage(const Message& msg)
