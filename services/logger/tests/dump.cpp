@@ -1,3 +1,11 @@
+/*
+** Author(s):
+**  - Herve Cuche <hcuche@aldebaran-robotics.com>
+**  - Matthieu Nottale <mnottale@aldebaran-robotics.com>
+**
+** Copyright (C) 2013 Aldebaran Robotics
+*/
+
 #include <qimessaging/session.hpp>
 #include <boost/thread.hpp>
 
@@ -24,11 +32,11 @@ void onMessage(int i)
 void onMessage2(const Message& msg)
 {
   std::cerr << "MESSAGE " << msg.level
-    << " " << msg.source
-    <<" " << msg.message
-    << ' ' << msg.category
-    << ' ' << msg.location
-    << std::endl;
+            << " " << msg.source
+            << " " << msg.message
+            << ' ' << msg.category
+            << ' ' << msg.location
+            << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -38,6 +46,7 @@ int main(int argc, char** argv)
   std::string target = "tcp://localhost:9559";
   if (argc > 1)
     target = argv[1];
+
   s.connect(target);
   qi::AnyObject glogger = s.service("LoggerService");
   LoggerProxyPtr logger(new LoggerProxy(glogger));
@@ -48,6 +57,6 @@ int main(int argc, char** argv)
   listener->setVerbosity(::qi::LogLevel_Info);
   //listener->asObject()->connect("onMessage", &onMessage);
   registerToLogger(logger);
-  boost::thread t (&ping);
+  boost::thread t(&ping);
   app.run();
 }

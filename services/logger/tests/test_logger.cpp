@@ -1,3 +1,10 @@
+/*
+** Author(s):
+**  - Herve Cuche <hcuche@aldebaran-robotics.com>
+**  - Matthieu Nottale <mnottale@aldebaran-robotics.com>
+**
+** Copyright (C) 2013 Aldebaran Robotics
+*/
 
 #include <gtest/gtest.h>
 
@@ -39,23 +46,25 @@ void onMessage(const Message& msg)
 {
   std::stringstream ss;
   ss << "MESSAGE " << msg.level
-    << " " << msg.source
-    <<" " << msg.message
-    << ' ' << msg.category
-    << ' ' << msg.location
-    << std::endl;
+     << " " << msg.source
+     << " " << msg.message
+     << " " << msg.category
+     << " " << msg.location
+     << std::endl;
   std::cerr << ss.str() << std::endl;
   int p = ++messagesCount;
-  messages[p-1] = msg;
+  messages[p - 1] = msg;
 }
 
 bool waitMessage(int count, bool exact = true)
 {
-  for (int i=0; count > *messagesCount && i < 50; ++i)
+  for (int i = 0; count > *messagesCount && i < 50; ++i)
     qi::os::msleep(10);
-  bool ok =  exact? (count == *messagesCount): (count <= *messagesCount);
+
+  bool ok =  exact ? (count == *messagesCount) : (count <= *messagesCount);
   if (!ok)
-    qiLogError("test") << "Failed wait for " << count <<" : " << *messagesCount;
+    qiLogError("test") << "Failed wait for " << count << " : " << *messagesCount;
+
   return ok;
 }
 
@@ -67,12 +76,12 @@ TEST(Logger, test)
   std::string loggerName = startService(*p.server());
   startClient(*p.client(), loggerName);
   ASSERT_TRUE(listener);
-  
+
   // use a third session to register the provider
   qi::Session s2;
   s2.connect(p.serviceDirectoryEndpoints()[0]);
   registerToLogger(LoggerProxyPtr(new LoggerProxy(s2.service(loggerName))));
-  
+
   listener->clearFilters();
   //listener->setCategory("qi*", qi::LogLevel_Silent);
   //listener->setCategory("qi.ThreadPool", qi::LogLevel_Silent);
@@ -90,7 +99,8 @@ TEST(Logger, test)
 }
 
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
   qi::Application app(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
   TestMode::initTestMode(argc, argv);
