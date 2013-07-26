@@ -34,10 +34,10 @@ public:
 private:
   void log(qi::LogLevel level,
            qi::os::timeval tv,
-           const char* file,
-           const char* function,
            const char* category,
            const char* message,
+           const char* file,
+           const char* function,
            int line);
 
 private:
