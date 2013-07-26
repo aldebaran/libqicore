@@ -197,7 +197,7 @@ void LoggerManager::recomputeCategories()
   {
     for (FilterMap::iterator it = _listeners[i]->_filters.begin();
          it != _listeners[i]->_filters.end();
-         ++i)
+         ++it)
     {
       // If we find a glob that has an other pattern than 'foo*', bailout
       size_t star = it->first.find('*');
