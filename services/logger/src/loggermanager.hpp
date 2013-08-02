@@ -83,7 +83,7 @@ private:
   std::vector<std::pair<std::string, qi::LogLevel> > _filters;
 
   /// FIXME keep a week-ptr
-  std::vector<LogListenerPtr>      _listeners;
+  std::vector<boost::weak_ptr<LogListener> >      _listeners;
   std::vector<LogProviderProxyPtr> _providers;
 
 private:

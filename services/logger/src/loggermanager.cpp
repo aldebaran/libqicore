@@ -126,16 +126,35 @@ LoggerManager::LoggerManager()
 void LoggerManager::log(const LogMessage& msg)
 {
   DEBUG("LoggerManager::log " << _listeners.size());
-  for (unsigned i = 0; i < _listeners.size(); ++i)
+  for (int listenerIt = 0; listenerIt < _listeners.size();)
   {
-    _listeners[i]->log(msg);
+    bool remove = true;
+    if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
+    {
+      DEBUG("LoggerManager::log listener lock");
+      l->log(msg);
+      remove = false;
+    }
+
+    if (remove)
+    {
+      std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
+      _listeners.pop_back();
+    }
+    else
+    {
+      ++listenerIt;
+    }
   }
+  DEBUG("LoggerManager::log exit " << _listeners.size());
 }
+
 
 LogListenerPtr LoggerManager::getListener()
 {
   LogListenerPtr ptr = boost::make_shared<LogListener>(boost::ref(*this));
-  _listeners.push_back(ptr);
+  boost::weak_ptr<LogListener> l(ptr);
+  _listeners.push_back(l);
 
   return ptr;
 }
@@ -149,9 +168,25 @@ void LoggerManager::recomputeVerbosities(qi::LogLevel from,
   }
 
   qi::LogLevel newMax = qi::LogLevel_Silent;
-  for (unsigned i = 0; i < _listeners.size(); ++i)
+
+  for (int listenerIt = 0; listenerIt < _listeners.size();)
   {
-    newMax = std::max(newMax, _listeners[i]->verbosity.get());
+    bool remove = true;
+    if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
+    {
+      newMax = std::max(newMax, l->verbosity.get());
+      remove = false;
+    }
+
+    if (remove)
+    {
+      std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
+      _listeners.pop_back();
+    }
+    else
+    {
+      ++listenerIt;
+    }
   }
 
   DEBUG("recomputed verbosity " << newMax);
@@ -182,39 +217,61 @@ void LoggerManager::recomputeCategories()
   {
     // easy case
     _filters.clear();
-    _filters.insert(_filters.begin(), _listeners.front()->_filters.begin(), _listeners.front()->_filters.end());
-    for (unsigned i = 0; i < _providers.size(); ++i)
+    if (boost::shared_ptr<LogListener> l = _listeners.front().lock())
     {
-      _providers[i]->clearAndSet(_filters).async();
+      _filters.insert(_filters.begin(), l->_filters.begin(), l->_filters.end());
+      for (unsigned i = 0; i < _providers.size(); ++i)
+      {
+        _providers[i]->clearAndSet(_filters).async();
+      }
+    }
+    else
+    {
+      _listeners.clear();
     }
     return;
   }
-
   _filters.clear();
   typedef LogListener::FilterMap FilterMap;
   FilterMap map;
-  for (unsigned i = 0; i < _listeners.size(); ++i)
-  {
-    for (FilterMap::iterator it = _listeners[i]->_filters.begin();
-         it != _listeners[i]->_filters.end();
-         ++it)
-    {
-      // If we find a glob that has an other pattern than 'foo*', bailout
-      size_t star = it->first.find('*');
-      if (star != it->first.npos && star < it->first.length() - 1)
-      {
-        goto bailout;
-      }
 
-      FilterMap::iterator found = map.find(it->first);
-      if (found == map.end())
+  for (int listenerIt = 0; listenerIt < _listeners.size();)
+  {
+    bool remove = true;
+    if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
+    {
+      remove = false;
+      for (FilterMap::iterator it = l->_filters.begin();
+           it != l->_filters.end();
+           ++it)
       {
-        map[it->first] = it->second;
+        // If we find a glob that has an other pattern than 'foo*', bailout
+        size_t star = it->first.find('*');
+        if (star != it->first.npos && star < it->first.length() - 1)
+        {
+          goto bailout;
+        }
+
+        FilterMap::iterator found = map.find(it->first);
+        if (found == map.end())
+        {
+          map[it->first] = it->second;
+        }
+        else
+        {
+          found->second = std::max(found->second, it->second);
+        }
       }
-      else
-      {
-        found->second = std::max(found->second, it->second);
-      }
+    }
+
+    if (remove)
+    {
+      std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
+      _listeners.pop_back();
+    }
+    else
+    {
+      ++listenerIt;
     }
   }
 
@@ -257,5 +314,6 @@ void LoggerManager::recomputeCategories()
     _providers[i]->clearAndSet(_filters).async();
   }
 }
+
 
 #include "loggermanager_bind.hpp"
