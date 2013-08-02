@@ -195,7 +195,22 @@ void LoggerManager::recomputeVerbosities(qi::LogLevel from,
     _maxLevel = newMax;
     for (unsigned i = 0; i < _providers.size(); ++i)
     {
-      _providers[i]->setVerbosity(_maxLevel);
+      bool remove = true;
+      if (LogProviderProxyPtr p = _providers[i].lock())
+      {
+        p->setVerbosity(_maxLevel);
+        remove = false;
+      }
+
+      if (remove)
+      {
+        std::swap(_providers[_providers.size() - 1], _providers[i]);
+        _providers.pop_back();
+      }
+      else
+      {
+        ++i;
+      }
     }
   }
 }
@@ -203,7 +218,7 @@ void LoggerManager::recomputeVerbosities(qi::LogLevel from,
 void LoggerManager::addProvider(LogProviderProxyPtr provider)
 {
   DEBUG("LoggerManager::addProvider");
-  _providers.push_back(provider);
+  _providers.push_back(boost::weak_ptr<LogProviderProxy>(provider));
   provider->setVerbosity(_maxLevel).async();
   provider->clearAndSet(_filters).async();
 }
@@ -222,7 +237,22 @@ void LoggerManager::recomputeCategories()
       _filters.insert(_filters.begin(), l->_filters.begin(), l->_filters.end());
       for (unsigned i = 0; i < _providers.size(); ++i)
       {
-        _providers[i]->clearAndSet(_filters).async();
+        bool remove = true;
+        if (LogProviderProxyPtr p = _providers[i].lock())
+        {
+          p->clearAndSet(_filters).async();
+          remove = false;
+        }
+
+        if (remove)
+        {
+          std::swap(_providers[_providers.size() - 1], _providers[i]);
+          _providers.pop_back();
+        }
+        else
+        {
+          ++i;
+        }
       }
     }
     else
@@ -311,7 +341,22 @@ void LoggerManager::recomputeCategories()
  bailout:
   for (unsigned i = 0; i < _providers.size(); ++i)
   {
-    _providers[i]->clearAndSet(_filters).async();
+    bool remove = true;
+    if (LogProviderProxyPtr p = _providers[i].lock())
+    {
+      p->clearAndSet(_filters).async();
+      remove = false;
+    }
+
+    if (remove)
+    {
+      std::swap(_providers[_providers.size() - 1], _providers[i]);
+      _providers.pop_back();
+    }
+    else
+    {
+      ++i;
+    }
   }
 }
 
