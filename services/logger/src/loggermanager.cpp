@@ -85,7 +85,7 @@ void LogListener::setCategory(const std::string& cat,
 
 void LogListener::log(const LogMessage& msg)
 {
-  DEBUG("LL:log");
+  DEBUG("LL:log: " << msg.message);
   if (msg.level > verbosity.get())
     return;
 

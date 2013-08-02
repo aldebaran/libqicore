@@ -61,7 +61,7 @@ void LogProvider::log(qi::LogLevel level,
                       const char* function,
                       int line)
 {
-  DEBUG("logprovider log callback");
+  DEBUG("logprovider log callback: " <<  message << " " << file <<  " " << function);
 
   LogMessage msg;
   std::string source(file);
