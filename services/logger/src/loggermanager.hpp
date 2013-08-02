@@ -82,9 +82,8 @@ private:
   qi::LogLevel _maxLevel;
   std::vector<std::pair<std::string, qi::LogLevel> > _filters;
 
-  /// FIXME keep a week-ptr
   std::vector<boost::weak_ptr<LogListener> >      _listeners;
-  std::vector<LogProviderProxyPtr> _providers;
+  std::vector<boost::weak_ptr<LogProviderProxy> > _providers;
 
 private:
   friend class LogListener;
