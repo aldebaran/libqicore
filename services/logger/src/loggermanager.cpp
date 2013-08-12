@@ -9,7 +9,7 @@
 #include <boost/make_shared.hpp>
 
 #include <logger/logger.hpp>
-#include <logger/logger_service.hpp>
+#include "src/loggermanager.hpp"
 
 #include <qi/os.hpp>
 
@@ -55,7 +55,7 @@ bool set_verbosity(LogListener* ll,
 }
 
 // LogListener Class
-LogListener::LogListener(Logger& l)
+LogListener::LogListener(LoggerManager& l)
   : _logger(l)
   , verbosity(qi::Property<qi::LogLevel>::Getter(),
               boost::bind(&set_verbosity, this, _1, _2))
@@ -111,28 +111,28 @@ void LogListener::log(const Message& msg)
 
 
 
-LoggerPtr make_LoggerPtr()
+LoggerManagerPtr make_LoggerPtr()
 {
-  return boost::make_shared<Logger>();
+  return boost::make_shared<LoggerManager>();
 }
 
-// Logger Class
-Logger::Logger()
+// LoggerManager Class
+LoggerManager::LoggerManager()
   : _maxLevel(qi::LogLevel_Silent)
 {
-  DEBUG("Logger instanciating");
+  DEBUG("LoggerManager instanciating");
 }
 
-void Logger::log(const Message& msg)
+void LoggerManager::log(const Message& msg)
 {
-  DEBUG("Logger::log " << _listeners.size());
+  DEBUG("LoggerManager::log " << _listeners.size());
   for (unsigned i = 0; i < _listeners.size(); ++i)
   {
     _listeners[i]->log(msg);
   }
 }
 
-LogListenerPtr Logger::getListener()
+LogListenerPtr LoggerManager::getListener()
 {
   LogListenerPtr ptr = boost::make_shared<LogListener>(boost::ref(*this));
   _listeners.push_back(ptr);
@@ -140,8 +140,8 @@ LogListenerPtr Logger::getListener()
   return ptr;
 }
 
-void Logger::recomputeVerbosities(qi::LogLevel from,
-                                  qi::LogLevel to)
+void LoggerManager::recomputeVerbosities(qi::LogLevel from,
+                                         qi::LogLevel to)
 {
   if (_maxLevel >= from && _maxLevel >= to)
   {
@@ -165,15 +165,15 @@ void Logger::recomputeVerbosities(qi::LogLevel from,
   }
 }
 
-void Logger::addProvider(LogProviderProxyPtr provider)
+void LoggerManager::addProvider(LogProviderProxyPtr provider)
 {
-  DEBUG("Logger::addProvider");
+  DEBUG("LoggerManager::addProvider");
   _providers.push_back(provider);
   provider->setVerbosity(_maxLevel).async();
   provider->clearAndSet(_filters).async();
 }
 
-void Logger::recomputeCategories()
+void LoggerManager::recomputeCategories()
 {
   // Soon you will know why this function is at the end of the source file...
   // Merge requests in one big map, keeping most verbose, ignoring globbing
@@ -258,4 +258,4 @@ void Logger::recomputeCategories()
   }
 }
 
-#include "logger_bind.hpp"
+#include "loggermanager_bind.hpp"
