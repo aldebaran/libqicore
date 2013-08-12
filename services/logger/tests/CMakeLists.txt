@@ -17,7 +17,5 @@ function(qi_create_session_test name)
 endfunction()
 
 
-qi_create_bin(dumper dump.cpp DEPENDS QIMESSAGING loggerclient)
-
-qi_create_session_test(test_logger           SRC test_logger.cpp DEPENDS QI QIMESSAGING GTEST TESTSESSION loggerclient TIMEOUT 10)
-
+qi_create_bin(dumper dump.cpp DEPENDS QIMESSAGING LOGPROVIDER)
+qi_create_session_test(test_logger SRC test_logger.cpp DEPENDS QI QIMESSAGING GTEST TESTSESSION LOGPROVIDER TIMEOUT 10)

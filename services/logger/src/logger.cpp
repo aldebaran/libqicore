@@ -1,10 +1,19 @@
+/*
+** Author(s):
+**  - Herve Cuche <hcuche@aldebaran-robotics.com>
+**  - Matthieu Nottale <mnottale@aldebaran-robotics.com>
+**
+** Copyright (C) 2013 Aldebaran Robotics
+*/
+
 #include <boost/make_shared.hpp>
 
-#include <src/logger.hpp>
-#include <src/logger_service.hpp>
+#include <logger/logger.hpp>
+#include <logger/logger_service.hpp>
+
 #include <qi/os.hpp>
 
-#include "logprovider_proxy.hpp"
+#include <services/logger/logprovider_proxy.hpp>
 
 static bool debug = getenv("LOGGER_DEBUG");
 #define DEBUG(a)                                \
@@ -47,9 +56,9 @@ bool set_verbosity(LogListener* ll,
 
 // LogListener Class
 LogListener::LogListener(Logger& l)
-  : verbosity(qi::Property<qi::LogLevel>::Getter(),
+  : _logger(l)
+  , verbosity(qi::Property<qi::LogLevel>::Getter(),
               boost::bind(&set_verbosity, this, _1, _2))
-  , _logger(l)
 {
   verbosity.set(qi::LogLevel_Debug);
   onMessage.setCallType(qi::MetaCallType_Queued);
