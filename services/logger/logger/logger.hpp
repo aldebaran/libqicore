@@ -14,7 +14,7 @@
 
 QI_TYPE_ENUM_REGISTER(qi::LogLevel)
 
-struct Message
+struct LogMessage
 {
   std::string source;
   qi::LogLevel level;
@@ -24,6 +24,6 @@ struct Message
   std::string message;
 };
 
-QI_TYPE_STRUCT_REGISTER(::Message, source, level, timestamp, category, location, message);
+QI_TYPE_STRUCT_REGISTER(::LogMessage, source, level, timestamp, category, location, message);
 
 #endif // !QICORE_LOGGER_HPP_

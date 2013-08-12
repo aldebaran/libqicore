@@ -48,7 +48,7 @@ private:
   LoggerManager& _logger;
 
 public:
-  qi::Signal<Message> onMessage;
+  qi::Signal<LogMessage> onLogMessage;
   qi::Property<qi::LogLevel> verbosity;
 
 private:
@@ -57,7 +57,7 @@ private:
                             qi::LogLevel& level,
                             const qi::LogLevel& newvalue);
 
-  void log(const Message& m);
+  void log(const LogMessage& m);
 };
 
 QI_TYPE_NOT_CLONABLE(LogListener);
@@ -69,7 +69,7 @@ class LoggerManager
 public:
   LoggerManager();
 
-  void log(const Message& msg);
+  void log(const LogMessage& msg);
   LogListenerPtr getListener();
   void addProvider(LogProviderProxyPtr provider);
 

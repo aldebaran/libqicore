@@ -61,7 +61,7 @@ LogListener::LogListener(LoggerManager& l)
               boost::bind(&set_verbosity, this, _1, _2))
 {
   verbosity.set(qi::LogLevel_Debug);
-  onMessage.setCallType(qi::MetaCallType_Queued);
+  onLogMessage.setCallType(qi::MetaCallType_Queued);
 }
 
 void LogListener::setVerbosity(qi::LogLevel level)
@@ -83,7 +83,7 @@ void LogListener::setCategory(const std::string& cat,
   _logger.recomputeCategories();
 }
 
-void LogListener::log(const Message& msg)
+void LogListener::log(const LogMessage& msg)
 {
   DEBUG("LL:log");
   if (msg.level > verbosity.get())
@@ -106,7 +106,7 @@ void LogListener::log(const Message& msg)
 
   DEBUG("LL:log filter " << pass);
   if (pass)
-    onMessage(msg);
+    onLogMessage(msg);
 }
 
 
@@ -123,7 +123,7 @@ LoggerManager::LoggerManager()
   DEBUG("LoggerManager instanciating");
 }
 
-void LoggerManager::log(const Message& msg)
+void LoggerManager::log(const LogMessage& msg)
 {
   DEBUG("LoggerManager::log " << _listeners.size());
   for (unsigned i = 0; i < _listeners.size(); ++i)

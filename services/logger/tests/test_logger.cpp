@@ -36,9 +36,9 @@ std::string startService(qi::Session& s)
 }
 
 qi::Atomic<int> messagesCount(0);
-Message* messages = new Message[100];
+LogMessage* messages = new LogMessage[100];
 
-void onMessage(const Message& msg)
+void onLogMessage(const LogMessage& msg)
 {
   std::stringstream ss;
   ss << "MESSAGE " << msg.level
@@ -52,7 +52,7 @@ void onMessage(const Message& msg)
   messages[p - 1] = msg;
 }
 
-bool waitMessage(int count, bool exact = true)
+bool waitLogMessage(int count, bool exact = true)
 {
   for (int i = 0; count > *messagesCount && i < 50; ++i)
     qi::os::msleep(10);
@@ -83,14 +83,14 @@ TEST(Logger, test)
   //listener->setCategory("qi.ThreadPool", qi::LogLevel_Silent);
   listener->setCategory("foo", qi::LogLevel_Debug);
   listener->setVerbosity(qi::LogLevel_Info);
-  listener->onMessage.connect(&onMessage);
+  listener->onLogMessage.connect(&onLogMessage);
   qi::os::msleep(200);
   messagesCount = 0;
   qiLogError("foo") << "bar";
   qi::os::msleep(200);
-  ASSERT_TRUE(waitMessage(1, true));
+  ASSERT_TRUE(waitLogMessage(1, true));
   qiLogWarning("foo") << "bar";
-  ASSERT_TRUE(waitMessage(2, true));
+  ASSERT_TRUE(waitLogMessage(2, true));
   listener.reset();
 }
 
