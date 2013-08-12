@@ -6,8 +6,8 @@
 ** Copyright (C) 2013 Aldebaran Robotics
 */
 
-#ifndef LOGGER_SERVICE_HPP_
-# define LOGGER_SERVICE_HPP_
+#ifndef LOGGERMANAGER_HPP_
+# define LOGGERMANAGER_HPP_
 
 # include <boost/shared_ptr.hpp>
 
@@ -23,8 +23,8 @@
 # include <utility>
 # include <vector>
 
-class Logger;
-typedef boost::shared_ptr<Logger> LoggerPtr;
+class LoggerManager;
+typedef boost::shared_ptr<LoggerManager> LoggerManagerPtr;
 
 class LogListener;
 typedef boost::shared_ptr<LogListener> LogListenerPtr;
@@ -33,7 +33,7 @@ typedef boost::shared_ptr<LogListener> LogListenerPtr;
 class LogListener
 {
 public:
-  explicit LogListener(Logger& l);
+  explicit LogListener(LoggerManager& l);
 
   void setVerbosity(qi::LogLevel level);
   void setCategory(const std::string& cat,
@@ -44,15 +44,15 @@ public:
 
 private:
   typedef std::map<std::string, qi::LogLevel> FilterMap;
-  FilterMap _filters;
-  Logger&   _logger;
+  FilterMap      _filters;
+  LoggerManager& _logger;
 
 public:
   qi::Signal<Message> onMessage;
   qi::Property<qi::LogLevel> verbosity;
 
 private:
-  friend class Logger;
+  friend class LoggerManager;
   friend bool set_verbosity(LogListener* ll,
                             qi::LogLevel& level,
                             const qi::LogLevel& newvalue);
@@ -64,10 +64,10 @@ QI_TYPE_NOT_CLONABLE(LogListener);
 
 
 /// @threadSafe
-class Logger
+class LoggerManager
 {
 public:
-  Logger();
+  LoggerManager();
 
   void log(const Message& msg);
   LogListenerPtr getListener();
@@ -93,4 +93,4 @@ private:
                             const qi::LogLevel& newvalue);
 };
 
-#endif // !LOGGER_SERVICE_HPP_
+#endif // !LOGGERMANAGER_HPP_

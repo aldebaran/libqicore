@@ -15,7 +15,7 @@
 # include <qi/macro.hpp>
 
 # include <logger/logger.hpp>
-# include <services/logger/logger_proxy.hpp>
+# include <services/logger/loggermanager_proxy.hpp>
 # include <services/logger/loglistener_proxy.hpp>
 
 # include <set>
@@ -27,7 +27,7 @@ class LogProvider;
 typedef boost::shared_ptr<LogProvider> LogProviderPtr;
 
 // Register local provider to service
-QI_API void registerToLogger(LoggerProxyPtr logger);
+QI_API void registerToLogger(LoggerManagerProxyPtr logger);
 
 /** Registers to a local or remote Logger service
  *  Sends local logger message to it
@@ -36,8 +36,8 @@ QI_API void registerToLogger(LoggerProxyPtr logger);
  */
 class QI_API LogProvider
 {
-public:
-  LogProvider(LoggerProxyPtr logger);
+ public:
+  LogProvider(LoggerManagerProxyPtr logger);
   ~LogProvider();
 
   void setVerbosity(qi::LogLevel level);
@@ -45,7 +45,7 @@ public:
                    qi::LogLevel level);
   void clearAndSet(const std::vector<std::pair<std::string, qi::LogLevel> >& data);
 
-private:
+ private:
   void log(qi::LogLevel level,
            qi::os::timeval tv,
            const char* category,
@@ -54,9 +54,9 @@ private:
            const char* function,
            int line);
 
-private:
+ private:
   std::set<std::string> _setCategories;
-  LoggerProxyPtr        _logger;
+  LoggerManagerProxyPtr _logger;
   qi::log::Subscriber   _subscriber;
 };
 QI_TYPE_NOT_CLONABLE(LogProvider);

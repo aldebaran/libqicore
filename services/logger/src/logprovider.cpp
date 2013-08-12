@@ -21,7 +21,7 @@ static bool loggerDebug = getenv("LOGGER_DEBUG");
     if (loggerDebug) std::cerr << a << std::endl;       \
   } while(0)
 
-void registerToLogger(LoggerProxyPtr logger)
+void registerToLogger(LoggerManagerProxyPtr logger)
 {
   DEBUG("registering new provider");
   if (instance)
@@ -35,7 +35,7 @@ void registerToLogger(LoggerProxyPtr logger)
   logger->addProvider(ptr, qi::MetaCallType_Queued).async();
 }
 
-LogProvider::LogProvider(LoggerProxyPtr logger)
+LogProvider::LogProvider(LoggerManagerProxyPtr logger)
   : _logger(logger)
 {
   _subscriber = qi::log::addLogHandler("remoteLogger",
