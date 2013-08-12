@@ -13,27 +13,23 @@
 #include <qimessaging/session.hpp>
 #include <testsession/testsessionpair.hpp>
 
-#include "src/logger.hpp"
-#include "logger_proxy.hpp"
-#include "loglistener_proxy.hpp"
+#include <logger/logger.hpp>
+#include <logger/logprovider.hpp>
+#include <services/logger/loggermanager_proxy.hpp>
+#include <services/logger/loglistener_proxy.hpp>
 
 
-LoggerProxyPtr logger;
 LogListenerProxyPtr listener;
 
 void startClient(qi::Session& s, const std::string& serviceName)
 {
-  qi::AnyObject glogger = s.service(serviceName);
-  ASSERT_TRUE(glogger);
-  logger = LoggerProxyPtr(new LoggerProxy(glogger));
-  listener = logger->getListener();
-  // we lose glogger, but logger keeps it alive
-  // can we lose logger? In theory yes
+  LoggerManagerProxy logger(s.service(serviceName));
+  listener = logger.getListener();
 }
 
 std::string startService(qi::Session& s)
 {
-  std::vector<std::string> services = s.loadService("logger");
+  std::vector<std::string> services = s.loadService("loggermanager");
   EXPECT_EQ(1u, services.size());
   qi::details::printMetaObject(std::cerr, s.service(services.front()).value()->metaObject());
   return services.front();
@@ -80,7 +76,7 @@ TEST(Logger, test)
   // use a third session to register the provider
   qi::Session s2;
   s2.connect(p.serviceDirectoryEndpoints()[0]);
-  registerToLogger(LoggerProxyPtr(new LoggerProxy(s2.service(loggerName))));
+  registerToLogger(LoggerManagerProxyPtr(new LoggerManagerProxy(s2.service(loggerName))));
 
   listener->clearFilters();
   //listener->setCategory("qi*", qi::LogLevel_Silent);

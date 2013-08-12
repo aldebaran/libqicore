@@ -1,17 +1,15 @@
-#include <set>
-#include <string>
+/*
+** Author(s):
+**  - Herve Cuche <hcuche@aldebaran-robotics.com>
+**  - Matthieu Nottale <mnottale@aldebaran-robotics.com>
+**
+** Copyright (C) 2013 Aldebaran Robotics
+*/
 
 #include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <qi/log.hpp>
-
-#include "logger.hpp"
-
-#include "logger_service.hpp"
-#include "logger_proxy.hpp"
-#include "loglistener_proxy.hpp"
-#include "logprovider_bind.cpp"
+#include <logger/logprovider.hpp>
 
 qiLogCategory("logger.provider");
 

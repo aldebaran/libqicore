@@ -1,9 +1,16 @@
-#ifndef QICORE_LOGGER_HPP
-# define QICORE_LOGGER_HPP
+/*
+** Author(s):
+**  - Herve Cuche <hcuche@aldebaran-robotics.com>
+**  - Matthieu Nottale <mnottale@aldebaran-robotics.com>
+**
+** Copyright (C) 2013 Aldebaran Robotics
+*/
+
+#ifndef QICORE_LOGGER_HPP_
+# define QICORE_LOGGER_HPP_
 
 # include <qi/log.hpp>
 # include <qitype/anyobject.hpp>
-# include <boost/shared_ptr.hpp>
 
 QI_TYPE_ENUM_REGISTER(qi::LogLevel)
 
@@ -19,10 +26,4 @@ struct Message
 
 QI_TYPE_STRUCT_REGISTER(::Message, source, level, timestamp, category, location, message);
 
-class LoggerProxy;
-typedef boost::shared_ptr<LoggerProxy> LoggerProxyPtr;
-
-// Register local logger to service
-void registerToLogger(LoggerProxyPtr logger);
-
-#endif // !QICORE_LOGGER_HPP
+#endif // !QICORE_LOGGER_HPP_
