@@ -11,10 +11,10 @@
 
 #include <qi/application.hpp>
 
-#include <logger/logger.hpp>
-#include <logger/logprovider.hpp>
-#include <services/logger/loggermanager_proxy.hpp>
-#include <services/logger/loglistener_proxy.hpp>
+#include <qicore/logmessage.hpp>
+#include <qicore/logprovider.hpp>
+#include <qicore/logmanager_proxy.hpp>
+#include <qicore/loglistener_proxy.hpp>
 
 void ping()
 {
@@ -49,8 +49,8 @@ int main(int argc, char** argv)
     target = argv[1];
 
   s.connect(target);
-  qi::AnyObject glogger = s.service("LoggerManager");
-  LoggerManagerProxyPtr logger(new LoggerManagerProxy(glogger));
+  qi::AnyObject glogger = s.service("LogManager");
+  LogManagerProxyPtr logger(new LogManagerProxy(glogger));
   assert(logger);
   LogListenerProxyPtr listener = logger->getListener();
   assert(listener);

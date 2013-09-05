@@ -6,8 +6,8 @@
 ** Copyright (C) 2013 Aldebaran Robotics
 */
 
-#ifndef QICORE_LOGGER_HPP_
-# define QICORE_LOGGER_HPP_
+#ifndef QICORE_LOG_HPP_
+# define QICORE_LOG_HPP_
 
 # include <qi/log.hpp>
 # include <qitype/anyobject.hpp>
@@ -26,4 +26,4 @@ struct LogMessage
 
 QI_TYPE_STRUCT_REGISTER(::LogMessage, source, level, timestamp, category, location, message);
 
-#endif // !QICORE_LOGGER_HPP_
+#endif // !QICORE_LOG_HPP_

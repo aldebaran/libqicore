@@ -9,19 +9,19 @@
 #include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <logger/logprovider.hpp>
+#include <qicore/logprovider.hpp>
 
-qiLogCategory("logger.provider");
+qiLogCategory("log.provider");
 
 static LogProviderPtr instance;
 
-static bool loggerDebug = getenv("LOGGER_DEBUG");
+static bool logDebug = getenv("LOG_DEBUG");
 #define DEBUG(a)                                        \
   do {                                                  \
-    if (loggerDebug) std::cerr << a << std::endl;       \
+    if (logDebug) std::cerr << a << std::endl;       \
   } while(0)
 
-void registerToLogger(LoggerManagerProxyPtr logger)
+void registerToLogger(LogManagerProxyPtr logger)
 {
   DEBUG("registering new provider");
   if (instance)
@@ -35,7 +35,7 @@ void registerToLogger(LoggerManagerProxyPtr logger)
   logger->addProvider(ptr, qi::MetaCallType_Queued).async();
 }
 
-LogProvider::LogProvider(LoggerManagerProxyPtr logger)
+LogProvider::LogProvider(LogManagerProxyPtr logger)
   : _logger(logger)
 {
   _subscriber = qi::log::addLogHandler("remoteLogger",

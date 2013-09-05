@@ -9,14 +9,14 @@ find_program(_doxygen doxygen)
 if(_doxygen AND NOT QI_NO_DOXYGEN)
 
   qi_create_idl(idlfiles
-    SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/loggermanager.hpp
-    CLASSES LogListener LoggerManager
+    SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/logmanager.hpp
+    CLASSES LogListener LogManager
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/share/idl
     TYPE_MAP qi::LogLevel=i<qi::LogLevel>
   )
 
   qi_create_idl(idlfiles
-    SRC ${CMAKE_CURRENT_SOURCE_DIR}/logger/logprovider.hpp
+    SRC ${CMAKE_CURRENT_SOURCE_DIR}/qicore/logprovider.hpp
     CLASSES LogProvider
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/share/idl
     TYPE_MAP qi::LogLevel=i<qi::LogLevel>
@@ -26,11 +26,11 @@ else()
   set(IDL_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
 
-# LoggerManager Proxy
-qi_create_proxy(${IDL_DIR}/share/idl/LoggerManager.xml
-  LoggerManager
+# LogManager Proxy
+qi_create_proxy(${IDL_DIR}/share/idl/LogManager.xml
+  LogManager
   ${CMAKE_CURRENT_BINARY_DIR}
-  _loggermanager_proxy
+  _logmanager_proxy
 )
 
 # LogProvider Proxy
@@ -47,13 +47,13 @@ qi_create_proxy(${IDL_DIR}/share/idl/LogListener.xml
   _loglistener_proxy
 )
 
-# loggermanager_bind.hpp
-qi_create_binder(_loggermanager_bind
-  IDL ${IDL_DIR}/share/idl/LoggerManager.xml
+# logmanager_bind.hpp
+qi_create_binder(_logmanager_bind
+  IDL ${IDL_DIR}/share/idl/LogManager.xml
   DIR ${CMAKE_CURRENT_BINARY_DIR}
-  NAME LoggerManager
+  NAME LogManager
   SERVICE
-  INCLUDE logger/logger.hpp src/loggermanager.hpp
+  INCLUDE qicore/logmessage.hpp src/logmanager.hpp
 )
 
 # logprovider_bind.cpp
@@ -62,7 +62,7 @@ qi_create_binder(_logprovider_bind
   IDL ${IDL_DIR}/share/idl/LogProvider.xml
   DIR ${CMAKE_CURRENT_BINARY_DIR}
   NAME LogProvider
-  INCLUDE logger/logger.hpp logger/logprovider.hpp
+  INCLUDE qicore/logmessage.hpp qicore/logprovider.hpp
 )
 
 # loglistener_bind.cpp
@@ -71,28 +71,25 @@ qi_create_binder(_loglistener_bind
   IDL ${IDL_DIR}/share/idl/LogListener.xml
   DIR ${CMAKE_CURRENT_BINARY_DIR}
   NAME LogListener
-  INCLUDE logger/logger.hpp src/loggermanager.hpp
+  INCLUDE qicore/logmessage.hpp src/logmanager.hpp
 )
 
 
-qi_create_lib(loggermanager
-  SRC src/loggermanager.cpp logger/logger.hpp ${_loggermanager_proxy} ${_logprovider_proxy} ${_loggermanager_bind} ${_loglistener_bind} ${_loglistener_proxy}
+qi_create_lib(logmanager
+  SRC src/logmanager.cpp qicore/logmessage.hpp qicore/logmanager_proxy.hpp qicore/logprovider_proxy.hpp qicore/logmanager_bind.hpp qicore/loglistener_bind.cpp qicore/loglistener_proxy.hpp
   MODULE
   DEPENDS QITYPE
 )
 
 qi_create_lib(logprovider
   STATIC
-  SRC logger/logger.hpp src/logprovider.cpp ${_loglistener_proxy}  ${_logprovider_bind}
-  DEPENDS QI QITYPE
+  SRC qicore/logmessage.hpp src/logprovider.cpp qicore/loglistener_proxy.hpp qicore/logprovider_bind.cpp
+  DEPENDS QI QITYPE QICORE
  )
 qi_stage_lib(logprovider)
 
 qi_stage_header_only_lib(logservice INCLUDE_DIRS
   "."
-  ${CMAKE_CURRENT_BINARY_DIR}/../..
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
   )
 
 qi_install_data(
