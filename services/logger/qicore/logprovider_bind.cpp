@@ -7,6 +7,8 @@
 #include <qicore/logprovider.hpp>
 
 
+namespace qi
+{
 
 
 static int LogProviderinit()
@@ -22,4 +24,5 @@ static int LogProviderinit()
 }
 static int _init_LogProvider = LogProviderinit();
 
+} // !qi
 

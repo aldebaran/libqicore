@@ -8,6 +8,9 @@
 
 
 
+namespace qi
+{
+
 
 static int LogManagerinit()
 {
@@ -23,4 +26,4 @@ static int LogManagerinit()
 static int _init_LogManager = LogManagerinit();
 QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(LogManager);
 
-
+} // !qi

@@ -19,17 +19,17 @@
 #include <qicore/loglistener_proxy.hpp>
 
 
-LogListenerProxyPtr listener;
+qi::LogListenerProxyPtr listener;
 
 void startClient(qi::Session& s, const std::string& serviceName)
 {
-  LogManagerProxy logger(s.service(serviceName));
+  qi::LogManagerProxy logger(s.service(serviceName));
   listener = logger.getListener();
 }
 
 void startProvider(qi::Session& s, const std::string& serviceName)
 {
-  registerToLogger(LogManagerProxyPtr(new LogManagerProxy(s.service(serviceName))));
+  qi::registerToLogger(qi::LogManagerProxyPtr(new qi::LogManagerProxy(s.service(serviceName))));
 }
 
 std::string startService(qi::Session& s)
@@ -41,9 +41,9 @@ std::string startService(qi::Session& s)
 }
 
 qi::Atomic<int> messagesCount(0);
-LogMessage* messages = new LogMessage[100];
+qi::LogMessage* messages = new qi::LogMessage[100];
 
-void onLogMessage(const LogMessage& msg)
+void onLogMessage(const qi::LogMessage& msg)
 {
   std::stringstream ss;
   ss << "MESSAGE " << msg.level

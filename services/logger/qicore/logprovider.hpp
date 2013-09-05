@@ -22,42 +22,46 @@
 # include <utility> // std::pair
 # include <vector>
 
-class LogProvider;
-typedef boost::shared_ptr<LogProvider> LogProviderPtr;
+namespace qi
+{
+  class LogProvider;
+  typedef boost::shared_ptr<LogProvider> LogProviderPtr;
 
-// Register local provider to service
-void registerToLogger(LogManagerProxyPtr logger);
+  // Register local provider to service
+  void registerToLogger(LogManagerProxyPtr logger);
 
-/** Registers to a local or remote Logger service
+  /** Registers to a local or remote Logger service
  *  Sends local logger message to it
  *  Honors commands from it to configure local logger verbosity.
  *  @threadSafe
  */
-class LogProvider
-{
- public:
-  LogProvider(LogManagerProxyPtr logger);
-  ~LogProvider();
+  class LogProvider
+  {
+    public:
+      LogProvider(LogManagerProxyPtr logger);
+      ~LogProvider();
 
-  void setVerbosity(qi::LogLevel level);
-  void setCategory(const std::string& cat,
-                   qi::LogLevel level);
-  void clearAndSet(const std::vector<std::pair<std::string, qi::LogLevel> >& data);
+      void setVerbosity(qi::LogLevel level);
+      void setCategory(const std::string& cat,
+                       qi::LogLevel level);
+      void clearAndSet(const std::vector<std::pair<std::string, qi::LogLevel> >& data);
 
- private:
-  void log(qi::LogLevel level,
-           qi::os::timeval tv,
-           const char* category,
-           const char* message,
-           const char* file,
-           const char* function,
-           int line);
+    private:
+      void log(qi::LogLevel level,
+               qi::os::timeval tv,
+               const char* category,
+               const char* message,
+               const char* file,
+               const char* function,
+               int line);
 
- private:
-  std::set<std::string> _setCategories;
-  LogManagerProxyPtr    _logger;
-  qi::log::Subscriber   _subscriber;
-};
-QI_TYPE_NOT_CLONABLE(LogProvider);
+    private:
+      std::set<std::string> _setCategories;
+      LogManagerProxyPtr    _logger;
+      qi::log::Subscriber   _subscriber;
+  };
+} // !qi
+
+QI_TYPE_NOT_CLONABLE(qi::LogProvider);
 
 #endif // !LOGPROVIDER_HPP_

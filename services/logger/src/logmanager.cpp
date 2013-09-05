@@ -18,7 +18,7 @@
 static bool debug = getenv("LOG_DEBUG");
 #define DEBUG(a)                                \
   do {                                          \
-    if (debug) std::cerr << a << std::endl;     \
+  if (debug) std::cerr << a << std::endl;     \
   } while(0)
 
 /* We have multiple inputs: logproviders that push messages and that we
@@ -42,7 +42,9 @@ static bool debug = getenv("LOG_DEBUG");
  * but the task is subtly different
  */
 
-bool set_verbosity(LogListener* ll,
+namespace qi
+{
+bool set_verbosity(qi::LogListener* ll,
                    qi::LogLevel& level,
                    const qi::LogLevel& newvalue)
 {
@@ -54,193 +56,167 @@ bool set_verbosity(LogListener* ll,
   return true;
 }
 
-// LogListener Class
-LogListener::LogListener(LogManager& l)
-  : _logger(l)
-  , verbosity(qi::Property<qi::LogLevel>::Getter(),
-              boost::bind(&set_verbosity, this, _1, _2))
-{
-  verbosity.set(qi::LogLevel_Debug);
-  onLogMessage.setCallType(qi::MetaCallType_Queued);
-}
-
-void LogListener::setVerbosity(qi::LogLevel level)
-{
-  DEBUG("LL verbosity " << level);
-  verbosity.set(level);
-}
-
-void LogListener::clearFilters()
-{
-  _filters.clear();
-  _logger.recomputeCategories();
-}
-
-void LogListener::setCategory(const std::string& cat,
-                              qi::LogLevel level)
-{
-  _filters[cat] = level;
-  _logger.recomputeCategories();
-}
-
-void LogListener::log(const LogMessage& msg)
-{
-  DEBUG("LL:log: " << msg.message);
-  if (msg.level > verbosity.get())
-    return;
-
-  // Check filters.
-  // map ordering will give us more generic globbing filter first
-  // so we must not stop on first negative filter, but go on
-  // to see if a positive filter overrides it@
-  bool pass = true;
-  for (FilterMap::iterator it = _filters.begin(); it != _filters.end(); ++it)
+  // LogListener Class
+  LogListener::LogListener(LogManager& l)
+    : _logger(l)
+    , verbosity(qi::Property<qi::LogLevel>::Getter(),
+                boost::bind(&set_verbosity, this, _1, _2))
   {
-    const std::string& f = it->first;
-    if (f == msg.category ||
-        (f.find('*') != f.npos && qi::os::fnmatch(f, msg.category)))
-    {
-      pass = msg.level <= it->second;
-    }
+    DEBUG("LL ctor logger: " << &_logger <<  " this: " << this);
+    verbosity.set(qi::LogLevel_Debug);
+    onLogMessage.setCallType(qi::MetaCallType_Queued);
   }
 
-  DEBUG("LL:log filter " << pass);
-  if (pass)
-    onLogMessage(msg);
-}
-
-
-
-LogManagerPtr make_LogPtr()
-{
-  return boost::make_shared<LogManager>();
-}
-
-// LogManager Class
-LogManager::LogManager()
-  : _maxLevel(qi::LogLevel_Silent)
-{
-  DEBUG("LogManager instanciating");
-}
-
-void LogManager::log(const LogMessage& msg)
-{
-  DEBUG("LogManager::log " << _listeners.size());
-  for (int listenerIt = 0; listenerIt < _listeners.size();)
+  LogListener::~LogListener()
   {
-    bool remove = true;
-    if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
-    {
-      DEBUG("LogManager::log listener lock");
-      l->log(msg);
-      remove = false;
-    }
-
-    if (remove)
-    {
-      std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
-      _listeners.pop_back();
-    }
-    else
-    {
-      ++listenerIt;
-    }
-  }
-  DEBUG("LogManager::log exit " << _listeners.size());
-}
-
-
-LogListenerPtr LogManager::getListener()
-{
-  LogListenerPtr ptr = boost::make_shared<LogListener>(boost::ref(*this));
-  boost::weak_ptr<LogListener> l(ptr);
-  _listeners.push_back(l);
-
-  return ptr;
-}
-
-void LogManager::recomputeVerbosities(qi::LogLevel from,
-                                         qi::LogLevel to)
-{
-  if (_maxLevel >= from && _maxLevel >= to)
-  {
-    return;
+    DEBUG("LL ~LogListener logger: " << &_logger <<  " this: " << this);
   }
 
-  qi::LogLevel newMax = qi::LogLevel_Silent;
-
-  for (int listenerIt = 0; listenerIt < _listeners.size();)
+  void LogListener::setVerbosity(qi::LogLevel level)
   {
-    bool remove = true;
-    if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
-    {
-      newMax = std::max(newMax, l->verbosity.get());
-      remove = false;
-    }
-
-    if (remove)
-    {
-      std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
-      _listeners.pop_back();
-    }
-    else
-    {
-      ++listenerIt;
-    }
+    DEBUG("LL verbosity " << level << " logger: " << &_logger << " this: " << this);
+    verbosity.set(level);
   }
 
-  DEBUG("recomputed verbosity " << newMax);
-  if (newMax != _maxLevel)
+  void LogListener::clearFilters()
   {
-    _maxLevel = newMax;
-    for (unsigned i = 0; i < _providers.size(); ++i)
+    DEBUG("LL clearFilters logger: " << &_logger << " this: " << this);
+    _filters.clear();
+    _logger.recomputeCategories();
+  }
+
+  void LogListener::setCategory(const std::string& cat,
+                                qi::LogLevel level)
+  {
+    DEBUG("LL setCategory logger: " << &_logger << " this: " << this);
+    _filters[cat] = level;
+    _logger.recomputeCategories();
+  }
+
+  void LogListener::log(const LogMessage& msg)
+  {
+    DEBUG("LL:log: " << msg.message);
+    if (msg.level > verbosity.get())
+      return;
+
+    // Check filters.
+    // map ordering will give us more generic globbing filter first
+    // so we must not stop on first negative filter, but go on
+    // to see if a positive filter overrides it@
+    bool pass = true;
+    for (FilterMap::iterator it = _filters.begin(); it != _filters.end(); ++it)
+    {
+      const std::string& f = it->first;
+      if (f == msg.category ||
+          (f.find('*') != f.npos && qi::os::fnmatch(f, msg.category)))
+      {
+        pass = msg.level <= it->second;
+      }
+    }
+
+    DEBUG("LL:log filter " << pass);
+    if (pass)
+      onLogMessage(msg);
+  }
+
+
+  LogManagerPtr make_LogPtr()
+  {
+    return boost::make_shared<LogManager>();
+  }
+
+  // LogManager Class
+  LogManager::LogManager()
+    : _maxLevel(qi::LogLevel_Silent)
+  {
+    DEBUG("LM instanciating");
+  }
+
+  LogManager::~LogManager()
+  {
+    DEBUG("LM ~LogManager");
+  }
+
+  void LogManager::log(const LogMessage& msg)
+  {
+    DEBUG("LM:log " << _listeners.size());
+    for (int listenerIt = 0; listenerIt < _listeners.size();)
     {
       bool remove = true;
-      if (LogProviderProxyPtr p = _providers[i].lock())
+      if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
       {
-        p->setVerbosity(_maxLevel);
+        DEBUG("LM::log listener lock");
+        l->log(msg);
         remove = false;
       }
 
       if (remove)
       {
-        std::swap(_providers[_providers.size() - 1], _providers[i]);
-        _providers.pop_back();
+        std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
+        _listeners.pop_back();
       }
       else
       {
-        ++i;
+        ++listenerIt;
       }
     }
+    DEBUG("LM::log exit " << _listeners.size());
   }
-}
 
-void LogManager::addProvider(LogProviderProxyPtr provider)
-{
-  DEBUG("LogManager::addProvider");
-  _providers.push_back(boost::weak_ptr<LogProviderProxy>(provider));
-  provider->setVerbosity(_maxLevel).async();
-  provider->clearAndSet(_filters).async();
-}
 
-void LogManager::recomputeCategories()
-{
-  // Soon you will know why this function is at the end of the source file...
-  // Merge requests in one big map, keeping most verbose, ignoring globbing
-  // Then, make a second pass that removes rules that overrides others and reduce verbosity
-  if (_listeners.size() == 1)
+  LogListenerPtr LogManager::getListener()
   {
-    // easy case
-    _filters.clear();
-    if (boost::shared_ptr<LogListener> l = _listeners.front().lock())
+    DEBUG("LM getListener");
+
+    LogListenerPtr ptr = boost::make_shared<LogListener>(boost::ref(*this));
+    boost::weak_ptr<LogListener> l(ptr);
+    _listeners.push_back(l);
+
+    DEBUG("LM getListener ptr: " << ptr << " listener: " << ptr.get());
+    return ptr;
+  }
+
+  void LogManager::recomputeVerbosities(qi::LogLevel from,
+                                        qi::LogLevel to)
+  {
+    DEBUG("LM recomputeVerbosities");
+    if (_maxLevel >= from && _maxLevel >= to)
     {
-      _filters.insert(_filters.begin(), l->_filters.begin(), l->_filters.end());
+      return;
+    }
+
+    qi::LogLevel newMax = qi::LogLevel_Silent;
+
+    for (int listenerIt = 0; listenerIt < _listeners.size();)
+    {
+      bool remove = true;
+      if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
+      {
+        newMax = std::max(newMax, l->verbosity.get());
+        remove = false;
+      }
+
+      if (remove)
+      {
+        std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
+        _listeners.pop_back();
+      }
+      else
+      {
+        ++listenerIt;
+      }
+    }
+
+    DEBUG("LM recomputed verbosity " << newMax);
+    if (newMax != _maxLevel)
+    {
+      _maxLevel = newMax;
       for (unsigned i = 0; i < _providers.size(); ++i)
       {
         bool remove = true;
         if (LogProviderProxyPtr p = _providers[i].lock())
         {
-          p->clearAndSet(_filters).async();
+          p->setVerbosity(_maxLevel);
           remove = false;
         }
 
@@ -255,110 +231,153 @@ void LogManager::recomputeCategories()
         }
       }
     }
-    else
-    {
-      _listeners.clear();
-    }
-    return;
   }
-  _filters.clear();
-  typedef LogListener::FilterMap FilterMap;
-  FilterMap map;
 
-  for (int listenerIt = 0; listenerIt < _listeners.size();)
+  void LogManager::addProvider(LogProviderProxyPtr provider)
   {
-    bool remove = true;
-    if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
-    {
-      remove = false;
-      for (FilterMap::iterator it = l->_filters.begin();
-           it != l->_filters.end();
-           ++it)
-      {
-        // If we find a glob that has an other pattern than 'foo*', bailout
-        size_t star = it->first.find('*');
-        if (star != it->first.npos && star < it->first.length() - 1)
-        {
-          goto bailout;
-        }
+    DEBUG("LM addProvider");
+    _providers.push_back(boost::weak_ptr<LogProviderProxy>(provider));
+    provider->setVerbosity(_maxLevel).async();
+    provider->clearAndSet(_filters).async();
+  }
 
-        FilterMap::iterator found = map.find(it->first);
-        if (found == map.end())
+  void LogManager::recomputeCategories()
+  {
+    DEBUG("LM recomputeCategories");
+    // Soon you will know why this function is at the end of the source file...
+    // Merge requests in one big map, keeping most verbose, ignoring globbing
+    // Then, make a second pass that removes rules that overrides others and reduce verbosity
+    if (_listeners.size() == 1)
+    {
+      // easy case
+      _filters.clear();
+      if (boost::shared_ptr<LogListener> l = _listeners.front().lock())
+      {
+        _filters.insert(_filters.begin(), l->_filters.begin(), l->_filters.end());
+        for (unsigned i = 0; i < _providers.size(); ++i)
         {
-          map[it->first] = it->second;
+          bool remove = true;
+          if (LogProviderProxyPtr p = _providers[i].lock())
+          {
+            p->clearAndSet(_filters).async();
+            remove = false;
+          }
+
+          if (remove)
+          {
+            std::swap(_providers[_providers.size() - 1], _providers[i]);
+            _providers.pop_back();
+          }
+          else
+          {
+            ++i;
+          }
         }
-        else
+      }
+      else
+      {
+        _listeners.clear();
+      }
+      return;
+    }
+    _filters.clear();
+    typedef LogListener::FilterMap FilterMap;
+    FilterMap map;
+
+    for (int listenerIt = 0; listenerIt < _listeners.size();)
+    {
+      bool remove = true;
+      if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
+      {
+        remove = false;
+        for (FilterMap::iterator it = l->_filters.begin();
+             it != l->_filters.end();
+             ++it)
         {
-          found->second = std::max(found->second, it->second);
+          // If we find a glob that has an other pattern than 'foo*', bailout
+          size_t star = it->first.find('*');
+          if (star != it->first.npos && star < it->first.length() - 1)
+          {
+            goto bailout;
+          }
+
+          FilterMap::iterator found = map.find(it->first);
+          if (found == map.end())
+          {
+            map[it->first] = it->second;
+          }
+          else
+          {
+            found->second = std::max(found->second, it->second);
+          }
         }
+      }
+
+      if (remove)
+      {
+        std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
+        _listeners.pop_back();
+      }
+      else
+      {
+        ++listenerIt;
       }
     }
 
-    if (remove)
+    // Now remove overriding rules that reduce verbosity
+    // This is a O(n2) algorithm that could be optimized:
+    // - Check only entries with globbing
+    // - Build a dependency graph.
+    // But we expect only a small number of filter rules to be present.
+    for (FilterMap::iterator it = map.begin(); it != map.end();)
     {
-      std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
-      _listeners.pop_back();
-    }
-    else
-    {
-      ++listenerIt;
-    }
-  }
-
-  // Now remove overriding rules that reduce verbosity
-  // This is a O(n2) algorithm that could be optimized:
-  // - Check only entries with globbing
-  // - Build a dependency graph.
-  // But we expect only a small number of filter rules to be present.
-  for (FilterMap::iterator it = map.begin(); it != map.end();)
-  {
-    bool remove = false;
-    for (FilterMap::iterator it2 = map.begin(); it2 != it; ++it2)
-    {
-      if (it2->first.find('*') != it2->first.npos
-          && qi::os::fnmatch(it2->first, it->first)
-          && it2->second > it->second)
+      bool remove = false;
+      for (FilterMap::iterator it2 = map.begin(); it2 != it; ++it2)
       {
-        remove = true;
-        break;
+        if (it2->first.find('*') != it2->first.npos
+            && qi::os::fnmatch(it2->first, it->first)
+            && it2->second > it->second)
+        {
+          remove = true;
+          break;
+        }
+      }
+
+      if (remove)
+      {
+        FilterMap::iterator tmp = it;
+        ++tmp;
+        map.erase(it);
+        it = tmp;
+      }
+      else
+      {
+        ++it;
       }
     }
 
-    if (remove)
+    _filters.insert(_filters.end(), map.begin(), map.end());
+bailout:
+    for (unsigned i = 0; i < _providers.size(); ++i)
     {
-      FilterMap::iterator tmp = it;
-      ++tmp;
-      map.erase(it);
-      it = tmp;
-    }
-    else
-    {
-      ++it;
+      bool remove = true;
+      if (LogProviderProxyPtr p = _providers[i].lock())
+      {
+        p->clearAndSet(_filters).async();
+        remove = false;
+      }
+
+      if (remove)
+      {
+        std::swap(_providers[_providers.size() - 1], _providers[i]);
+        _providers.pop_back();
+      }
+      else
+      {
+        ++i;
+      }
     }
   }
-
-  _filters.insert(_filters.end(), map.begin(), map.end());
- bailout:
-  for (unsigned i = 0; i < _providers.size(); ++i)
-  {
-    bool remove = true;
-    if (LogProviderProxyPtr p = _providers[i].lock())
-    {
-      p->clearAndSet(_filters).async();
-      remove = false;
-    }
-
-    if (remove)
-    {
-      std::swap(_providers[_providers.size() - 1], _providers[i]);
-      _providers.pop_back();
-    }
-    else
-    {
-      ++i;
-    }
-  }
-}
-
+} // !qi
 
 #include <qicore/logmanager_bind.hpp>
