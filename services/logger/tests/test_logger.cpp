@@ -13,23 +13,28 @@
 #include <qimessaging/session.hpp>
 #include <testsession/testsessionpair.hpp>
 
-#include <logger/logger.hpp>
-#include <logger/logprovider.hpp>
-#include <services/logger/loggermanager_proxy.hpp>
-#include <services/logger/loglistener_proxy.hpp>
+#include <qicore/logmessage.hpp>
+#include <qicore/logprovider.hpp>
+#include <qicore/logmanager_proxy.hpp>
+#include <qicore/loglistener_proxy.hpp>
 
 
 LogListenerProxyPtr listener;
 
 void startClient(qi::Session& s, const std::string& serviceName)
 {
-  LoggerManagerProxy logger(s.service(serviceName));
+  LogManagerProxy logger(s.service(serviceName));
   listener = logger.getListener();
+}
+
+void startProvider(qi::Session& s, const std::string& serviceName)
+{
+  registerToLogger(LogManagerProxyPtr(new LogManagerProxy(s.service(serviceName))));
 }
 
 std::string startService(qi::Session& s)
 {
-  std::vector<std::string> services = s.loadService("loggermanager");
+  std::vector<std::string> services = s.loadService("logmanager");
   EXPECT_EQ(1u, services.size());
   qi::details::printMetaObject(std::cerr, s.service(services.front()).value()->metaObject());
   return services.front();
@@ -70,13 +75,15 @@ TEST(Logger, test)
   using namespace qi::log;
   TestSessionPair p;
   std::string loggerName = startService(*p.server());
+
+// qi::Session s;
+// s.connect(p.serviceDirectoryEndpoints()[0]);
+// startClient(s, loggerName);
+
   startClient(*p.client(), loggerName);
   ASSERT_TRUE(listener);
 
-  // use a third session to register the provider
-  qi::Session s2;
-  s2.connect(p.serviceDirectoryEndpoints()[0]);
-  registerToLogger(LoggerManagerProxyPtr(new LoggerManagerProxy(s2.service(loggerName))));
+  startProvider(*p.server(), loggerName);
 
   listener->clearFilters();
   //listener->setCategory("qi*", qi::LogLevel_Silent);

@@ -8,14 +8,14 @@
 
 #include <boost/make_shared.hpp>
 
-#include <logger/logger.hpp>
-#include "src/loggermanager.hpp"
+#include <qicore/logmessage.hpp>
+#include "src/logmanager.hpp"
 
 #include <qi/os.hpp>
 
-#include <services/logger/logprovider_proxy.hpp>
+#include <qicore/logprovider_proxy.hpp>
 
-static bool debug = getenv("LOGGER_DEBUG");
+static bool debug = getenv("LOG_DEBUG");
 #define DEBUG(a)                                \
   do {                                          \
     if (debug) std::cerr << a << std::endl;     \
@@ -55,7 +55,7 @@ bool set_verbosity(LogListener* ll,
 }
 
 // LogListener Class
-LogListener::LogListener(LoggerManager& l)
+LogListener::LogListener(LogManager& l)
   : _logger(l)
   , verbosity(qi::Property<qi::LogLevel>::Getter(),
               boost::bind(&set_verbosity, this, _1, _2))
@@ -111,27 +111,27 @@ void LogListener::log(const LogMessage& msg)
 
 
 
-LoggerManagerPtr make_LoggerPtr()
+LogManagerPtr make_LogPtr()
 {
-  return boost::make_shared<LoggerManager>();
+  return boost::make_shared<LogManager>();
 }
 
-// LoggerManager Class
-LoggerManager::LoggerManager()
+// LogManager Class
+LogManager::LogManager()
   : _maxLevel(qi::LogLevel_Silent)
 {
-  DEBUG("LoggerManager instanciating");
+  DEBUG("LogManager instanciating");
 }
 
-void LoggerManager::log(const LogMessage& msg)
+void LogManager::log(const LogMessage& msg)
 {
-  DEBUG("LoggerManager::log " << _listeners.size());
+  DEBUG("LogManager::log " << _listeners.size());
   for (int listenerIt = 0; listenerIt < _listeners.size();)
   {
     bool remove = true;
     if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
     {
-      DEBUG("LoggerManager::log listener lock");
+      DEBUG("LogManager::log listener lock");
       l->log(msg);
       remove = false;
     }
@@ -146,11 +146,11 @@ void LoggerManager::log(const LogMessage& msg)
       ++listenerIt;
     }
   }
-  DEBUG("LoggerManager::log exit " << _listeners.size());
+  DEBUG("LogManager::log exit " << _listeners.size());
 }
 
 
-LogListenerPtr LoggerManager::getListener()
+LogListenerPtr LogManager::getListener()
 {
   LogListenerPtr ptr = boost::make_shared<LogListener>(boost::ref(*this));
   boost::weak_ptr<LogListener> l(ptr);
@@ -159,7 +159,7 @@ LogListenerPtr LoggerManager::getListener()
   return ptr;
 }
 
-void LoggerManager::recomputeVerbosities(qi::LogLevel from,
+void LogManager::recomputeVerbosities(qi::LogLevel from,
                                          qi::LogLevel to)
 {
   if (_maxLevel >= from && _maxLevel >= to)
@@ -215,15 +215,15 @@ void LoggerManager::recomputeVerbosities(qi::LogLevel from,
   }
 }
 
-void LoggerManager::addProvider(LogProviderProxyPtr provider)
+void LogManager::addProvider(LogProviderProxyPtr provider)
 {
-  DEBUG("LoggerManager::addProvider");
+  DEBUG("LogManager::addProvider");
   _providers.push_back(boost::weak_ptr<LogProviderProxy>(provider));
   provider->setVerbosity(_maxLevel).async();
   provider->clearAndSet(_filters).async();
 }
 
-void LoggerManager::recomputeCategories()
+void LogManager::recomputeCategories()
 {
   // Soon you will know why this function is at the end of the source file...
   // Merge requests in one big map, keeping most verbose, ignoring globbing
@@ -361,4 +361,4 @@ void LoggerManager::recomputeCategories()
 }
 
 
-#include "loggermanager_bind.hpp"
+#include <qicore/logmanager_bind.hpp>
