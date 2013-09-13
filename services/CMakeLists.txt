@@ -2,4 +2,9 @@
 
 add_subdirectory("logger")
 add_subdirectory("behavior")
-add_subdirectory("tray")
+
+qi_add_optional_package(QT_QTCORE "Enable QT")
+qi_add_optional_package(QT_QTGUI  "Enable QTGUI")
+if (WITH_QT_QTCORE AND WITH_QT_QTGUI)
+  add_subdirectory("tray")
+endif()
