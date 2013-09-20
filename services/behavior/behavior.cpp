@@ -110,19 +110,19 @@ qi::AnyValue Behavior::call(const std::string& objUid, const std::string& fun,
   switch(args.size())
   {
   case 0:
-    return o->call<AnyValue>(fun);
+    return o.call<AnyValue>(fun);
     break;
   case 1:
-    return o->call<AnyValue>(fun, args[0]);
+    return o.call<AnyValue>(fun, args[0]);
     break;
   case 2:
-    return o->call<AnyValue>(fun, args[0], args[1]);
+    return o.call<AnyValue>(fun, args[0], args[1]);
     break;
   case 3:
-    return o->call<AnyValue>(fun, args[0], args[1], args[2]);
+    return o.call<AnyValue>(fun, args[0], args[1], args[2]);
     break;
   case 4:
-    return o->call<AnyValue>(fun, args[0], args[1], args[2], args[3]);
+    return o.call<AnyValue>(fun, args[0], args[1], args[2], args[3]);
     break;
   default:
     throw std::runtime_error("argument count not implemented");
@@ -159,17 +159,17 @@ void Behavior::loadObjects(bool debugmode)
     _objects[n.first] = o;
     if (debugmode)
     {
-      qi::MetaObject mo = o->metaObject();
+      qi::MetaObject mo = o.metaObject();
       int pRunningId = mo.propertyId("running");
       int pErrorId = mo.propertyId("error");
       if (pRunningId!= -1 && pErrorId != -1)
       {
         qiLogDebug() << "Detected a Task, hooking signals...";
-        SignalLink lRunning = o->connect("running",
+        SignalLink lRunning = o.connect("running",
           (boost::function<void(bool)>)boost::bind(
             &onTaskRunningBounce, this, n.first, _1));
 
-        SignalLink lError = o->connect("error",
+        SignalLink lError = o.connect("error",
           (boost::function<void(const std::string&)>)boost::bind(
             onTaskErrorBounce, this, n.first, _1));
         _objectLinks[n.first] = std::make_pair(lRunning, lError);
@@ -195,8 +195,8 @@ void Behavior::unloadObjects()
       qiLogError() << "Expected object in map for " << it->first;
       continue;
     }
-    obj->disconnect(it->second.first);
-    obj->disconnect(it->second.second);
+    obj.disconnect(it->second.first);
+    obj.disconnect(it->second.second);
   }
   _objectLinks.clear();
   _objects.clear();
@@ -216,11 +216,11 @@ void Behavior::setTransitions(bool debugmode, qi::MetaCallType type)
       throw std::runtime_error("No object " + t.src.first);
     if (!dst)
       throw std::runtime_error("No object " + t.dst.first);
-    const qi::MetaSignal* srcSignal = src->metaObject().signal(t.src.second);
-    std::vector<qi::MetaMethod> dstMethods = dst->metaObject().findMethod(t.dst.second);
+    const qi::MetaSignal* srcSignal = src.metaObject().signal(t.src.second);
+    std::vector<qi::MetaMethod> dstMethods = dst.metaObject().findMethod(t.dst.second);
     // also lookup for a matching property
-    int propId = dst->metaObject().propertyId(t.dst.second);
-    const qi::MetaProperty* prop = dst->metaObject().property(propId);
+    int propId = dst.metaObject().propertyId(t.dst.second);
+    const qi::MetaProperty* prop = dst.metaObject().property(propId);
     // fixme: handle properties as target
     if (!srcSignal)
       throw std::runtime_error("No signal " + t.src.second);
@@ -266,10 +266,10 @@ void Behavior::setTransitions(bool debugmode, qi::MetaCallType type)
       ptr.targetMethod = dstMethods[best].uid();
     // If target is a property, we need to use our bouncer to invoke setProperty
     if (debugmode || best == PROP_MATCH || t.filter.isValue())
-      ptr.link = src->connect(srcSignal->uid(),
+      ptr.link = src.connect(srcSignal->uid(),
         qi::SignalSubscriber(qi::AnyFunction::from((boost::function<void(qi::AnyValue)>) boost::bind(&Behavior::transition, this, _1, t.uid)),type));
     else
-      ptr.link = src->connect(srcSignal->uid(), qi::SignalSubscriber(dst, ptr.targetMethod));
+      ptr.link = src.connect(srcSignal->uid(), qi::SignalSubscriber(dst, ptr.targetMethod));
   }
 }
 
@@ -277,7 +277,7 @@ void Behavior::removeTransitions()
 {
   foreach(TransitionMap::value_type& t, _transitions)
   {
-    t.second.source->disconnect(t.second.link);
+    t.second.source.disconnect(t.second.link);
   }
   _transitions.clear();
 }
@@ -286,18 +286,12 @@ static qi::AnyReference bounce_call(qi::AnyObject o, const std::string& method,
   const std::vector<qi::AnyReference>& args)
 {
   qi::Promise<qi::AnyValue> prom;
-  adaptFuture(o->metaCall(method, args), prom, qi::FutureValueConverterTakeAnyReference<qi::AnyValue>());
+  adaptFuture(o.metaCall(method, args), prom, qi::FutureValueConverterTakeAnyReference<qi::AnyValue>());
   qi::Future<qi::AnyValue> res = prom.future();
   return qi::AnyReference(res).clone();
 }
 
 typedef qi::TaskCall<qi::Future<qi::AnyValue> > TaskAdapter;
-
-static void delete_go(qi::GenericObject* go)
-{
-  delete (TaskAdapter*)go->value;
-  delete go;
-}
 
 AnyObject Behavior::makeObject(const std::string& model, const std::string& factory,
   const qi::BehaviorModel::ParameterMap& parameters)
@@ -323,7 +317,7 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
         throw std::runtime_error("AutoTask argument is not a previously loaded object: " + object);
       // Fetch method return type if we can
       qi::TypeInterface* taskType = 0;
-      qi::MetaObject mo = o->metaObject();
+      qi::MetaObject mo = o.metaObject();
       std::vector<qi::MetaMethod> mm = mo.findMethod(method);
       if (mm.size() == 1)
         taskType = qi::TypeInterface::fromSignature(mm[0].returnSignature());
@@ -333,12 +327,15 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
       // There is a convert bug that prevent shared_ptr tracking from working, manual override!
       TaskAdapter* task = new TaskAdapter(
           qi::AnyFunction::fromDynamicFunction(boost::bind(&bounce_call, o, method, _1)), taskType);
+      /*
       qi::TypeInterface* taType = qi::typeOf<TaskAdapter>();
       qi::TypeInterface* taTypeNext = dynamic_cast<qi::TemplateTypeInterface*>(taType)->next();
       qi::GenericObject* go = new qi::GenericObject(
         static_cast<qi::ObjectTypeInterface*>(taTypeNext), task);
       boost::shared_ptr<qi::GenericObject> ptr(go, &delete_go);
-      return ptr;
+      return ptr;*/
+      
+      return qi::Object<TaskAdapter>(task);
       // this fails qi::GenericValueRef(task).to<qi::GenericObject*>();
       /*
       boost::shared_ptr<qi::TaskCall<qi::Future<qi::GenericValue> > > pTask(task);
@@ -362,15 +359,15 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
     }
     // Heuristic: autodetect factory and invoke create
     // Do we realy want that?
-    if (method.empty() && !s->metaObject().findMethod("create").empty())
+    if (method.empty() && !s.metaObject().findMethod("create").empty())
       method = "create";
     if (!method.empty())
     {
-      s = s->call<AnyObject>(method);
+      s = s.call<AnyObject>(method);
     }
     for (qi::BehaviorModel::ParameterMap::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
     {
-      s->setProperty(it->first, it->second);
+      s.setProperty(it->first, it->second);
     }
     return s;
   }
@@ -416,14 +413,14 @@ void Behavior::transition(qi::AnyValue arg, const std::string& transId)
   if (!t.property.empty())
   {
     qiLogDebug() << "Forwarding transition to property " << t.property;
-    t.target->setProperty(t.property, arg);
+    t.target.setProperty(t.property, arg);
   }
   else
   {
     qiLogDebug() << "Forwarding transition to method " << t.targetMethod;
     qi::GenericFunctionParameters args;
     args.push_back(qi::AnyReference(arg.type, arg.value));
-    t.target->metaPost(t.targetMethod, args);
+    t.target.metaPost(t.targetMethod, args);
   }
 }
 

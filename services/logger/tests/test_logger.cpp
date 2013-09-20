@@ -36,7 +36,7 @@ std::string startService(qi::Session& s)
 {
   std::vector<std::string> services = s.loadService("logmanager");
   EXPECT_EQ(1u, services.size());
-  qi::details::printMetaObject(std::cerr, s.service(services.front()).value()->metaObject());
+  qi::details::printMetaObject(std::cerr, s.service(services.front()).value().metaObject());
   return services.front();
 }
 

@@ -196,8 +196,8 @@ TEST(Behavior, testFactory)
 {
   TestSessionPair p;
   ASSERT_EQ(1u, p.server()->loadService("behavior").size());
-  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
-  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
+  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   std::string behavior = STRING(
     a Whatever TestObjectService.create;
     b Whatever TestObjectService.create;
@@ -209,17 +209,17 @@ TEST(Behavior, testFactory)
   while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
-  b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects", false);
-  b->call<void>("call", "a", "setv", arguments(42));
-  ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
-  b->call<void>("call", "b", "setv", arguments(1));
-  b->call<void>("call", "c", "setv", arguments(2));
-  b->call<void>("setTransitions", false, qi::MetaCallType_Auto);
-  ASSERT_EQ(2, b->call<int>("call", "c", "getv", arguments()));
-  b->call<void>("call", "a", "setv", arguments(3));
+  b.call<void>("loadString", behavior);
+  b.call<void>("loadObjects", false);
+  b.call<void>("call", "a", "setv", arguments(42));
+  ASSERT_EQ(42, b.call<int>("call", "a", "getv", arguments()));
+  b.call<void>("call", "b", "setv", arguments(1));
+  b.call<void>("call", "c", "setv", arguments(2));
+  b.call<void>("setTransitions", false, qi::MetaCallType_Auto);
+  ASSERT_EQ(2, b.call<int>("call", "c", "getv", arguments()));
+  b.call<void>("call", "a", "setv", arguments(3));
   qi::os::msleep(1000);
-  ASSERT_EQ(6, b->call<int>("call", "c", "lastAdd", arguments()));
+  ASSERT_EQ(6, b.call<int>("call", "c", "lastAdd", arguments()));
 }
 
 
@@ -228,8 +228,8 @@ TEST(Behavior, testService)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
-  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
+  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   std::string behavior = STRING(
     a Whatever TestObjectService.create v=42;
@@ -242,18 +242,18 @@ TEST(Behavior, testService)
   while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
-  b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects", false);
-  ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
-  ASSERT_EQ(1, b->call<int>("call", "b", "getv", arguments()));
-  ASSERT_EQ(2, b->call<int>("call", "c", "getv", arguments()));
-  b->call<void>("setTransitions", false, qi::MetaCallType_Auto);
-  b->call<void>("call", "a", "setv", arguments(3));
-  PERSIST(, 6 == b->call<int>("call", "c", "lastAdd", arguments()), 1000);
-  ASSERT_EQ(6, b->call<int>("call", "c", "lastAdd", arguments()));
+  b.call<void>("loadString", behavior);
+  b.call<void>("loadObjects", false);
+  ASSERT_EQ(42, b.call<int>("call", "a", "getv", arguments()));
+  ASSERT_EQ(1,  b.call<int>("call", "b", "getv", arguments()));
+  ASSERT_EQ(2,  b.call<int>("call", "c", "getv", arguments()));
+  b.call<void>("setTransitions", false, qi::MetaCallType_Auto);
+  b.call<void>("call", "a", "setv", arguments(3));
+  PERSIST(, 6 == b.call<int>("call", "c", "lastAdd", arguments()), 1000);
+  ASSERT_EQ(6, b.call<int>("call", "c", "lastAdd", arguments()));
   // recheck by accessing the service
   qi::AnyObject daC = p.client()->service("TestObject2");
-  ASSERT_EQ(6, daC->call<int>("lastAdd"));
+  ASSERT_EQ(6, daC.call<int>("lastAdd"));
 }
 
 
@@ -278,8 +278,8 @@ TEST(Behavior, transitionTrack)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
-  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
+  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   std::string behavior = STRING(
     a Whatever TestObjectService.create;
@@ -294,20 +294,20 @@ TEST(Behavior, transitionTrack)
   while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
-  b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects", false);
-  b->call<void>("call", "a", "setv", arguments(42));
-  ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
-  b->call<void>("call", "b", "setv", arguments(1));
-  b->call<void>("call", "c", "setv", arguments(2));
-  b->call<void>("setTransitions", true, qi::MetaCallType_Auto);
+  b.call<void>("loadString", behavior);
+  b.call<void>("loadObjects", false);
+  b.call<void>("call", "a", "setv", arguments(42));
+  ASSERT_EQ(42, b.call<int>("call", "a", "getv", arguments()));
+  b.call<void>("call", "b", "setv", arguments(1));
+  b.call<void>("call", "c", "setv", arguments(2));
+  b.call<void>("setTransitions", true, qi::MetaCallType_Auto);
   std::vector<std::string> transitionData;
-  b->connect("onTransition",
+  b.connect("onTransition",
     boost::function<void(const std::string&, qi::AnyValue)>
     (boost::bind(&onTransition, boost::ref(transitionData), _1, _2)));
-  b->call<void>("call", "a", "setv", arguments(3));
-  PERSIST(, 6 == b->call<int>("call", "c", "lastAdd", arguments()), 1000);
-  ASSERT_EQ(6, b->call<int>("call", "c", "lastAdd", arguments()));
+  b.call<void>("call", "a", "setv", arguments(3));
+  PERSIST(, 6 == b.call<int>("call", "c", "lastAdd", arguments()), 1000);
+  ASSERT_EQ(6, b.call<int>("call", "c", "lastAdd", arguments()));
   ASSERT_EQ(3u, transitionData.size());
   std::sort(transitionData.begin(), transitionData.end());
   ASSERT_EQ("ab 3", transitionData[0]);
@@ -321,8 +321,8 @@ TEST(Behavior, targetPropertyDbgOn)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
-  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
+  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   std::string behavior = STRING(
     a Whatever TestObjectService.create;
@@ -337,12 +337,12 @@ TEST(Behavior, targetPropertyDbgOn)
   while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
-  b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects", false);
-  b->call<void>("setTransitions", true, qi::MetaCallType_Auto);
-  b->call<void>("call", "a", "setv", arguments(55));
-  PERSIST(, 55 == b->call<int>("call", "d", "getv", arguments()), 1000);
-  ASSERT_EQ(55, b->call<int>("call", "d", "getv", arguments()));
+  b.call<void>("loadString", behavior);
+  b.call<void>("loadObjects", false);
+  b.call<void>("setTransitions", true, qi::MetaCallType_Auto);
+  b.call<void>("call", "a", "setv", arguments(55));
+  PERSIST(, 55 == b.call<int>("call", "d", "getv", arguments()), 1000);
+  ASSERT_EQ(55, b.call<int>("call", "d", "getv", arguments()));
 }
 
 TEST(Behavior, targetPropertyDbgOff)
@@ -350,8 +350,8 @@ TEST(Behavior, targetPropertyDbgOff)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
-  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
+  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   std::string behavior = STRING(
     a Whatever TestObjectService.create;
@@ -366,12 +366,12 @@ TEST(Behavior, targetPropertyDbgOff)
   while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
-  b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects", false);
-  b->call<void>("setTransitions", false, qi::MetaCallType_Auto);
-  b->call<void>("call", "a", "setv", arguments(55));
-  PERSIST(, 55 == b->call<int>("call", "d", "getv", arguments()), 1000);
-  ASSERT_EQ(55, b->call<int>("call", "d", "getv", arguments()));
+  b.call<void>("loadString", behavior);
+  b.call<void>("loadObjects", false);
+  b.call<void>("setTransitions", false, qi::MetaCallType_Auto);
+  b.call<void>("call", "a", "setv", arguments(55));
+  PERSIST(, 55 == b.call<int>("call", "d", "getv", arguments()), 1000);
+  ASSERT_EQ(55, b.call<int>("call", "d", "getv", arguments()));
 }
 
 TEST(Behavior, PropSet)
@@ -379,34 +379,34 @@ TEST(Behavior, PropSet)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
-  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
+  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("PropHolder", qi::createObject("PropHolder"));
   qi::AnyObject propHolder = p.client()->service("PropHolder");
   qi::ProxyProperty<qi::AnyValue> prop(propHolder, "prop");
   qi::ProxyProperty<qi::AnyValue> prop2(propHolder, "prop2");
 
-  b->call<void>("loadString", "a x PropHolder prop=1 prop2=2");
-  b->call<void>("loadObjects", false);
+  b.call<void>("loadString", "a x PropHolder prop=1 prop2=2");
+  b.call<void>("loadObjects", false);
   EXPECT_EQ(1, prop.get().toInt());
   EXPECT_EQ(2, prop2.get().toInt());
-  b->call<void>("unloadObjects");
+  b.call<void>("unloadObjects");
 
-  b->call<void>("loadString", "a x PropHolder prop=[1,2] prop2=\"foo\"");
-  b->call<void>("loadObjects", false);
+  b.call<void>("loadString", "a x PropHolder prop=[1,2] prop2=\"foo\"");
+  b.call<void>("loadObjects", false);
   std::vector<int> vi = boost::assign::list_of(1)(2);
   EXPECT_EQ(vi, prop.get().to<std::vector<int> >());
   EXPECT_EQ("foo", prop2.get().toString());
-  b->call<void>("unloadObjects");
+  b.call<void>("unloadObjects");
 
   prop.set(qi::AnyValue::from(0)); prop2.set(qi::AnyValue::from(0));
 
-  b->call<void>("loadString", "a x PropHolder prop= [ 1 , 2 ]  prop2= \"foo\"  ");
-  b->call<void>("loadObjects", false);
+  b.call<void>("loadString", "a x PropHolder prop= [ 1 , 2 ]  prop2= \"foo\"  ");
+  b.call<void>("loadObjects", false);
   vi = boost::assign::list_of(1)(2);
   EXPECT_EQ(vi, prop.get().to<std::vector<int> >());
   EXPECT_EQ("foo", prop2.get().toString());
-  b->call<void>("unloadObjects");
+  b.call<void>("unloadObjects");
 }
 
 TEST(Behavior, Filter)
@@ -414,8 +414,8 @@ TEST(Behavior, Filter)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
-  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
+  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   p.server()->registerService("PropHolder", qi::createObject("PropHolder"));
   qi::AnyObject propHolder = p.client()->service("PropHolder");
@@ -432,15 +432,15 @@ TEST(Behavior, Filter)
   while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
-  b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects", false);
-  b->call<void>("setTransitions", false, qi::MetaCallType_Auto);
+  b.call<void>("loadString", behavior);
+  b.call<void>("loadObjects", false);
+  b.call<void>("setTransitions", false, qi::MetaCallType_Auto);
   propInt.set(12);
   qi::os::msleep(100);
-  EXPECT_EQ(0, testObject->call<int>("lastAdd"));
+  EXPECT_EQ(0, testObject.call<int>("lastAdd"));
   propInt.set(42);
   qi::os::msleep(100);
-  EXPECT_EQ(42, testObject->call<int>("lastAdd"));
+  EXPECT_EQ(42, testObject.call<int>("lastAdd"));
   /*
   prop.set(qi::AnyValue::from("foo"));
   qi::os::msleep(100);
@@ -472,8 +472,8 @@ TEST(Behavior, Task)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
-  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
+  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
   std::string behavior = STRING(
     sq1 W SqrtTaskService.create   ;
@@ -488,19 +488,19 @@ TEST(Behavior, Task)
   while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
-  b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects", true);
-  b->call<void>("setTransitions", true, qi::MetaCallType_Auto);
+  b.call<void>("loadString", behavior);
+  b.call<void>("loadObjects", true);
+  b.call<void>("setTransitions", true, qi::MetaCallType_Auto);
   std::vector<std::string> store;
-  qi::SignalLink l1 =  b->connect("onTaskError",   (boost::function<void(const std::string&, const std::string&)>)boost::bind(&pushError, boost::ref(store), _1, _2));
-  qi::SignalLink l2 = b->connect("onTaskRunning", (boost::function<void(const std::string&, bool)>)boost::bind(&pushState, boost::ref(store), _1, _2));
+  qi::SignalLink l1 = b.connect("onTaskError",   (boost::function<void(const std::string&, const std::string&)>)boost::bind(&pushError, boost::ref(store), _1, _2));
+  qi::SignalLink l2 = b.connect("onTaskRunning", (boost::function<void(const std::string&, bool)>)boost::bind(&pushState, boost::ref(store), _1, _2));
   ASSERT_TRUE(l1 != qi::SignalBase::invalidSignalLink);
   ASSERT_TRUE(l2 != qi::SignalBase::invalidSignalLink);
-  qi::AnyObject ts = b->call<qi::AnyObject>("object", "st");
-  qi::AnyObject sq3 = b->call<qi::AnyObject>("object", "sq3");
+  qi::AnyObject ts = b.call<qi::AnyObject>("object", "st");
+  qi::AnyObject sq3 = b.call<qi::AnyObject>("object", "sq3");
   qi::ProxyProperty<double> sq3_val(sq3, "val");
   ASSERT_TRUE(!!ts);
-  ts->call<int>("add", 256);
+  ts.call<int>("add", 256);
   PERSIST_CHECK(, sq3_val.get() == 2, , 2000);
   ASSERT_EQ(2.0, sq3_val.get());
   EXPECT_EQ(6u, store.size());
@@ -508,8 +508,8 @@ TEST(Behavior, Task)
   EXPECT_EQ("sq1 start;sq1 stop;sq2 start;sq2 stop;sq3 start;sq3 stop",
     boost::algorithm::join(store, ";"));
   store.clear();
-  ts->setProperty("v", -17);
-  ts->call<int>("add", 0);
+  ts.setProperty("v", -17);
+  ts.call<int>("add", 0);
   PERSIST_CHECK(, store.size() == 3, , 2000);
   EXPECT_EQ(3u, store.size());
   std::sort(store.begin(), store.end());
@@ -530,25 +530,25 @@ TEST(Behavior, TaskCall)
   TestSessionPair p;
   qi::os::dlopen("behavior");
   p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value()->call<qi::AnyObject>("create");
-  b->call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
+  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   size_t pos = 0;
   while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
-  b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects", true);
-  b->call<void>("setTransitions", true, qi::MetaCallType_Auto);
+  b.call<void>("loadString", behavior);
+  b.call<void>("loadObjects", true);
+  b.call<void>("setTransitions", true, qi::MetaCallType_Auto);
   std::vector<std::string> store;
-  qi::SignalLink l1 =  b->connect("onTaskError",   (boost::function<void(const std::string&, const std::string&)>)boost::bind(&pushError, boost::ref(store), _1, _2));
-  qi::SignalLink l2 = b->connect("onTaskRunning", (boost::function<void(const std::string&, bool)>)boost::bind(&pushState, boost::ref(store), _1, _2));
+  qi::SignalLink l1 = b.connect("onTaskError",   (boost::function<void(const std::string&, const std::string&)>)boost::bind(&pushError, boost::ref(store), _1, _2));
+  qi::SignalLink l2 = b.connect("onTaskRunning", (boost::function<void(const std::string&, bool)>)boost::bind(&pushState, boost::ref(store), _1, _2));
   ASSERT_TRUE(l1 != qi::SignalBase::invalidSignalLink);
   ASSERT_TRUE(l2 != qi::SignalBase::invalidSignalLink);
-  qi::AnyObject ts = b->call<qi::AnyObject>("object", "st");
-  qi::AnyObject sq2 = b->call<qi::AnyObject>("object", "sq2");
+  qi::AnyObject ts = b.call<qi::AnyObject>("object", "st");
+  qi::AnyObject sq2 = b.call<qi::AnyObject>("object", "sq2");
   qi::ProxyProperty<double> sq2_result(sq2, "result");
 
-  ts->call<int>("add", 256);
+  ts.call<int>("add", 256);
   PERSIST_CHECK(, sq2_result.get() == 4, , 2000);
   ASSERT_EQ(4.0, sq2_result.get());
   std::sort(store.begin(), store.end());
@@ -556,8 +556,8 @@ TEST(Behavior, TaskCall)
     boost::algorithm::join(store, ";"));
 
   store.clear();
-  ts->setProperty("v", -17);
-  ts->call<int>("add", 0);
+  ts.setProperty("v", -17);
+  ts.call<int>("add", 0);
   PERSIST_CHECK(, store.size() == 3, , 2000);
   std::sort(store.begin(), store.end());
   EXPECT_EQ("sq1 error Negative input;sq1 start;sq1 stop",
