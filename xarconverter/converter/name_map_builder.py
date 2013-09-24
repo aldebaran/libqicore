@@ -29,7 +29,7 @@ def format_name(name):
             result += char
 
     name = result
-    pattern = re.compile(r'[\W_]+')
+    pattern = re.compile(r'[^ \w\%]+')
     return pattern.sub('_', name)
 
 
@@ -70,7 +70,9 @@ class NameMapBuilder:
         self._name_set = set()
 
     def construct_name(self, node):
-        name = node.name + str(node.id)
+        name = node.name
+        if node.id != "-1":
+            name = name + str(node.id)
         if node.parent_path:
             name = node.parent_path + "_" + name
 
