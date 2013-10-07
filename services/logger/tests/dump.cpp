@@ -25,12 +25,12 @@ void ping()
   }
 }
 
-void onMessage(int i)
+void onLogMessage(int i)
 {
   std::cerr << "MESSAGE " << i << std::endl;
 }
 
-void onMessage2(const Message& msg)
+void onLogMessage2(const LogMessage& msg)
 {
   std::cerr << "MESSAGE " << msg.level
             << " " << msg.source
@@ -54,9 +54,9 @@ int main(int argc, char** argv)
   assert(logger);
   LogListenerProxyPtr listener = logger->getListener();
   assert(listener);
-  listener->onMessage.connect(&onMessage2);
+  listener->onLogMessage.connect(&onLogMessage2);
   listener->setVerbosity(::qi::LogLevel_Info);
-  //listener->asObject()->connect("onMessage", &onMessage);
+  //listener->asObject()->connect("onLogMessage", &onLogMessage);
   registerToLogger(logger);
   boost::thread t(&ping);
   app.run();
