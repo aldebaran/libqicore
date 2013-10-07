@@ -15,6 +15,8 @@
 
 
 
+namespace qi
+{
 
 
 class LogListenerProxy;
@@ -49,8 +51,9 @@ public:
 };
 
 QI_REGISTER_PROXY(LogListenerProxy);
+} // !qi
 
 
-QI_TYPE_PROXY(LogListenerProxy);
+QI_TYPE_PROXY(qi::LogListenerProxy);
 
 #endif //_LOGLISTENER_PROXY_HPP_

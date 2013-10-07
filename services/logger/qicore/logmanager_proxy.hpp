@@ -14,7 +14,8 @@
 #include <qitype/proxyproperty.hpp>
 
 
-
+namespace qi
+{
 
 
 class LogManagerProxy;
@@ -48,8 +49,8 @@ public:
 };
 
 QI_REGISTER_PROXY(LogManagerProxy);
+} // !qi
 
-
-QI_TYPE_PROXY(LogManagerProxy);
+QI_TYPE_PROXY(qi::LogManagerProxy);
 
 #endif //_LOGMANAGER_PROXY_HPP_

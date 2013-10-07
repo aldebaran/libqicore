@@ -7,6 +7,8 @@
 #include <src/logmanager.hpp>
 
 
+namespace qi
+{
 
 
 static int LogListenerinit()
@@ -24,4 +26,5 @@ static int LogListenerinit()
 }
 static int _init_LogListener = LogListenerinit();
 
+} // !qi
 

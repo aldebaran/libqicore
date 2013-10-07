@@ -30,7 +30,7 @@ void onLogMessage(int i)
   std::cerr << "MESSAGE " << i << std::endl;
 }
 
-void onLogMessage2(const LogMessage& msg)
+void onLogMessage2(const qi::LogMessage& msg)
 {
   std::cerr << "MESSAGE " << msg.level
             << " " << msg.source
@@ -50,14 +50,14 @@ int main(int argc, char** argv)
 
   s.connect(target);
   qi::AnyObject glogger = s.service("LogManager");
-  LogManagerProxyPtr logger(new LogManagerProxy(glogger));
+  qi::LogManagerProxyPtr logger(new qi::LogManagerProxy(glogger));
   assert(logger);
-  LogListenerProxyPtr listener = logger->getListener();
+  qi::LogListenerProxyPtr listener = logger->getListener();
   assert(listener);
   listener->onLogMessage.connect(&onLogMessage2);
   listener->setVerbosity(::qi::LogLevel_Info);
   //listener->asObject()->connect("onLogMessage", &onLogMessage);
-  registerToLogger(logger);
+  qi::registerToLogger(logger);
   boost::thread t(&ping);
   app.run();
 }
