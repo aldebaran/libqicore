@@ -288,7 +288,7 @@ static qi::AnyReference bounce_call(qi::AnyObject o, const std::string& method,
   qi::Promise<qi::AnyValue> prom;
   adaptFuture(o.metaCall(method, args), prom, qi::FutureValueConverterTakeAnyReference<qi::AnyValue>());
   qi::Future<qi::AnyValue> res = prom.future();
-  return qi::AnyReference(res).clone();
+  return qi::AnyReference::from(res).clone();
 }
 
 typedef qi::TaskCall<qi::Future<qi::AnyValue> > TaskAdapter;
@@ -334,7 +334,7 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
         static_cast<qi::ObjectTypeInterface*>(taTypeNext), task);
       boost::shared_ptr<qi::GenericObject> ptr(go, &delete_go);
       return ptr;*/
-      
+
       return qi::Object<TaskAdapter>(task);
       // this fails qi::GenericValueRef(task).to<qi::GenericObject*>();
       /*

@@ -109,7 +109,7 @@ namespace qi
         error.set(fut.error());
         break;
       case FutureState_FinishedWithValue:
-        qiLogDebug("TaskCall") << "setResult " << encodeJSON(AnyReference(fut.value()));
+        qiLogDebug("TaskCall") << "setResult " << encodeJSON(AnyReference::from(fut.value()));
         result.setValue(fut.value());
         break;
       case FutureState_None:
