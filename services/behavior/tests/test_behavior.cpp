@@ -47,15 +47,15 @@ std::vector<qi::AnyValue> arguments(qi::AutoAnyReference v1 = qi::AutoAnyReferen
   qi::AutoAnyReference v5 = qi::AutoAnyReference())
 {
   std::vector<qi::AnyValue> res;
-  if (v1.value)
+  if (v1.rawValue())
     res.push_back(qi::AnyValue(v1));
-  if (v2.value)
+  if (v2.rawValue())
     res.push_back(qi::AnyValue(v2));
-  if (v3.value)
+  if (v3.rawValue())
     res.push_back(qi::AnyValue(v3));
-  if (v4.value)
+  if (v4.rawValue())
     res.push_back(qi::AnyValue(v4));
-  if (v5.value)
+  if (v5.rawValue())
     res.push_back(qi::AnyValue(v5));
   return res;
 }

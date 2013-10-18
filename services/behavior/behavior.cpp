@@ -419,7 +419,7 @@ void Behavior::transition(qi::AnyValue arg, const std::string& transId)
   {
     qiLogDebug() << "Forwarding transition to method " << t.targetMethod;
     qi::GenericFunctionParameters args;
-    args.push_back(qi::AnyReference(arg.type, arg.value));
+    args.push_back(qi::AnyReference(arg.type(), arg.rawValue()));
     t.target.metaPost(t.targetMethod, args);
   }
 }
