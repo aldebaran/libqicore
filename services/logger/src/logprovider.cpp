@@ -112,4 +112,8 @@ namespace qi
 
     ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
   }
+
 } // !qi
+
+// We need this include because the library is static.
+#include <qicore/logprovider_bind.cpp>
