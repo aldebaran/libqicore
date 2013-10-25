@@ -83,9 +83,8 @@ namespace qi
       qi::LogLevel _maxLevel;
       std::vector<std::pair<std::string, qi::LogLevel> > _filters;
 
-      std::vector<boost::weak_ptr<LogListener> >      _listeners;
-      std::vector<boost::weak_ptr<LogProviderProxy> > _providers;
-
+      std::vector<boost::weak_ptr<LogListener> >        _listeners;
+      std::vector<boost::shared_ptr<LogProviderProxy> > _providers;
     private:
       friend class LogListener;
       friend bool set_verbosity(LogListener* ll,

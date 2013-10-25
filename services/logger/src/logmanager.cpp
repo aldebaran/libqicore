@@ -214,7 +214,7 @@ bool set_verbosity(qi::LogListener* ll,
       for (unsigned i = 0; i < _providers.size(); ++i)
       {
         bool remove = true;
-        if (LogProviderProxyPtr p = _providers[i].lock())
+        if (LogProviderProxyPtr p = _providers[i])
         {
           p->setVerbosity(_maxLevel);
           remove = false;
@@ -236,7 +236,7 @@ bool set_verbosity(qi::LogListener* ll,
   void LogManager::addProvider(LogProviderProxyPtr provider)
   {
     DEBUG("LM addProvider");
-    _providers.push_back(boost::weak_ptr<LogProviderProxy>(provider));
+    _providers.push_back(provider);
     provider->setVerbosity(_maxLevel).async();
     provider->clearAndSet(_filters).async();
   }
@@ -257,7 +257,7 @@ bool set_verbosity(qi::LogListener* ll,
         for (unsigned i = 0; i < _providers.size(); ++i)
         {
           bool remove = true;
-          if (LogProviderProxyPtr p = _providers[i].lock())
+          if (LogProviderProxyPtr p = _providers[i])
           {
             p->clearAndSet(_filters).async();
             remove = false;
@@ -361,7 +361,7 @@ bailout:
     for (unsigned i = 0; i < _providers.size(); ++i)
     {
       bool remove = true;
-      if (LogProviderProxyPtr p = _providers[i].lock())
+      if (LogProviderProxyPtr p = _providers[i])
       {
         p->clearAndSet(_filters).async();
         remove = false;
