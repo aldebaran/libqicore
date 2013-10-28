@@ -44,8 +44,9 @@ namespace qi
 
     DEBUG("LP subscribed " << _subscriber);
     // Safety: avoid infinite loop
-    ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
     ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, _subscriber);
+    ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
+    ::qi::log::setCategory("qi.eventloop", qi::LogLevel_Silent, _subscriber);
     ++_ready;
   }
 
@@ -99,18 +100,34 @@ namespace qi
 
   void LogProvider::clearAndSet(const std::vector<std::pair<std::string, qi::LogLevel> >& data)
   {
+    DEBUG("LP clearAndSet");
     for (std::set<std::string>::iterator it = _setCategories.begin(); it != _setCategories.end(); ++it)
     {
-      ::qi::log::setCategory(*it, qi::LogLevel_Debug, _subscriber);
+      if (*it != "*")
+        ::qi::log::setCategory(*it, qi::LogLevel_Debug, _subscriber);
     }
 
     _setCategories.clear();
+    qi::LogLevel wildcardLevel = qi::LogLevel_Silent;
+    bool wildcardIsSet = false;
     for (unsigned i = 0; i < data.size(); ++i)
     {
-      setCategory(data[i].first, data[i].second);
+      if (data[i].first == "*")
+      {
+        wildcardLevel = data[i].second;
+        wildcardIsSet = true;
+      }
+      else
+        setCategory(data[i].first, data[i].second);
     }
 
+    // Safety: avoid infinite loop
+    ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, _subscriber);
     ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
+    ::qi::log::setCategory("qi.eventloop", qi::LogLevel_Silent, _subscriber);
+
+    if (wildcardIsSet)
+      ::qi::log::setCategory("*", wildcardLevel, _subscriber);
   }
 
 } // !qi
