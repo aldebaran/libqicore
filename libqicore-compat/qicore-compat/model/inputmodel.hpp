@@ -16,7 +16,7 @@ namespace qi
 {
   class InputModelPrivate;
 
-  class QICORECOMPAT_API InputModel {
+  class QICORECOMPAT_API InputModel : private boost::noncopyable {
   public:
     enum InputNature  {
       InputNature_OnLoad   = 0,
@@ -59,7 +59,6 @@ namespace qi
     void setInner(bool inner);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(InputModel);
     InputModelPrivate* _p;
   };
   typedef boost::shared_ptr<InputModel> InputModelPtr;

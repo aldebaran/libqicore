@@ -17,7 +17,7 @@ namespace qi {
   class ChoregrapheProjectModelPrivate;
   class BoxInstanceModel;
 
-  class QICORECOMPAT_API ChoregrapheProjectModel {
+  class QICORECOMPAT_API ChoregrapheProjectModel : private boost::noncopyable {
   public:
     ChoregrapheProjectModel(const std::string &dir = "",
                             const std::string &name = "",
@@ -38,7 +38,6 @@ namespace qi {
     void setRootBox(boost::shared_ptr<BoxInstanceModel> rootBox);
 
   protected:
-    QI_DISALLOW_COPY_AND_ASSIGN(ChoregrapheProjectModel);
     ChoregrapheProjectModelPrivate* _p;
   };
 

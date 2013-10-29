@@ -18,7 +18,7 @@ namespace qi
 {
   class ActuatorCurveModelPrivate;
 
-  class QICORECOMPAT_API ActuatorCurveModel {
+  class QICORECOMPAT_API ActuatorCurveModel : private boost::noncopyable {
   public:
     enum UnitType
     {
@@ -55,7 +55,6 @@ namespace qi
     void addKey(boost::shared_ptr<KeyModel> key);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(ActuatorCurveModel);
     ActuatorCurveModelPrivate* _p;
   };
   typedef boost::shared_ptr<ActuatorCurveModel> ActuatorCurveModelPtr;

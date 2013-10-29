@@ -16,7 +16,7 @@ namespace qi
   class ContentsModelPrivate;
   class ContentModel;
 
-  class QICORECOMPAT_API ContentsModel
+  class QICORECOMPAT_API ContentsModel : private boost::noncopyable
   {
   public:
     ContentsModel(const std::list<boost::shared_ptr<ContentModel> > &contents = std::list<boost::shared_ptr<ContentModel> >());
@@ -29,7 +29,6 @@ namespace qi
     boost::shared_ptr<ContentModel> findContent(int type) const;
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(ContentsModel);
     ContentsModelPrivate* _p;
   };
   typedef boost::shared_ptr<ContentsModel> ContentsModelPtr;

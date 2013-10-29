@@ -15,7 +15,7 @@ namespace qi {
   class ActuatorListModelPrivate;
   class ActuatorCurveModel;
 
-  class QICORECOMPAT_API ActuatorListModel {
+  class QICORECOMPAT_API ActuatorListModel : private boost::noncopyable {
   public:
     ActuatorListModel(const std::string &model,
                       const std::list<boost::shared_ptr<ActuatorCurveModel> > &curves = std::list<boost::shared_ptr<ActuatorCurveModel> >());
@@ -32,7 +32,6 @@ namespace qi {
     bool isValid() const;
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(ActuatorListModel);
     ActuatorListModelPrivate* _p;
 
   };

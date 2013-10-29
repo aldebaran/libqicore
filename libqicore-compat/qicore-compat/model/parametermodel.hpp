@@ -19,7 +19,7 @@ namespace qi
   class ChoiceModel;
   class ParameterValueModel;
 
-  class QICORECOMPAT_API ParameterModel
+  class QICORECOMPAT_API ParameterModel : private boost::noncopyable
   {
   public:
     ParameterModel(const std::string &name,
@@ -69,7 +69,6 @@ namespace qi
     static const Signature &signatureRessource();
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(ParameterModel);
     ParameterModelPrivate *_p;
   };
   typedef boost::shared_ptr<ParameterModel> ParameterModelPtr;

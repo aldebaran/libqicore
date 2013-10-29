@@ -14,7 +14,7 @@ namespace qi
 {
   namespace compat {
     class BehaviorExecuterPrivate;
-    class QICORECOMPAT_API BehaviorExecuter
+    class QICORECOMPAT_API BehaviorExecuter : private boost::noncopyable
     {
     public:
       BehaviorExecuter(const std::string &dir, qi::Session &session, bool debug);
@@ -24,7 +24,6 @@ namespace qi
       bool load();
       qi::AnyObject behaviorService();
     private:
-      QI_DISALLOW_COPY_AND_ASSIGN(BehaviorExecuter);
       BehaviorExecuterPrivate* _p;
     };
   }

@@ -23,7 +23,7 @@ namespace qi {
   class BoxInterfaceModel;
   class ParameterValueModel;
 
-  class QICORECOMPAT_API BoxInstanceModel : public boost::enable_shared_from_this<BoxInstanceModel>
+  class QICORECOMPAT_API BoxInstanceModel : public boost::enable_shared_from_this<BoxInstanceModel>, private boost::noncopyable
   {
   public:
     BoxInstanceModel(const std::string &name, int id, int x, int y, boost::shared_ptr<BoxInterfaceModel> interface);
@@ -55,7 +55,6 @@ namespace qi {
     bool isValid() const;
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(BoxInstanceModel);
     BoxInstanceModelPrivate *_p;
   };
   typedef boost::shared_ptr<BoxInstanceModel> BoxInstanceModelPtr;

@@ -14,7 +14,7 @@
 namespace qi {
   class BitmapModelPrivate;
 
-  class QICORECOMPAT_API Bitmap
+  class QICORECOMPAT_API Bitmap : private boost::noncopyable
   {
   public:
     Bitmap(const std::string &path);
@@ -25,7 +25,6 @@ namespace qi {
     void setPath(const std::string &path);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(Bitmap);
     BitmapModelPrivate *_p;
   };
   typedef boost::shared_ptr<Bitmap> BitmapModelPtr;

@@ -19,7 +19,7 @@ namespace qi
 {
   class OutputModelPrivate;
 
-  class QICORECOMPAT_API OutputModel {
+  class QICORECOMPAT_API OutputModel : private boost::noncopyable {
   public:
     enum OutputNature {
       OutputNature_Undef    = 0,
@@ -49,7 +49,6 @@ namespace qi
     void setTooltip(const std::string& tooltip);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(OutputModel);
     OutputModelPrivate* _p;
   };
   typedef boost::shared_ptr<OutputModel> OutputModelPtr;

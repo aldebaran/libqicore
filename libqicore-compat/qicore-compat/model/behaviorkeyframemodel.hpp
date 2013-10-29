@@ -16,7 +16,7 @@ namespace qi {
   class BehaviorKeyFrameModelPrivate;
   class FlowDiagramModel;
 
-  class QICORECOMPAT_API BehaviorKeyFrameModel
+  class QICORECOMPAT_API BehaviorKeyFrameModel : private boost::noncopyable
   {
   public:
     BehaviorKeyFrameModel(const std::string &name, int index, const std::string &bitmap, const std::string &path);
@@ -36,7 +36,6 @@ namespace qi {
     void setPath(const std::string& path);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(BehaviorKeyFrameModel);
     BehaviorKeyFrameModelPrivate *_p;
   };
   typedef boost::shared_ptr<BehaviorKeyFrameModel> BehaviorKeyFrameModelPtr;

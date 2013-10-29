@@ -14,7 +14,7 @@
 namespace qi {
   class LinkModelPrivate;
 
-  class QICORECOMPAT_API LinkModel {
+  class QICORECOMPAT_API LinkModel : private boost::noncopyable {
   public:
     LinkModel(int inputtowner, int indexofinput, int outputtowner, int indexofoutput);
     LinkModel(boost::shared_ptr<const AL::XmlElement> elt);
@@ -31,7 +31,6 @@ namespace qi {
     void setIndexOfOutput(int index);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(LinkModel);
     LinkModelPrivate* _p;
   };
   typedef boost::shared_ptr<LinkModel> LinkModelPtr;

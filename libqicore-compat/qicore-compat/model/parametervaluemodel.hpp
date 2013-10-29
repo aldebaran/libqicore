@@ -17,7 +17,7 @@ namespace qi {
   class ParameterValueModelPrivate;
   class BoxInterfaceModel;
 
-  class QICORECOMPAT_API ParameterValueModel {
+  class QICORECOMPAT_API ParameterValueModel : private boost::noncopyable {
   public:
     ParameterValueModel(int id, AutoAnyReference value);
     ParameterValueModel(boost::shared_ptr<const AL::XmlElement> elt, boost::shared_ptr<BoxInterfaceModel> interface);
@@ -33,7 +33,6 @@ namespace qi {
     bool isValid() const;
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(ParameterValueModel);
     ParameterValueModelPrivate* _p;
   };
   typedef boost::shared_ptr<ParameterValueModel> ParameterValueModelPtr;
