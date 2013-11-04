@@ -59,6 +59,7 @@ namespace qi
       std::set<std::string> _setCategories;
       LogManagerProxyPtr    _logger;
       qi::log::Subscriber   _subscriber;
+      qi::Atomic<int>       _ready;
   };
 } // !qi
 

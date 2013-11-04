@@ -46,6 +46,7 @@ namespace qi
     // Safety: avoid infinite loop
     ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
     ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, _subscriber);
+    ++_ready;
   }
 
   LogProvider::~LogProvider()
@@ -63,7 +64,8 @@ namespace qi
                         int line)
   {
     DEBUG("LP log callback: " <<  message << " " << file <<  " " << function);
-
+    if (!*_ready)
+      return;
     LogMessage msg;
     std::string source(file);
     source += ':';
