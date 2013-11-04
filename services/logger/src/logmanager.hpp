@@ -10,6 +10,7 @@
 # define LOGMANAGER_HPP_
 
 # include <boost/shared_ptr.hpp>
+# include <boost/thread/mutex.hpp>
 
 # include <qitype/signal.hpp>
 # include <qitype/property.hpp>
@@ -47,7 +48,9 @@ namespace qi
 
     private:
       typedef std::map<std::string, qi::LogLevel> FilterMap;
-      FilterMap      _filters;
+      FilterMap    _filters;
+      boost::mutex _filtersMutex;
+
       LogManager&    _logger;
 
     public:

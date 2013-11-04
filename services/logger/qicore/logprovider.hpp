@@ -57,6 +57,7 @@ namespace qi
 
     private:
       std::set<std::string> _setCategories;
+      boost::mutex _setCategoriesMutex;
       LogManagerProxyPtr    _logger;
       qi::log::Subscriber   _subscriber;
       qi::Atomic<int>       _ready;

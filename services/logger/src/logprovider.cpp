@@ -94,20 +94,26 @@ namespace qi
                                 qi::LogLevel level)
   {
     DEBUG("LP setCategory level: " << level << " cat: " << cat);
-    _setCategories.insert(cat);
+    {
+      boost::mutex::scoped_lock sl(_setCategoriesMutex);
+      _setCategories.insert(cat);
+    }
     ::qi::log::setCategory(cat, level, _subscriber);
   }
 
   void LogProvider::clearAndSet(const std::vector<std::pair<std::string, qi::LogLevel> >& data)
   {
     DEBUG("LP clearAndSet");
-    for (std::set<std::string>::iterator it = _setCategories.begin(); it != _setCategories.end(); ++it)
     {
-      if (*it != "*")
-        ::qi::log::setCategory(*it, qi::LogLevel_Debug, _subscriber);
-    }
+      boost::mutex::scoped_lock sl(_setCategoriesMutex);
+      for (std::set<std::string>::iterator it = _setCategories.begin(); it != _setCategories.end(); ++it)
+      {
+        if (*it != "*")
+          ::qi::log::setCategory(*it, qi::LogLevel_Debug, _subscriber);
+      }
 
-    _setCategories.clear();
+      _setCategories.clear();
+    }
     qi::LogLevel wildcardLevel = qi::LogLevel_Silent;
     bool wildcardIsSet = false;
     for (unsigned i = 0; i < data.size(); ++i)

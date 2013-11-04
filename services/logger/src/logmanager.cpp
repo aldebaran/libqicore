@@ -81,7 +81,10 @@ bool set_verbosity(qi::LogListener* ll,
   void LogListener::clearFilters()
   {
     DEBUG("LL clearFilters logger: " << &_logger << " this: " << this);
-    _filters.clear();
+    {
+      boost::mutex::scoped_lock filtersLock(_filtersMutex);
+      _filters.clear();
+    }
     _logger.recomputeCategories();
   }
 
@@ -89,7 +92,10 @@ bool set_verbosity(qi::LogListener* ll,
                                 qi::LogLevel level)
   {
     DEBUG("LL setCategory logger: " << &_logger << " this: " << this);
-    _filters[cat] = level;
+    {
+      boost::mutex::scoped_lock filtersLock(_filtersMutex);
+      _filters[cat] = level;
+    }
     _logger.recomputeCategories();
   }
 
@@ -104,13 +110,17 @@ bool set_verbosity(qi::LogListener* ll,
     // so we must not stop on first negative filter, but go on
     // to see if a positive filter overrides it@
     bool pass = true;
-    for (FilterMap::iterator it = _filters.begin(); it != _filters.end(); ++it)
     {
-      const std::string& f = it->first;
-      if (f == msg.category ||
-          (f.find('*') != f.npos && qi::os::fnmatch(f, msg.category)))
+      boost::mutex::scoped_lock filtersLock(_filtersMutex);
+
+      for (FilterMap::iterator it = _filters.begin(); it != _filters.end(); ++it)
       {
-        pass = msg.level <= it->second;
+        const std::string& f = it->first;
+        if (f == msg.category ||
+            (f.find('*') != f.npos && qi::os::fnmatch(f, msg.category)))
+        {
+          pass = msg.level <= it->second;
+        }
       }
     }
 
