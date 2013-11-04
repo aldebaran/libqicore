@@ -40,10 +40,12 @@ public:
   qi::FutureSync<LogListenerProxyPtr > getListener(::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
     return _obj.call<LogListenerProxyPtr >(callType,"getListener");
   }
-  qi::FutureSync<void > addProvider(::qi::AutoAnyReference p0, ::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
-    return _obj.call<void >(callType,"addProvider", p0);
+  qi::FutureSync<int > addProvider(::qi::AutoAnyReference p0, ::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
+    return _obj.call<int >(callType,"addProvider", p0);
   }
-
+  qi::FutureSync<void > removeProvider(::qi::AutoAnyReference p0, ::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
+    return _obj.call<void >(callType,"removeProvider", p0);
+  }
 
 
 };

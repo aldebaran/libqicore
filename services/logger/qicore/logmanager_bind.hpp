@@ -19,6 +19,7 @@ static int LogManagerinit()
   builder.advertiseMethod("log", &LogManager::log, qi::MetaCallType_Auto);
   builder.advertiseMethod("getListener", &LogManager::getListener, qi::MetaCallType_Auto);
   builder.advertiseMethod("addProvider", &LogManager::addProvider, qi::MetaCallType_Auto);
+  builder.advertiseMethod("removeProvider", &LogManager::removeProvider, qi::MetaCallType_Auto);
 
   builder.registerType();
   return 0;

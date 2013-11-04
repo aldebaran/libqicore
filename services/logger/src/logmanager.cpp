@@ -149,13 +149,13 @@ bool set_verbosity(qi::LogListener* ll,
 
   void LogManager::log(const LogMessage& msg)
   {
+    boost::mutex::scoped_lock dataLock(_dataMutex);
     DEBUG("LM:log " << _listeners.size());
     for (int listenerIt = 0; listenerIt < _listeners.size();)
     {
       bool remove = true;
       if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
       {
-        DEBUG("LM::log listener lock");
         l->log(msg);
         remove = false;
       }
@@ -180,6 +180,8 @@ bool set_verbosity(qi::LogListener* ll,
 
     LogListenerPtr ptr = boost::make_shared<LogListener>(boost::ref(*this));
     boost::weak_ptr<LogListener> l(ptr);
+
+    boost::mutex::scoped_lock dataLock(_dataMutex);
     _listeners.push_back(l);
 
     DEBUG("LM getListener ptr: " << ptr << " listener: " << ptr.get());
@@ -190,147 +192,174 @@ bool set_verbosity(qi::LogListener* ll,
                                         qi::LogLevel to)
   {
     DEBUG("LM recomputeVerbosities");
+    // clean proxy sync
+    gcProviders();
     if (_maxLevel >= from && _maxLevel >= to)
-    {
       return;
-    }
 
     qi::LogLevel newMax = qi::LogLevel_Silent;
 
-    for (int listenerIt = 0; listenerIt < _listeners.size();)
     {
-      bool remove = true;
-      if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
-      {
-        newMax = std::max(newMax, l->verbosity.get());
-        remove = false;
-      }
-
-      if (remove)
-      {
-        std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
-        _listeners.pop_back();
-      }
-      else
-      {
-        ++listenerIt;
-      }
-    }
-
-    DEBUG("LM recomputed verbosity " << newMax);
-    if (newMax != _maxLevel)
-    {
-      _maxLevel = newMax;
-      for (unsigned i = 0; i < _providers.size(); ++i)
+      boost::mutex::scoped_lock dataLock(_dataMutex);
+      for (int listenerIt = 0; listenerIt < _listeners.size();)
       {
         bool remove = true;
-        if (LogProviderProxyPtr p = _providers[i])
+        if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
         {
-          p->setVerbosity(_maxLevel);
+          newMax = std::max(newMax, l->verbosity.get());
           remove = false;
         }
 
         if (remove)
         {
-          std::swap(_providers[_providers.size() - 1], _providers[i]);
-          _providers.pop_back();
+          std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
+          _listeners.pop_back();
         }
         else
         {
-          ++i;
+          ++listenerIt;
+        }
+      }
+
+      if (newMax != _maxLevel)
+      {
+        _maxLevel = newMax;
+        std::map<int, LogProviderProxyPtr >::iterator providersIt;
+        for (providersIt = _providers.begin(); providersIt != _providers.end(); ++providersIt)
+        {
+          providersIt->second->setVerbosity(_maxLevel).async().connect(
+                &LogManager::providerCallback, this, _1, providersIt->first);
         }
       }
     }
   }
 
-  void LogManager::addProvider(LogProviderProxyPtr provider)
+  int LogManager::addProvider(LogProviderProxyPtr provider)
   {
     DEBUG("LM addProvider");
-    _providers.push_back(provider);
-    provider->setVerbosity(_maxLevel).async();
-    provider->clearAndSet(_filters).async();
+    boost::mutex::scoped_lock dataLock(_dataMutex);
+    int id = ++_providerId;
+    _providers[id] = provider;
+    provider->setVerbosity(_maxLevel).async().connect(
+          &LogManager::providerCallback, this, _1, id);
+    provider->clearAndSet(_filters).async().connect(
+          &LogManager::providerCallback, this, _1, id);
+
+    return id;
+  }
+
+  void LogManager::providerCallback(qi::Future<void> fut, int idProvider)
+  {
+    DEBUG("LM providerCallback id " << idProvider);
+    if (fut.hasError())
+    {
+      boost::mutex::scoped_lock invalidProviderIdsLock(_invalidProviderIdsMutex);
+      _invalidProviderIds.insert(idProvider);
+    }
+
+    return;
+  }
+
+
+  void LogManager::gcProviders()
+  {
+    DEBUG("LM gcProviders");
+    boost::mutex::scoped_lock invalidProviderIdsLock(_invalidProviderIdsMutex);
+    boost::mutex::scoped_lock dataLock(_dataMutex);
+    std::set<int>::const_iterator invalidProviderIdsIt;
+    for (invalidProviderIdsIt = _invalidProviderIds.begin();
+         invalidProviderIdsIt != _invalidProviderIds.end();
+         ++invalidProviderIdsIt)
+    {
+      _providers.erase(*invalidProviderIdsIt);
+    }
+
+    _invalidProviderIds.clear();
+    return;
+  }
+
+  void LogManager::removeProvider(int idProvider)
+  {
+    DEBUG("LM removeProvider id " << idProvider);
+    boost::mutex::scoped_lock dataLock(_dataMutex);
+    _providers.erase(idProvider);
   }
 
   void LogManager::recomputeCategories()
   {
     DEBUG("LM recomputeCategories");
+
+    // clean proxy sync
+    gcProviders();
     // Soon you will know why this function is at the end of the source file...
     // Merge requests in one big map, keeping most verbose, ignoring globbing
     // Then, make a second pass that removes rules that overrides others and reduce verbosity
-    if (_listeners.size() == 1)
-    {
-      // easy case
-      _filters.clear();
-      if (boost::shared_ptr<LogListener> l = _listeners.front().lock())
-      {
-        _filters.insert(_filters.begin(), l->_filters.begin(), l->_filters.end());
-        for (unsigned i = 0; i < _providers.size(); ++i)
-        {
-          bool remove = true;
-          if (LogProviderProxyPtr p = _providers[i])
-          {
-            p->clearAndSet(_filters).async();
-            remove = false;
-          }
-
-          if (remove)
-          {
-            std::swap(_providers[_providers.size() - 1], _providers[i]);
-            _providers.pop_back();
-          }
-          else
-          {
-            ++i;
-          }
-        }
-      }
-      else
-      {
-        _listeners.clear();
-      }
-      return;
-    }
-    _filters.clear();
     typedef LogListener::FilterMap FilterMap;
     FilterMap map;
-
-    for (int listenerIt = 0; listenerIt < _listeners.size();)
     {
-      bool remove = true;
-      if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
+      boost::mutex::scoped_lock dataLock(_dataMutex);
+      if (_listeners.size() == 1)
       {
-        remove = false;
-        for (FilterMap::iterator it = l->_filters.begin();
-             it != l->_filters.end();
-             ++it)
+        // easy case
+        _filters.clear();
+        if (boost::shared_ptr<LogListener> l = _listeners.front().lock())
         {
-          // If we find a glob that has an other pattern than 'foo*', bailout
-          size_t star = it->first.find('*');
-          if (star != it->first.npos && star < it->first.length() - 1)
+          _filters.insert(_filters.begin(), l->_filters.begin(), l->_filters.end());
+          std::map<int, LogProviderProxyPtr >::iterator providersIt;
+          for (providersIt = _providers.begin();
+               providersIt != _providers.end();
+               ++providersIt)
           {
-            goto bailout;
-          }
-
-          FilterMap::iterator found = map.find(it->first);
-          if (found == map.end())
-          {
-            map[it->first] = it->second;
-          }
-          else
-          {
-            found->second = std::max(found->second, it->second);
+            providersIt->second->clearAndSet(_filters).async().connect(
+                  &LogManager::providerCallback, this, _1, providersIt->first);
           }
         }
+        else
+        {
+          _listeners.clear();
+        }
+        return;
       }
+      _filters.clear();
 
-      if (remove)
+      for (int listenerIt = 0; listenerIt < _listeners.size();)
       {
-        std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
-        _listeners.pop_back();
-      }
-      else
-      {
-        ++listenerIt;
+        bool remove = true;
+        if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
+        {
+          remove = false;
+          for (FilterMap::iterator it = l->_filters.begin();
+               it != l->_filters.end();
+               ++it)
+          {
+            // If we find a glob that has an other pattern than 'foo*', bailout
+            size_t star = it->first.find('*');
+            if (star != it->first.npos && star < it->first.length() - 1)
+            {
+              goto bailout;
+            }
+
+            FilterMap::iterator found = map.find(it->first);
+            if (found == map.end())
+            {
+              map[it->first] = it->second;
+            }
+            else
+            {
+              found->second = std::max(found->second, it->second);
+            }
+          }
+        }
+
+        if (remove)
+        {
+          std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
+          _listeners.pop_back();
+        }
+        else
+        {
+          ++listenerIt;
+        }
       }
     }
 
@@ -366,26 +395,17 @@ bool set_verbosity(qi::LogListener* ll,
       }
     }
 
-    _filters.insert(_filters.end(), map.begin(), map.end());
-bailout:
-    for (unsigned i = 0; i < _providers.size(); ++i)
     {
-      bool remove = true;
-      if (LogProviderProxyPtr p = _providers[i])
-      {
-        p->clearAndSet(_filters).async();
-        remove = false;
-      }
-
-      if (remove)
-      {
-        std::swap(_providers[_providers.size() - 1], _providers[i]);
-        _providers.pop_back();
-      }
-      else
-      {
-        ++i;
-      }
+      boost::mutex::scoped_lock dataLock(_dataMutex);
+      _filters.insert(_filters.end(), map.begin(), map.end());
+    }
+bailout:
+    boost::mutex::scoped_lock dataLock(_dataMutex);
+    std::map<int, LogProviderProxyPtr >::iterator providersIt;
+    for (providersIt = _providers.begin(); providersIt != _providers.end(); ++providersIt)
+    {
+      providersIt->second->clearAndSet(_filters).async().connect(
+            &LogManager::providerCallback, this, _1, providersIt->first);
     }
   }
 } // !qi

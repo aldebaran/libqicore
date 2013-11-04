@@ -28,7 +28,7 @@ namespace qi
   typedef boost::shared_ptr<LogProvider> LogProviderPtr;
 
   // Register local provider to service
-  void registerToLogger(LogManagerProxyPtr logger);
+  qi::Future<int> registerToLogger(LogManagerProxyPtr logger);
 
   /** Registers to a local or remote Logger service
  *  Sends local logger message to it

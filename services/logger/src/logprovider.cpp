@@ -22,18 +22,18 @@ if (logDebug) std::cerr << a << std::endl;       \
 namespace qi
 {
   static LogProviderPtr instance;
-  void registerToLogger(LogManagerProxyPtr logger)
+  qi::Future<int> registerToLogger(LogManagerProxyPtr logger)
   {
     DEBUG("registering new provider");
     if (instance)
     {
       qiLogError("Provider already registered for this process");
-      return;
+      return qi::Future<int>(-1);
     }
 
     LogProviderPtr ptr = boost::make_shared<LogProvider>(logger);
     instance = ptr;
-    logger->addProvider(ptr, qi::MetaCallType_Queued).async();
+    return (logger->addProvider(ptr, qi::MetaCallType_Queued).async());
   }
 
   LogProvider::LogProvider(LogManagerProxyPtr logger)
