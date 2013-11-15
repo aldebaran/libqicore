@@ -6,8 +6,10 @@
 """
 import qisys.qixml
 from qisys import ui
+import qisys.sh
 import os
 import zipfile
+import shutil
 
 
 class Package(object):
@@ -28,6 +30,13 @@ class Package(object):
         ui.info(ui.green, "Generated package:", ui.reset, output_file)
         archive.close()
 
+    def do_install(self, output_dir):
+        for b in self.behaviors:
+            for f in b.files:
+                arcname = os.path.relpath(f, self.path)
+                dest = os.path.join(output_dir, arcname)
+                qisys.sh.mkdir(os.path.dirname(dest), recursive=True)
+                shutil.copy(f, dest)
 
 class Behavior(object):
     def __init__(self, path, name, files):
