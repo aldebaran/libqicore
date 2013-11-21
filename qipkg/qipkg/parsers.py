@@ -2,6 +2,8 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+### NOT USED ANYMORE (pml are not registered in qiproject.xml)
+
 from qisys import ui
 import qisys.parsers
 from qipkg.worktree import PkgWorkTree, new_pkg_project

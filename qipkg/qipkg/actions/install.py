@@ -13,27 +13,22 @@ from qisys import ui
 import qisys.sh
 import qisys.parsers
 import qipkg.parsers
-import qibuild.parsers
-import qipkg.worktree
+import qipkg.package
 
 
 def configure_parser(parser):
     """Configure parser for this action"""
     qisys.parsers.worktree_parser(parser)
-    qibuild.parsers.project_parser(parser)
+    #qibuild.parsers.project_parser(parser)
     group = parser.add_argument_group("Install options")
+    group.add_argument("input", help=".pml package xml input file")
     group.add_argument("output", help="directory destination")
 
 
 def do(args):
     """Main entry point"""
 
-    if not os.path.isdir(args.output):
-        raise Exception("Destination is not a folder: %s" % args.output)
-    pkg_worktree = qipkg.parsers.get_pkg_worktree(args)
+    pkg = qipkg.package.make(args.input)
 
-    topackage = qipkg.parsers.get_pkg_projects(pkg_worktree, args)
-
-    for tp in topackage:
-        ui.info(ui.green, "Generating package for:", ui.reset, tp.name)
-        tp.do_install(args.output)
+    ui.info(ui.green, "Installing package", ui.reset, pkg.name, ui.green, "into", ui.reset, args.output)
+    pkg.do_install(args.output)
