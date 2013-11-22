@@ -31,4 +31,4 @@ def do(args):
     pkg = qipkg.package.make(args.input)
 
     ui.info(ui.green, "Installing package", ui.reset, pkg.name, ui.green, "into", ui.reset, args.output)
-    pkg.do_install(args.output)
+    pkg.install(args.output)
