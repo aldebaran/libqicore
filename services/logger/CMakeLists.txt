@@ -33,6 +33,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 #   qi::LogManager
 #   ${CMAKE_CURRENT_BINARY_DIR}
 #   _logmanager_proxy
+#   INCLUDE qicore/logmessage.hpp
 # )
 
 # # LogProvider Proxy
