@@ -18,12 +18,12 @@ namespace qi
 {
   struct LogMessage
   {
-    std::string source;
-    qi::LogLevel level;
-    qi::os::timeval timestamp;
-    std::string category;
-    std::string location;
-    std::string message;
+    std::string source;        // File:function:line
+    qi::LogLevel level;        // Level of verbosity of the message
+    qi::os::timeval timestamp; // timestamp when the message have been posted
+    std::string category;      // Category of the message
+    std::string location;      // machineID:PID
+    std::string message;       // The message itself
   };
 }
 QI_TYPE_STRUCT(::qi::LogMessage, source, level, timestamp, category, location, message);
