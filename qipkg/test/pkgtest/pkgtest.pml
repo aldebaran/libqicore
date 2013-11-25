@@ -12,4 +12,7 @@
   <resources>
     <file src="res1"/>
   </resources>
+
+  <qibuild name="libqi"/>
+
 </package>

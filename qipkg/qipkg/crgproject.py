@@ -26,35 +26,25 @@ class CrgProject(object):
     def make(self):
         pass
 
-    def package(self, output_file):
-        outdir = os.path.dirname(os.path.abspath(output_file))
-        if not os.path.isdir(outdir):
-            raise Exception("Destination folder do not exists: " % outdir)
-
-        archive = zipfile.ZipFile(output_file, "w", zipfile.ZIP_DEFLATED)
-
-        for f in self.resources:
-            arcname = os.path.relpath(f, self.path)
-            archive.write(f, arcname)
-        for b in self.behaviors:
-            for f in b.files:
-                arcname = os.path.relpath(f, self.path)
-                archive.write(f, arcname)
-        ui.info(ui.green, "Generated package:", ui.reset, output_file)
-        archive.close()
-
     def install(self, output_dir):
-        for f in self.resources:
+        ui.info(ui.green, "Installing crg project:", ui.reset, self.name)
+        filelisting = list()
+
+        def _inst(f):
             arcname = os.path.relpath(f, self.path)
             dest = os.path.join(output_dir, arcname)
             qisys.sh.mkdir(os.path.dirname(dest), recursive=True)
             shutil.copy(f, dest)
+            filelisting.append(dest)
+
+        for f in self.resources:
+            _inst(f)
+
         for b in self.behaviors:
             for f in b.files:
-                arcname = os.path.relpath(f, self.path)
-                dest = os.path.join(output_dir, arcname)
-                qisys.sh.mkdir(os.path.dirname(dest), recursive=True)
-                shutil.copy(f, dest)
+                _inst(f)
+        return filelisting
+
 
 class Behavior(object):
     def __init__(self, path, files):
