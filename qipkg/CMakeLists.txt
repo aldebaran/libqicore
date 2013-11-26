@@ -1,3 +1,3 @@
 
 
-qi_stage_cmake(qipackage-config.cmake)
+qi_stage_cmake(qipkg-config.cmake)
