@@ -6,10 +6,14 @@ import qisys.qixml
 from qisys import ui
 import qisys.sh
 import os
-import zipfile
 import shutil
+from qisys.abstractbuilder import AbstractBuilder
 
-class CrgProject(object):
+
+class CrgBuilder(AbstractBuilder):
+    """ Builder for choregraphe projects
+    """
+
     def __init__(self, path, name, manifest, behaviors, resources):
         self.path = path
         self.name = name
@@ -20,13 +24,14 @@ class CrgProject(object):
             if not os.path.isfile(f):
                 raise Exception("Missing file: %s" % f)
 
-    def configure(self):
+    def configure(self, *args, **kwargs):
         pass
 
-    def make(self):
+    def build(self, *args, **kwargs):
         pass
 
-    def install(self, output_dir):
+    #TODO: copy only if change are detected
+    def install(self, output_dir, *args, **kwargs):
         ui.info(ui.green, "Installing crg project:", ui.reset, self.name)
         filelisting = list()
 
@@ -65,6 +70,7 @@ def _populate_files(xmlnode, path):
         files.append(os.path.join(path, f.get("src")))
     return files
 
+
 def make(fullpath):
     if not os.path.isfile(fullpath):
         raise Exception("Package xml file not found: %s" % fullpath)
@@ -97,4 +103,4 @@ def make(fullpath):
         files = _populate_files(behavior, path)
         behavior_toadd = Behavior(path, files)
         pkg_behaviors.append(behavior_toadd)
-    return CrgProject(pkg_path, name, manifest, pkg_behaviors, pkg_resources)
+    return CrgBuilder(pkg_path, name, manifest, pkg_behaviors, pkg_resources)

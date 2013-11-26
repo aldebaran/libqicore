@@ -23,8 +23,7 @@ def configure_parser(parser):
 
 def do(args):
     """Main entry point"""
-
-    pkg = qipkg.package.make(args.input, args)
+    pkg = qipkg.parsers.get_pkg_from_args(args)
 
     ui.info(ui.green, "Generating package for:", ui.reset, pkg.name)
     pkg.package(args.output)
