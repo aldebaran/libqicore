@@ -19,6 +19,7 @@
 #include <qicore-compat/timeline.hpp>
 #include <qitype/objectfactory.hpp>
 #include <qitype/dynamicobject.hpp>
+#include <qipython/gil.hpp>
 #include "behaviorexecuter_p.hpp"
 
 #include <boost/python.hpp>
@@ -37,7 +38,8 @@ namespace qi
     typedef std::map<std::string, qi::AnyObject> ObjectMap;
     BehaviorExecuterPrivate::BehaviorExecuterPrivate(const std::string &dir, Session &session, bool debug) :
       _project(dir),
-      _debug(debug)
+      _debug(debug),
+      _running(0)
     {
       std::stringstream p;
       p << session.url().port();
@@ -48,6 +50,19 @@ namespace qi
       _alresourcemanager = session.service("ALResourceManager");
       _almotion = session.service("ALMotion");
       _almemory = session.service("ALMemory");
+    }
+
+    BehaviorExecuterPrivate::~BehaviorExecuterPrivate()
+    {
+      {
+        py::GILScopedLock l;
+        _timelines.clear();
+        _behaviorService = qi::AnyObject();
+        _alresourcemanager = qi::AnyObject();
+        _almotion = qi::AnyObject();
+        _almemory = qi::AnyObject();
+      }
+      _pythonCreator.terminate();
     }
 
     bool BehaviorExecuterPrivate::declaredBox(BoxInstanceModelPtr instance)
@@ -220,7 +235,7 @@ namespace qi
       qiLogDebug() << t.toString();
     }
 
-    void BehaviorExecuterPrivate::initialiseBox(BoxInstanceModelPtr instance)
+    void BehaviorExecuterPrivate::initialiseBox(BoxInstanceModelPtr instance, bool rootBox)
     {
       //If FlowDiagram
       qi::AnyReference diagram = instance->content(ContentModel::ContentType_FlowDiagram);
@@ -304,6 +319,26 @@ namespace qi
       }
 
       _behaviorService.call<void>("call", instance->uid(), "__onLoad__", std::vector<qi::AnyValue>());
+
+      // connect to end output to know when the behavior is finished
+      if (rootBox)
+      {
+        boost::shared_ptr<BoxInterfaceModel> interface = instance->interface();
+        const std::map<int, boost::shared_ptr<OutputModel> >& outputs = interface->outputs();
+        for (std::map<int, boost::shared_ptr<OutputModel> >::const_iterator
+              iter = outputs.begin();
+            iter != outputs.end();
+            ++iter)
+        {
+          // We suppose the object returned by behaviorService is always local
+          _behaviorService.call<AnyObject>("object", instance->uid()).value().connect(iter->second->metaSignal().name() + "Signal", boost::function<void(AnyValue)>(boost::bind(&BehaviorExecuterPrivate::onFinished, this, _1)));
+        }
+      }
+    }
+
+    void BehaviorExecuterPrivate::onFinished(AnyValue v)
+    {
+      _finished.setValue(0);
     }
 
     void BehaviorExecuterPrivate::connect(qi::AnyObject src,
@@ -394,12 +429,17 @@ namespace qi
 
     BehaviorExecuter::~BehaviorExecuter()
     {
-      _p->_pythonCreator.terminate();
       delete _p;
     }
 
     void BehaviorExecuter::execute()
     {
+      if (!_p->_running.setIfEquals(0, 1))
+      {
+        qiLogError() << "Cannot execute behavior, already running";
+        return;
+      }
+
       //Search start input
       BoxInstanceModelPtr root = _p->_project.rootBox();
 
@@ -412,6 +452,9 @@ namespace qi
       qiLogDebug() << "Start Behavior " << root->behaviorPath();
       std::vector<qi::AnyValue> args;
       args.push_back(qi::AnyValue("args"));
+
+      _p->_finished = qi::Promise<void>();
+
       _p->_behaviorService.call<void>("call", root->uid(), inputStart, args);
 
       if(!_p->_timelines.empty())
@@ -421,16 +464,17 @@ namespace qi
           val.second.call<void>("waitForTimelineCompletion");
         }
       }
-      qiLogDebug() << "Stop Behavior " << root->behaviorPath();
 
-      qiLogDebug() << "Unload box";
-      _p->_pythonCreator.switchMainThread();
+      _p->_finished.future().wait();
+      qiLogDebug() << "Behavior " << root->behaviorPath() << " finished";
       ObjectMap objects = _p->_behaviorService.call<ObjectMap>("objects");
       foreach(ObjectMap::value_type const &val, objects)
       {
         qi::AnyObject o = val.second;
         o.call<void>("__onUnload__");
       }
+
+      _p->_running = 0;
     }
 
     bool BehaviorExecuter::load()
@@ -472,7 +516,7 @@ namespace qi
         qiCoreMemoryWatcher.call<void>("subscribe", s);
       }
 
-      _p->initialiseBox(root);
+      _p->initialiseBox(root, true);
 
       //Set ObjectThreadingModel to prevent deadlock.
       //Infact, A.method trigger A.signal (so A is locked)
@@ -481,7 +525,7 @@ namespace qi
       foreach(ObjectMap::value_type const &val, objects)
       {
         qi::AnyObject obj = val.second;
-        DynamicObject* dynamic = reinterpret_cast<DynamicObject*>(obj.get()->value);
+        DynamicObject* dynamic = reinterpret_cast<DynamicObject*>(obj.asGenericObject()->value);
         dynamic->setThreadingModel(ObjectThreadingModel_MultiThread);
       }
 

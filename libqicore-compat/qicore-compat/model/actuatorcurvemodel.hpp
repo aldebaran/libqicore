@@ -13,6 +13,7 @@
 #include <alserial/alserial.h>
 #include <qicore-compat/api.hpp>
 #include <qicore-compat/model/keymodel.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace qi
 {

@@ -10,6 +10,7 @@
 
 #include <alserial/alserial.h>
 #include <qicore-compat/api.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace qi {
   class ActuatorListModelPrivate;

@@ -6,11 +6,12 @@
 #pragma once
 
 #ifndef RESSOURCE_H_
-# define RESSOURCE_H_
+#define RESSOURCE_H_
 
-# include <qicore-compat/api.hpp>
-# include <string>
-# include <alserial/alserial.h>
+#include <qicore-compat/api.hpp>
+#include <string>
+#include <alserial/alserial.h>
+#include <boost/noncopyable.hpp>
 
 namespace qi
 {

@@ -14,7 +14,6 @@
 #include <qitype/objecttypebuilder.hpp>
 
 #include "timeline_p.hpp"
-#include "python/pyregisterthread.hpp"
 #include <qicore-compat/timeline.hpp>
 #include <qicore-compat/model/actuatorlistmodel.hpp>
 #include <qicore-compat/model/actuatorcurvemodel.hpp>
@@ -200,7 +199,6 @@ void TimelinePrivate::setAnimation(AnimationModel* anim)
 
 void TimelinePrivate::startFlowdiagram(int index)
 {
-   PyRegisterThread pyThread(_mainInterpreterState);
   _timeline->startFlowdiagram(index);
 }
 
@@ -214,10 +212,7 @@ void TimelinePrivate::startFlowdiagramAsync(int index)
 
 void TimelinePrivate::stopFlowdiagram()
 {
-  {
-  PyRegisterThread pyThread(_mainInterpreterState);
   _timeline->stopFlowdiagram(-1);
-  }
 
   foreach(boost::thread *t, _flowdiagrams)
   {

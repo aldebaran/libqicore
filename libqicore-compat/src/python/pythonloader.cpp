@@ -13,6 +13,7 @@
 #include <qi/log.hpp>
 #include <qi/path.hpp>
 #include <qitype/objectfactory.hpp>
+#include <qipython/gil.hpp>
 
 #include <qicore-compat/model/boxinterfacemodel.hpp>
 #include <qicore-compat/model/boxinstancemodel.hpp>
@@ -40,7 +41,15 @@ namespace qi
   {
     PyEval_InitThreads();
     Py_Initialize();
-    _mainThread = PyThreadState_Get();
+    _mainThread = PyThreadState_Swap(NULL);
+    // Py_Initialize takes the GIL, so we release it
+    PyEval_ReleaseLock();
+
+    // We will now execute python code, so we take the lock with a nice scoped
+    // lock. This lock must be released at the end of the function because we
+    // will call python function through qimessaging after that and qimessaging
+    // will take the lock in other threads.
+    py::GILScopedLock lock;
     //create main namespace
     _main = py::import("__main__");
     _mainNamespace = _main.attr("__dict__");
@@ -95,17 +104,24 @@ namespace qi
 
   void PythonBoxLoader::terminate()
   {
-    std::stringstream delalbroker;
-    delalbroker << "del al\n";
-
-    try {
-      py::exec(py::str(delalbroker.str().c_str()), _mainNamespace);
-    }
-    catch(py::error_already_set const&)
     {
-      PyErr_Print();
+      py::GILScopedLock lock;
+      std::stringstream delalbroker;
+      delalbroker <<
+        "al.shutdown()\n"
+        "del al\n";
+
+      try {
+        py::exec(py::str(delalbroker.str().c_str()), _mainNamespace);
+      }
+      catch(py::error_already_set const&)
+      {
+        PyErr_Print();
+      }
     }
 
+    PyEval_AcquireLock();
+    PyThreadState_Swap(_mainThread);
     Py_Finalize();
   }
 
@@ -114,13 +130,9 @@ namespace qi
     return _mainThread->interp;
   }
 
-  void PythonBoxLoader::switchMainThread()
-  {
-    PyThreadState_Swap(_mainThread);
-  }
-
   bool PythonBoxLoader::registerPythonClass(BoxInstanceModelPtr instance)
   {
+    py::GILScopedLock lock;
     std::string code = generatedClass(instance);
 
     if(instance->uid() == "root_1_Diagnostic_20_init_Bumpers_2")
@@ -174,15 +186,15 @@ namespace qi
 
     if(pyfile)
     {
-    script = std::string("qi.registerObjectFactory('")
+      script = std::string("qi.registerObjectFactory('")
         + unique_id
         + std::string("', MyClass)\n");
     }
     else
     {
       script = std::string("qi.registerObjectFactory('")
-          + unique_id
-          + std::string("', GeneratedClass_") + unique_id + std::string(")\n");
+        + unique_id
+        + std::string("', GeneratedClass_") + unique_id + std::string(")\n");
     }
 
     qiLogDebug() << "Srcipt register : " + script;

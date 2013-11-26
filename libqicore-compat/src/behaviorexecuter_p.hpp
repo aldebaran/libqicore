@@ -7,6 +7,7 @@
 #define BEHAVIORLOADER_P_HPP_
 
 #include <qimessaging/session.hpp>
+#include <qi/atomic.hpp>
 #include <qitype/anyobject.hpp>
 #include <qicore/behavior.hpp>
 #include <qicore-compat/model/flowdiagrammodel.hpp>
@@ -23,6 +24,7 @@ namespace qi
       friend class BehaviorExecuter;
     public:
       BehaviorExecuterPrivate(const std::string &dir, qi::Session &session, bool debug);
+      ~BehaviorExecuterPrivate();
 
       bool loadFlowDiagram(FlowDiagramModel *diagram,
                            bool behaviorsequence = false,
@@ -31,7 +33,7 @@ namespace qi
       bool loadBehaviorSequence(BehaviorSequenceModel *behaviorSequence);
       bool declaredBox(BoxInstanceModelPtr instance);
       bool declaredPythonBox(BoxInstanceModelPtr instance);
-      void initialiseBox(BoxInstanceModelPtr instance);
+      void initialiseBox(BoxInstanceModelPtr instance, bool rootBox = false);
       void initialiseFlowDiagram(FlowDiagramModel* diagram);
       std::map<std::string, int> initialiseBehaviorSequence(BehaviorSequenceModel* seq,
                                                             const std::string &uid);
@@ -54,6 +56,11 @@ namespace qi
       std::map<std::string, qi::AnyObject> _timelines;
       std::vector<std::string> _stmvalues;
       bool _debug;
+      qi::Atomic<int> _running;
+
+      qi::Promise<void> _finished;
+
+      void onFinished(AnyValue v);
     };
     typedef std::map<std::string, qi::AnyObject> TimlineMap;
   }

@@ -34,7 +34,7 @@ class MyClass(GeneratedClass):
             self.tts.wait(id, 0)
         finally:
             try:
-                self.ids.remove(1)
+                self.ids.remove(id)
             except:
                 pass
             if( self.ids == [] ):

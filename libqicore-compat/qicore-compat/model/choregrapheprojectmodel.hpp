@@ -6,12 +6,13 @@
 #pragma once
 
 #ifndef CHOREGRAPHEPROJECT_H_
-# define CHOREGRAPHEPROJECT_H_
+#define CHOREGRAPHEPROJECT_H_
 
-# include <qicore-compat/api.hpp>
+#include <qicore-compat/api.hpp>
 
-# include <string>
-# include <boost/shared_ptr.hpp>
+#include <string>
+#include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace qi {
   class ChoregrapheProjectModelPrivate;

@@ -77,11 +77,13 @@ int main(int argc, char **argv)
   }
 
   qi::os::dlopen("behavior");
-  session.registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::compat::BehaviorExecuter behavior(behavior_path, session, debug_mode);
-  if(!behavior.load())
-    return -1;
-  behavior.execute();
+  qi::FutureSync<unsigned int> f = session.registerService("BehaviorService", qi::createObject("BehaviorService"));
+  {
+    qi::compat::BehaviorExecuter behavior(behavior_path, session, debug_mode);
+    if(!behavior.load())
+      return -1;
+    behavior.execute();
+  }
 
   session.close();
   return 0;
