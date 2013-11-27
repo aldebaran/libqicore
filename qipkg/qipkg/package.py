@@ -12,6 +12,7 @@ import qibuild.parsers
 import zipfile
 
 def gen_package(output_file, basedir, files):
+    ui.info(ui.green, "Creating package", ui.reset, output_file)
     outdir = os.path.dirname(os.path.abspath(output_file))
     if not os.path.isdir(outdir):
         raise Exception("Destination folder do not exists: " % outdir)
@@ -66,12 +67,10 @@ class Package(object):
 
     def package(self, dest):
         install_dest, files = self._cached_install()
-        ui.info(ui.green, "Generating package:", ui.reset, dest)
         gen_package(dest, install_dest, files)
 
     def deploy(self, dest):
         install_dest, files = self._cached_install()
-        ui.info(ui.green, "Deploying package to:", ui.reset, dest)
         raise NotImplementedError
 
 def make(pmlfilename, cmake_builder):

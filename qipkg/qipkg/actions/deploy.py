@@ -27,5 +27,5 @@ def do(args):
     """Main entry point"""
     pkg = qipkg.parsers.get_pkg_from_args(args)
 
-    ui.info(ui.green, "Installing package", ui.reset, pkg.name, ui.green, "into", ui.reset, args.output)
+    ui.info(ui.green, "Deploying package", ui.reset, pkg.name, ui.green, "into", ui.reset, args.output)
     pkg.deploy(args.output)
