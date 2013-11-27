@@ -41,11 +41,13 @@ class Package(object):
         self.builders       = builders
         self.build_config   = build_config
 
-    def configure(self):
-        raise NotImplementedError
+    def configure(self, *args, **kwargs):
+        for builder in self.builders:
+            builder.configure(*args, **kwargs)
 
-    def build(self):
-        raise NotImplementedError
+    def build(self, *args, **kwargs):
+        for builder in self.builders:
+            builder.build(*args, **kwargs)
 
     def install(self, dest, listing=None):
         """ install the package's content into 'dest'
