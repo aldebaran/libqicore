@@ -11,6 +11,7 @@
 #include <alcommon/alproxy.h>
 
 #include <qi/log.hpp>
+#include <qitype/objecttypebuilder.hpp>
 
 #include "timeline_p.hpp"
 #include "python/pyregisterthread.hpp"

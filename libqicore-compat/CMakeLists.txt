@@ -1,5 +1,10 @@
 ## Copyright (c) 2012 Aldebaran Robotics. All rights reserved.
 
+cmake_minimum_required(VERSION 2.8)
+project(LibQiCoreCompat)
+find_package(qibuild)
+qi_sanitize_compile_flags(HIDDEN_SYMBOLS)
+
 include_directories(".")
 
 set(PUBLIC_HEADERS

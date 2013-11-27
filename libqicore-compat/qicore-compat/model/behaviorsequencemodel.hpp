@@ -19,7 +19,7 @@ namespace qi {
   class BehaviorLayerModel;
   class BoxInstanceModel;
 
-  class QICORECOMPAT_API BehaviorSequenceModel {
+  class QICORECOMPAT_API BehaviorSequenceModel : private boost::noncopyable {
   public:
     BehaviorSequenceModel(const std::string &path = "",
                           boost::shared_ptr<BoxInstanceModel> parent = boost::shared_ptr<BoxInstanceModel>(),
@@ -49,7 +49,6 @@ namespace qi {
     bool loadFromFile();
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(BehaviorSequenceModel);
     BehaviorSequenceModelPrivate* _p;
   };
   typedef boost::shared_ptr<BehaviorSequenceModel> BehaviorSequenceModelPtr;

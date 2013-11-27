@@ -17,7 +17,7 @@ namespace qi {
   class AnimationModelPrivate;
   class ActuatorListModel;
 
-  class QICORECOMPAT_API AnimationModel {
+  class QICORECOMPAT_API AnimationModel : private boost::noncopyable {
   public:
     enum MotionResourcesHandler
     {
@@ -57,7 +57,6 @@ namespace qi {
     bool loadFromFile();
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(AnimationModel);
     AnimationModelPrivate* _p;
   };
   typedef boost::shared_ptr<AnimationModel> AnimationModelPtr;

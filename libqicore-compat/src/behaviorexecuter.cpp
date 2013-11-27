@@ -44,7 +44,7 @@ namespace qi
 
       _pythonCreator = PythonBoxLoader();
       _pythonCreator.initPython(session.url().host(), p.str(), dir);
-      _behaviorService = session.service("BehaviorService").value()->call<qi::AnyObject>("create");
+      _behaviorService = session.service("BehaviorService").value().call<qi::AnyObject>("create");
       _alresourcemanager = session.service("ALResourceManager");
       _almotion = session.service("ALMotion");
       _almemory = session.service("ALMemory");
@@ -236,7 +236,7 @@ namespace qi
         qi::AnyObject timeline;
         qi::Timeline* t = new qi::Timeline(_almotion, _pythonCreator.getInterpreter());
         timeline = qi::AnyReference::fromPtr(t).toObject();
-        timeline->call<void>("setAnimation",
+        timeline.call<void>("setAnimation",
                              behaviorAnimation.ptr<AnimationModel>());
         _timelines[instance->uid()] = timeline;
       }
@@ -258,7 +258,7 @@ namespace qi
         std::vector<qi::AnyValue> param;
         param.push_back(qi::AnyValue(name));
         param.push_back(qi::AnyValue(value));
-        _behaviorService->call<void>("call", instance->uid(), "setParameter", param);
+        _behaviorService.call<void>("call", instance->uid(), "setParameter", param);
       }
 
       if(instance->interface()->hasResource())
@@ -269,15 +269,15 @@ namespace qi
         foreach (ResourceModelPtr resource, resources) {
           resourcesName.push_back(resource->name());
         }
-        _alresourcemanager->call<void>("createResource",
-                                       _behaviorService->call<std::string>("call",
+        _alresourcemanager.call<void>("createResource",
+                                       _behaviorService.call<std::string>("call",
                                                                            instance->uid(),
                                                                            "getName",
                                                                            std::vector<qi::AnyValue>()).value(),
                                        "");
-        _alresourcemanager->call<void>("createResourcesList",
+        _alresourcemanager.call<void>("createResourcesList",
                                        resourcesName,
-                                       _behaviorService->call<std::string>("call",
+                                       _behaviorService.call<std::string>("call",
                                                                            instance->uid(),
                                                                            "getName",
                                                                            std::vector<qi::AnyValue>()).value());
@@ -299,11 +299,11 @@ namespace qi
           }
         }
 
-        timeline->call<void>("setFrames", framesKey);
-        _behaviorService->call<void>("call", instance->uid(), "setTimeline", args);
+        timeline.call<void>("setFrames", framesKey);
+        _behaviorService.call<void>("call", instance->uid(), "setTimeline", args);
       }
 
-      _behaviorService->call<void>("call", instance->uid(), "__onLoad__", std::vector<qi::AnyValue>());
+      _behaviorService.call<void>("call", instance->uid(), "__onLoad__", std::vector<qi::AnyValue>());
     }
 
     void BehaviorExecuterPrivate::connect(qi::AnyObject src,
@@ -311,8 +311,8 @@ namespace qi
                                           const std::string &signal,
                                           const std::string &method)
     {
-      std::vector<qi::MetaMethod> methods = dst->metaObject().findMethod(method);
-      const qi::MetaSignal* sig = src->metaObject().signal(signal);
+      std::vector<qi::MetaMethod> methods = dst.metaObject().findMethod(method);
+      const qi::MetaSignal* sig = src.metaObject().signal(signal);
 
       qi::Signature sigS = sig->parametersSignature();
       float bestScore = 0.0;
@@ -332,7 +332,7 @@ namespace qi
       if(bestScore == 0)
         throw std::runtime_error("Could not connect src." + signal + "with dst." + method);
 
-      src->connect(signal, qi::SignalSubscriber(dst, methods[best].uid()));
+      src.connect(signal, qi::SignalSubscriber(dst, methods[best].uid()));
     }
 
     std::map<std::string, int> BehaviorExecuterPrivate::initialiseBehaviorSequence(BehaviorSequenceModel* seq,
@@ -363,7 +363,7 @@ namespace qi
           std::stringstream sindex;
           sindex << key->index();
           std::string uid = parent->uid() + "_controlflowdiagram_" + sindex.str();
-          ObjectMap objects = _behaviorService->call<ObjectMap>("objects");
+          ObjectMap objects = _behaviorService.call<ObjectMap>("objects");
           qi::AnyObject boxdelay = objects[uid];
 
           connect(timeline, boxdelay, "startFlowdiagram", "startDelay");
@@ -412,24 +412,24 @@ namespace qi
       qiLogDebug() << "Start Behavior " << root->behaviorPath();
       std::vector<qi::AnyValue> args;
       args.push_back(qi::AnyValue("args"));
-      _p->_behaviorService->call<void>("call", root->uid(), inputStart, args);
+      _p->_behaviorService.call<void>("call", root->uid(), inputStart, args);
 
       if(!_p->_timelines.empty())
       {
         foreach(TimlineMap::value_type &val, _p->_timelines)
         {
-          val.second->call<void>("waitForTimelineCompletion");
+          val.second.call<void>("waitForTimelineCompletion");
         }
       }
       qiLogDebug() << "Stop Behavior " << root->behaviorPath();
 
       qiLogDebug() << "Unload box";
       _p->_pythonCreator.switchMainThread();
-      ObjectMap objects = _p->_behaviorService->call<ObjectMap>("objects");
+      ObjectMap objects = _p->_behaviorService.call<ObjectMap>("objects");
       foreach(ObjectMap::value_type const &val, objects)
       {
         qi::AnyObject o = val.second;
-        o->call<void>("__onUnload__");
+        o.call<void>("__onUnload__");
       }
     }
 
@@ -460,16 +460,16 @@ namespace qi
       if(!_p->declaredBox(root))
         return false;
 
-      _p->_behaviorService->call<void>("setModel", _p->_model);
-      _p->_behaviorService->call<void>("loadObjects", _p->_debug);
-      _p->_behaviorService->call<void>("setTransitions", _p->_debug, (int)qi::MetaCallType_Direct);
+      _p->_behaviorService.call<void>("setModel", _p->_model);
+      _p->_behaviorService.call<void>("loadObjects", _p->_debug);
+      _p->_behaviorService.call<void>("setTransitions", _p->_debug, (int)qi::MetaCallType_Direct);
 
       //QiCoreMemoryWatcher set watching value
-      ObjectMap objects = _p->_behaviorService->call<ObjectMap>("objects");
+      ObjectMap objects = _p->_behaviorService.call<ObjectMap>("objects");
       qi::AnyObject qiCoreMemoryWatcher = objects["QiCoreMemoryWatcher"];
       foreach(std::string const &s, _p->_stmvalues)
       {
-        qiCoreMemoryWatcher->call<void>("subscribe", s);
+        qiCoreMemoryWatcher.call<void>("subscribe", s);
       }
 
       _p->initialiseBox(root);
@@ -481,7 +481,7 @@ namespace qi
       foreach(ObjectMap::value_type const &val, objects)
       {
         qi::AnyObject obj = val.second;
-        DynamicObject* dynamic = reinterpret_cast<DynamicObject*>(obj->value);
+        DynamicObject* dynamic = reinterpret_cast<DynamicObject*>(obj.get()->value);
         dynamic->setThreadingModel(ObjectThreadingModel_MultiThread);
       }
 

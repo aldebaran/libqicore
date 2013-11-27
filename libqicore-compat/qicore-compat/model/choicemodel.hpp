@@ -18,7 +18,7 @@ namespace qi
 {
   class ChoiceModelPrivate;
 
-  class QICORECOMPAT_API ChoiceModel {
+  class QICORECOMPAT_API ChoiceModel : private boost::noncopyable {
   public:
     explicit ChoiceModel(AutoAnyReference value);
     ChoiceModel(boost::shared_ptr<const AL::XmlElement> elt, const Signature &type);
@@ -29,7 +29,6 @@ namespace qi
     void setValue(AutoAnyReference value);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(ChoiceModel);
     ChoiceModelPrivate* _p;
   };
   typedef boost::shared_ptr<ChoiceModel> ChoiceModelPtr;

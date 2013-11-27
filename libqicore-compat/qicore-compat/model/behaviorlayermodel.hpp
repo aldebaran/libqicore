@@ -16,7 +16,7 @@ namespace qi {
   class BehaviorKeyFrameModel;
   class BoxInstanceModel;
 
-  class QICORECOMPAT_API BehaviorLayerModel {
+  class QICORECOMPAT_API BehaviorLayerModel : private boost::noncopyable {
   public:
     BehaviorLayerModel(const std::string &name,
                        bool mute,
@@ -33,7 +33,6 @@ namespace qi {
     void addBehaviorKeyFrame(boost::shared_ptr<BehaviorKeyFrameModel> behaviorKeyFrame);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(BehaviorLayerModel);
     BehaviorLayerModelPrivate* _p;
   };
   typedef boost::shared_ptr<BehaviorLayerModel> BehaviorLayerModelPtr;

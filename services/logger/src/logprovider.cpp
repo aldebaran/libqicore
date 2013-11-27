@@ -22,18 +22,18 @@ if (logDebug) std::cerr << a << std::endl;       \
 namespace qi
 {
   static LogProviderPtr instance;
-  void registerToLogger(LogManagerProxyPtr logger)
+  qi::Future<int> registerToLogger(LogManagerProxyPtr logger)
   {
     DEBUG("registering new provider");
     if (instance)
     {
       qiLogError("Provider already registered for this process");
-      return;
+      return qi::Future<int>(-1);
     }
 
     LogProviderPtr ptr = boost::make_shared<LogProvider>(logger);
     instance = ptr;
-    logger->addProvider(ptr, qi::MetaCallType_Queued).async();
+    return (logger->addProvider(ptr, qi::MetaCallType_Queued).async());
   }
 
   LogProvider::LogProvider(LogManagerProxyPtr logger)
@@ -44,8 +44,10 @@ namespace qi
 
     DEBUG("LP subscribed " << _subscriber);
     // Safety: avoid infinite loop
-    ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
     ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, _subscriber);
+    ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
+    ::qi::log::setCategory("qi.eventloop", qi::LogLevel_Silent, _subscriber);
+    ++_ready;
   }
 
   LogProvider::~LogProvider()
@@ -63,7 +65,8 @@ namespace qi
                         int line)
   {
     DEBUG("LP log callback: " <<  message << " " << file <<  " " << function);
-
+    if (!*_ready)
+      return;
     LogMessage msg;
     std::string source(file);
     source += ':';
@@ -91,23 +94,49 @@ namespace qi
                                 qi::LogLevel level)
   {
     DEBUG("LP setCategory level: " << level << " cat: " << cat);
-    _setCategories.insert(cat);
+    {
+      boost::mutex::scoped_lock sl(_setCategoriesMutex);
+      _setCategories.insert(cat);
+    }
     ::qi::log::setCategory(cat, level, _subscriber);
   }
 
   void LogProvider::clearAndSet(const std::vector<std::pair<std::string, qi::LogLevel> >& data)
   {
-    for (std::set<std::string>::iterator it = _setCategories.begin(); it != _setCategories.end(); ++it)
+    DEBUG("LP clearAndSet");
     {
-      ::qi::log::setCategory(*it, qi::LogLevel_Debug, _subscriber);
-    }
+      boost::mutex::scoped_lock sl(_setCategoriesMutex);
+      for (std::set<std::string>::iterator it = _setCategories.begin(); it != _setCategories.end(); ++it)
+      {
+        if (*it != "*")
+          ::qi::log::setCategory(*it, qi::LogLevel_Debug, _subscriber);
+      }
 
-    _setCategories.clear();
+      _setCategories.clear();
+    }
+    qi::LogLevel wildcardLevel = qi::LogLevel_Silent;
+    bool wildcardIsSet = false;
     for (unsigned i = 0; i < data.size(); ++i)
     {
-      setCategory(data[i].first, data[i].second);
+      if (data[i].first == "*")
+      {
+        wildcardLevel = data[i].second;
+        wildcardIsSet = true;
+      }
+      else
+        setCategory(data[i].first, data[i].second);
     }
 
+    // Safety: avoid infinite loop
+    ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, _subscriber);
     ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
+    ::qi::log::setCategory("qi.eventloop", qi::LogLevel_Silent, _subscriber);
+
+    if (wildcardIsSet)
+      ::qi::log::setCategory("*", wildcardLevel, _subscriber);
   }
+
 } // !qi
+
+// We need this include because the library is static.
+#include <qicore/logprovider_bind.cpp>

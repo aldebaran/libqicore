@@ -20,7 +20,7 @@ namespace qi
   class FlowDiagramModel;
   class BoxInstanceModel;
 
-  class QICORECOMPAT_API ContentModel
+  class QICORECOMPAT_API ContentModel : private boost::noncopyable
   {
   public:
     enum  ContentType
@@ -47,7 +47,6 @@ namespace qi
     void setChecksum(const std::string& checksum);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(ContentModel);
     ContentModelPrivate* _p;
   };
   typedef boost::shared_ptr<ContentModel> ContentModelPtr;

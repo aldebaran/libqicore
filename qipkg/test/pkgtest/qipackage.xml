@@ -1,0 +1,13 @@
+<package name="test_package">
+
+  <behavior src=".">
+    <file src="manifest.xml"/>
+    <file src="dummy"/>
+  </behavior>
+
+  <behavior src="subfolder">
+    <file src="manifest.xml"/>
+    <file src="super.xar"/>
+  </behavior>
+
+</package>

@@ -17,7 +17,7 @@ namespace qi
   class KeyModelPrivate;
   class TangentModel;
 
-  class QICORECOMPAT_API KeyModel
+  class QICORECOMPAT_API KeyModel : private boost::noncopyable
   {
   public:
     KeyModel(int frame, float value, bool smooth, bool symmetrical);
@@ -42,7 +42,6 @@ namespace qi
     bool setTangents(boost::shared_ptr<TangentModel> left, boost::shared_ptr<TangentModel> right);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(KeyModel);
     KeyModelPrivate* _p;
   };
   typedef boost::shared_ptr<KeyModel> KeyModelPtr;

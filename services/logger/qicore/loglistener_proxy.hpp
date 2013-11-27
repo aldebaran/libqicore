@@ -35,13 +35,13 @@ public:
   }
    public:
   qi::FutureSync<void > setVerbosity(qi::LogLevel p0, ::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
-    return _obj->call<void >(callType,"setVerbosity", p0);
+    return _obj.call<void >(callType,"setVerbosity", p0);
   }
   qi::FutureSync<void > setCategory(std::string p0, qi::LogLevel p1, ::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
-    return _obj->call<void >(callType,"setCategory", p0,p1);
+    return _obj.call<void >(callType,"setCategory", p0,p1);
   }
   qi::FutureSync<void > clearFilters(::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
-    return _obj->call<void >(callType,"clearFilters");
+    return _obj.call<void >(callType,"clearFilters");
   }
   qi::ProxySignal<void(LogMessage)> onLogMessage;
   qi::ProxyProperty<qi::LogLevel> verbosity;

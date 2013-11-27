@@ -16,7 +16,7 @@ namespace qi
 {
   class ResourceModelPrivate;
 
-  class QICORECOMPAT_API ResourceModel
+  class QICORECOMPAT_API ResourceModel : private boost::noncopyable
   {
   public:
     enum LockType {
@@ -41,7 +41,6 @@ namespace qi
     void setTimeout(int timeout);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(ResourceModel);
     ResourceModelPrivate* _p;
   };
   typedef boost::shared_ptr<ResourceModel> ResourceModelPtr;

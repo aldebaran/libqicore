@@ -26,7 +26,7 @@ namespace qi
   class ContentsModel;
   class ContentModel;
 
-  class QICORECOMPAT_API BoxInterfaceModel
+  class QICORECOMPAT_API BoxInterfaceModel : private boost::noncopyable
   {
   public:
     typedef std::map<int, boost::shared_ptr<InputModel> > InputModelMap;
@@ -90,7 +90,6 @@ namespace qi
     std::string findInput(InputModel::InputNature nature) const;
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(BoxInterfaceModel);
     BoxInterfaceModelPrivate *_p;
   };
   typedef boost::shared_ptr<BoxInterfaceModel> BoxInterfaceModelPtr;

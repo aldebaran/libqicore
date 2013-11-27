@@ -32,7 +32,7 @@ namespace qi
         std::vector<AnyReference> nargs;
         nargs.reserve(args.args().size());
         for (unsigned i=0; i<args.args().size(); ++i)
-          nargs.push_back(AnyReference(args.args()[i].type, args.args()[i].value));
+          nargs.push_back(AnyReference(args.args()[i].type(), args.args()[i].rawValue()));
         T res = _f.call(nargs);
         result.setValue(AnyReference(res));
       }
@@ -80,7 +80,7 @@ namespace qi
         std::vector<AnyReference> nargs;
         nargs.reserve(args.args().size());
         for (unsigned i=0; i<args.args().size(); ++i)
-          nargs.push_back(AnyReference(args.args()[i].type, args.args()[i].value));
+          nargs.push_back(AnyReference(args.args()[i].type(), args.args()[i].rawValue()));
         AnyReference v = _f.call(nargs);
         _fut = *v.ptr<Future<T> >();
         v.destroy();
@@ -109,7 +109,7 @@ namespace qi
         error.set(fut.error());
         break;
       case FutureState_FinishedWithValue:
-        qiLogDebug("TaskCall") << "setResult " << encodeJSON(AnyReference(fut.value()));
+        qiLogDebug("TaskCall") << "setResult " << encodeJSON(AnyReference::from(fut.value()));
         result.setValue(fut.value());
         break;
       case FutureState_None:

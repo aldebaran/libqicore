@@ -15,15 +15,15 @@ std::vector<qi::AnyValue> arguments(qi::AutoAnyReference v1 = qi::AutoAnyReferen
   qi::AutoAnyReference v5 = qi::AutoAnyReference())
 {
   std::vector<qi::AnyValue> res;
-  if (v1.value)
+  if (v1.rawValue())
     res.push_back(qi::AnyValue(v1));
-  if (v2.value)
+  if (v2.rawValue())
     res.push_back(qi::AnyValue(v2));
-  if (v3.value)
+  if (v3.rawValue())
     res.push_back(qi::AnyValue(v3));
-  if (v4.value)
+  if (v4.rawValue())
     res.push_back(qi::AnyValue(v4));
-  if (v5.value)
+  if (v5.rawValue())
     res.push_back(qi::AnyValue(v5));
   return res;
 }
@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
   ses->connect(url);
 
   ses->loadService("behavior").size();
-  qi::AnyObject b = ses->service("BehaviorService").value()->call<qi::AnyObject>("create");
-  b->call<void>("connect", url);
+  qi::AnyObject b = ses->service("BehaviorService").value().call<qi::AnyObject>("create");
+  b.call<void>("connect", url);
   std::string behavior = STRING(
     a Whatever TestObjectService.create;
     b Whatever TestObjectService.create;
@@ -81,15 +81,15 @@ int main(int argc, char *argv[])
   while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
     behavior[pos] = '\n';
   std::cerr << "INPUT: " << behavior << std::endl;
-  b->call<void>("loadString", behavior);
-  b->call<void>("loadObjects");
-  b->call<void>("call", "a", "setv", arguments(42));
+  b.call<void>("loadString", behavior);
+  b.call<void>("loadObjects");
+  b.call<void>("call", "a", "setv", arguments(42));
   //ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
-  b->call<void>("call", "b", "setv", arguments(1));
-  b->call<void>("call", "c", "setv", arguments(2));
-  b->call<void>("setTransitions", false);
+  b.call<void>("call", "b", "setv", arguments(1));
+  b.call<void>("call", "c", "setv", arguments(2));
+  b.call<void>("setTransitions", false);
   //ASSERT_EQ(2, b->call<int>("call", "c", "getv", arguments()));
-  b->call<void>("call", "a", "setv", arguments(3));
+  b.call<void>("call", "a", "setv", arguments(3));
   qi::os::msleep(1000);
   //ASSERT_EQ(6, b->call<int>("call", "c", "lastAdd", arguments()));
 

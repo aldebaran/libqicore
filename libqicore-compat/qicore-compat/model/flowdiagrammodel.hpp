@@ -21,7 +21,7 @@ namespace qi {
   class LinkModel;
 
 
-  class QICORECOMPAT_API FlowDiagramModel
+  class QICORECOMPAT_API FlowDiagramModel : private boost::noncopyable
   {
   public:
     typedef std::map<int, boost::shared_ptr<BoxInstanceModel> > BoxInstanceModelMap;
@@ -52,7 +52,6 @@ namespace qi {
     bool loadFromFile();
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(FlowDiagramModel);
     FlowDiagramModelPrivate* _p;
   };
   typedef boost::shared_ptr<FlowDiagramModel> FlowDiagramModelPtr;

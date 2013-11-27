@@ -33,13 +33,13 @@ public:
   }
    public:
   qi::FutureSync<void > setVerbosity(qi::LogLevel p0, ::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
-    return _obj->call<void >(callType,"setVerbosity", p0);
+    return _obj.call<void >(callType,"setVerbosity", p0);
   }
   qi::FutureSync<void > setCategory(std::string p0, qi::LogLevel p1, ::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
-    return _obj->call<void >(callType,"setCategory", p0,p1);
+    return _obj.call<void >(callType,"setCategory", p0,p1);
   }
   qi::FutureSync<void > clearAndSet(std::vector<std::pair<std::string,qi::LogLevel > > p0, ::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
-    return _obj->call<void >(callType,"clearAndSet", p0);
+    return _obj.call<void >(callType,"clearAndSet", p0);
   }
 
 

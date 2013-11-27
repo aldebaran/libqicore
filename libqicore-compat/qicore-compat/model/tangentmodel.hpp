@@ -15,7 +15,7 @@
 namespace qi {
   class TangentModelPrivate;
 
-  class QICORECOMPAT_API TangentModel
+  class QICORECOMPAT_API TangentModel : private boost::noncopyable
   {
   public:
     enum Side
@@ -51,7 +51,6 @@ namespace qi {
     void setOrdinateParam(float ordinate);
 
   private:
-    QI_DISALLOW_COPY_AND_ASSIGN(TangentModel);
     TangentModelPrivate* _p;
   };
   typedef boost::shared_ptr<TangentModel> TangentModelPtr;
