@@ -212,6 +212,7 @@ void Behavior::setTransitions(bool debugmode, qi::MetaCallType type)
     qi::BehaviorModel::Transition& t = vt.second;
     AnyObject src = find0Ptr(_objects, t.src.first);
     AnyObject dst = find0Ptr(_objects, t.dst.first);
+    qiLogDebug() << "Connecting " << t.src.first << '.' << t.src.second << " to " << t.dst.first << '.' << t.dst.second;
     if (!src)
       throw std::runtime_error("No object " + t.src.first);
     if (!dst)

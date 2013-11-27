@@ -40,7 +40,7 @@ public:
   friend class Timeline;
 
   TimelinePrivate(AnyObject motion, Timeline* timeline, PyInterpreterState *mainInterpreterState);
-  virtual ~TimelinePrivate(void);
+  virtual ~TimelinePrivate();
 
   /**
    * loadFromXml.
@@ -49,12 +49,13 @@ public:
    */
   void loadFromXml(boost::shared_ptr<const AL::XmlElement> elt);
 
-  void play(void);
-  void pause(void);
-  void stop(void);
+  void play();
+  void pause();
+  void stop(bool join = true);
   void goTo(int pFrame);
+  void goTo(const std::string& pFrame);
   int getSize() const;
-  int getFPS(void) const;
+  int getFPS() const;
   void setFPS(int pFps);
   void setAnimation(AnimationModel *anim);
 
@@ -69,10 +70,10 @@ public:
   std::string getName() const;
 
 private:
-  bool update(void);
+  bool update();
 
   void killMotionOrders();
-  void updateFrameInSTM(void);
+  void updateFrameInSTM();
 
   /**
    * Call this method at each update.
@@ -141,6 +142,7 @@ private:
   mutable boost::recursive_mutex        _methodMonitor;
 
   std::map<int, std::string>            _framesFlagsMap;
+  std::map<std::string, int>            _framesFlagsMapRev;
   AnimationModel* _animation;
   Timeline* _timeline;
   PyInterpreterState *_mainInterpreterState;

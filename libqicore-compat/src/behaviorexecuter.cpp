@@ -145,9 +145,6 @@ namespace qi
         //TODO node.parameters
 
         _model.nodes[node.uid] = node;
-
-        if(instance->uid() == "root_1_Diagnostic_20_diagnostic_Crouch_8")
-        qiLogError() << node.uid << " " << node.factory;
       }
 
       //Linking box
@@ -197,10 +194,12 @@ namespace qi
           std::stringstream sindex;
           sindex << index;
           //Set transition for start flowdiagram in a behaviorsequence.
+          std::string onStartMethod = dst->interface()->findInput(InputModel::InputNature_OnStop);
           tStart.src = BehaviorModel::Slot(src->uid() + "_controlflowdiagram_" + sindex.str(),
                                        "startFlowdiagram");
           tStart.dst = BehaviorModel::Slot(dst->uid(), method);
-
+          if (!onStartMethod.empty())
+            addTransition(tStart);
 
           std::string onStopMethod = dst->interface()->findInput(InputModel::InputNature_OnStop);
           qi::BehaviorModel::Transition tStop;
@@ -235,12 +234,12 @@ namespace qi
       qiLogDebug() << t.toString();
     }
 
-    void BehaviorExecuterPrivate::initialiseBox(BoxInstanceModelPtr instance, bool rootBox)
+    void BehaviorExecuterPrivate::initialiseBox(BoxInstanceModelPtr instance, qi::AnyObject timeline, bool rootBox)
     {
       //If FlowDiagram
       qi::AnyReference diagram = instance->content(ContentModel::ContentType_FlowDiagram);
       if(diagram.isValid())
-        initialiseFlowDiagram(diagram.ptr<FlowDiagramModel>());
+        initialiseFlowDiagram(diagram.ptr<FlowDiagramModel>(), timeline);
 
       std::map<std::string, int> frames;
 
@@ -315,7 +314,15 @@ namespace qi
         }
 
         timeline.call<void>("setFrames", framesKey);
+        timeline.call<void>("setFrameNames", frames);
         _behaviorService.call<void>("call", instance->uid(), "setTimeline", args);
+      }
+
+      if(timeline)
+      {
+        std::vector<qi::AnyObject> args;
+        args.push_back(timeline);
+        _behaviorService.call<void>("call", instance->uid(), "setParentTimeline", args);
       }
 
       _behaviorService.call<void>("call", instance->uid(), "__onLoad__", std::vector<qi::AnyValue>());
@@ -405,19 +412,19 @@ namespace qi
           connect(timeline, boxdelay, "stopFlowdiagram", "stop");
 
           //Load flowdiagram
-          initialiseFlowDiagram(key->diagram().get());
+          initialiseFlowDiagram(key->diagram().get(), timeline);
         }
       }
 
       return ret;
     }
 
-    void BehaviorExecuterPrivate::initialiseFlowDiagram(FlowDiagramModel* diagram)
+    void BehaviorExecuterPrivate::initialiseFlowDiagram(FlowDiagramModel* diagram, qi::AnyObject timeline)
     {
       BoxInstanceModelMap instances = diagram->boxsInstance();
       foreach(BoxInstanceModelMap::value_type &instance, instances)
       {
-        initialiseBox(instance.second);
+        initialiseBox(instance.second, timeline);
       }
     }
 
@@ -516,7 +523,7 @@ namespace qi
         qiCoreMemoryWatcher.call<void>("subscribe", s);
       }
 
-      _p->initialiseBox(root, true);
+      _p->initialiseBox(root, qi::AnyObject(), true);
 
       //Set ObjectThreadingModel to prevent deadlock.
       //Infact, A.method trigger A.signal (so A is locked)

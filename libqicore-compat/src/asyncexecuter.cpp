@@ -63,7 +63,7 @@ void asyncExecuter::waitUntilPauseExecuter()
   _pauseRequestCondition.wait(pauseLock);
 }
 
-void asyncExecuter::stopExecuter()
+void asyncExecuter::stopExecuter(bool join)
 {
   {
     boost::mutex::scoped_lock pauseLock(_isPlayingMutex);
@@ -73,11 +73,10 @@ void asyncExecuter::stopExecuter()
   }
 
   _executerThread.interrupt();
-  _executerThread.join();
+  if (join)
+    _executerThread.join();
 
   _callback = 0;
-
-  _isPlayingCondition.notify_all();
 }
 
 void asyncExecuter::executerLoop()

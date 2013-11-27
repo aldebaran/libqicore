@@ -54,12 +54,11 @@ class Behavior(object):
   def stimulateIO(self, name, *args):
     if name + "Signal" in dir(self):
       signal = getattr(self, name + "Signal")
-      self.logger.debug("Send signal " + self.name + "." + name + " beginning")
+      self.logger.debug("Send signal " + self.name + "." + name)
       if None in args:
         signal("None")
       else:
         signal(*args)
-      self.logger.debug("Signal " + self.name + "." + name + " end")
     else:
       self.logger.error("Signal " + name + " not found")
 
@@ -72,16 +71,16 @@ class Behavior(object):
           func(functionArg)
         else:
           func()
-      else:
-        self.logger.warning("Method " + self.name + "." + functionName + " not found")
       return True
     except BaseException, err:
-      self.logger.error(str(err))
-      try:
-        if('onError' in dir(self)):
+      import traceback
+      if('onError' in dir(self)):
+        try:
           self.onError(self.getName() + ':' + str(err))
-      except BaseException, err2:
-        self.logger.error(str(err2))
+        except BaseException, err2:
+          self.logger.error(traceback.format_exc())
+      else:
+        self.logger.error(traceback.format_exc())
     return False
 
   def __onLoad__(self):
@@ -101,3 +100,9 @@ class Behavior(object):
       self.stminput[pDataName](pValue)
     else:
       self.logger.error("STM Input " + pDataName + " in " + self.name + "not found")
+
+  def setParentTimeline(self, timeline):
+    self.parentTimeline = timeline
+
+  def getParentTimeline(self):
+    return self.parentTimeline

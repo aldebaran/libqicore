@@ -238,6 +238,7 @@ namespace qi
     if(out->nature() == OutputModel::OutputNature_Stopped)
     {
       std::stringstream output;
+
       if(interface->hasResource())
         output << "      self.releaseResource()\n";
 
@@ -255,9 +256,17 @@ namespace qi
                 << "      self.logger.error(str(err))\n"
                 << "      pass\n";
       }
+
+      if(interface->hasTimeline())
+        outputs << "    self.stimulateIO('" << out->metaSignal().name() << "', p)\n";
     }
 
-    outputs << "    self.stimulateIO('" << out->metaSignal().name() << "', p)\n";
+    if(out->nature() == OutputModel::OutputNature_Stopped && interface->hasTimeline())
+      outputs << "  def onStopped__(self):\n"
+              << "    self.stimulateIO('" << out->metaSignal().name() << "', None)\n";
+    else
+      outputs << "    self.stimulateIO('" << out->metaSignal().name() << "', p)\n";
+
     return outputs.str();
   }
 
@@ -353,7 +362,8 @@ namespace qi
         fps = behaviorSequence.ptr<BehaviorSequenceModel>()->fps();
       }
       generatedClass << "    self.timeline = Timeline(" << fps << ")\n"
-                     << "    ALFrameManager.addTimeline(self.name, " << fps << ", self.timeline)\n";
+                     << "    ALFrameManager.addTimeline(self.name, " << fps << ", self.timeline)\n"
+                     << "    self.getTimeline().onTimelineFinished.connect(self.onStopped__)\n";
     }
 
     if(interface->hasResource())

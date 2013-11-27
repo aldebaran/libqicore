@@ -33,8 +33,8 @@ namespace qi
       bool loadBehaviorSequence(BehaviorSequenceModel *behaviorSequence);
       bool declaredBox(BoxInstanceModelPtr instance);
       bool declaredPythonBox(BoxInstanceModelPtr instance);
-      void initialiseBox(BoxInstanceModelPtr instance, bool rootBox = false);
-      void initialiseFlowDiagram(FlowDiagramModel* diagram);
+      void initialiseBox(BoxInstanceModelPtr instance, qi::AnyObject timeline = qi::AnyObject(), bool rootBox = false);
+      void initialiseFlowDiagram(FlowDiagramModel* diagram, qi::AnyObject timeline);
       std::map<std::string, int> initialiseBehaviorSequence(BehaviorSequenceModel* seq,
                                                             const std::string &uid);
       void addTransition(BehaviorModel::Transition &t);
