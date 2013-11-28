@@ -41,6 +41,7 @@ class CrgBuilder(AbstractBuilder):
             qisys.sh.mkdir(os.path.dirname(dest), recursive=True)
             shutil.copy(f, dest)
             filelisting.append(dest)
+            ui.info("-- Installing:", f)
 
         for f in self.resources:
             _inst(f)

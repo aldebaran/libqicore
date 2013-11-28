@@ -7,7 +7,7 @@
 import os
 import qisys.qixml
 from qisys import ui
-import crgbuilder
+from . import crgbuilder
 import qibuild.parsers
 import zipfile
 
@@ -24,15 +24,13 @@ def gen_package(output_file, basedir, files):
         archive.write(f, arcname)
     archive.close()
 
-
-
 class Package(object):
     """ Wrap operation related to a Package.
         A package is a set of project, we use builders to build them.
         We use only one builder for each type of project.
     """
 
-    def __init__(self, pml_path, build_config, name, builders):
+    def __init__(self, pml_path, build_config, name, builders, install_in_subdir=False):
         """ pml_path: the pml file used to build the package
             builders: a list of builders (cmake, crg, qidoc, ...)
         """
@@ -41,6 +39,7 @@ class Package(object):
         self.name           = name
         self.builders       = builders
         self.build_config   = build_config
+        self.install_in_subdir = install_in_subdir
 
     def configure(self, *args, **kwargs):
         for builder in self.builders:
@@ -54,6 +53,8 @@ class Package(object):
         """ install the package's content into 'dest'
             return: the list of file installed
         """
+        if self.install_in_subdir:
+            dest = os.path.join(dest, self.name)
         ui.debug("Installing inside:", dest)
         filelisting = list()
         for builder in self.builders:
@@ -73,13 +74,11 @@ class Package(object):
         install_dest, files = self._cached_install()
         raise NotImplementedError
 
-def make(pmlfilename, cmake_builder):
-    """ create Package from a PmlFile.
-        Instanciate all Projects (crg, qibuild, ...) with correct arguments
-    """
-    builders = list()
-    builders.append(crgbuilder.make(pmlfilename))
-    builders.append(cmake_builder)
+#bah oui!
+MetaPackage = Package
+
+def _parse_metapackage(pmlfilename, build_worktree):
+    packages = list()
 
     if not os.path.isfile(pmlfilename):
         raise Exception("Package xml file not found: %s" % pmlfilename)
@@ -87,12 +86,39 @@ def make(pmlfilename, cmake_builder):
     ui.debug("opening file: ", pmlfilename)
     root = qisys.qixml.read(pmlfilename).getroot()
     name = root.get("name")
+    pml_nodes = root.findall("pml")
+    for pml in pml_nodes:
+        pkg = make(pml.get("src"), build_worktree)
+        pkg.install_in_subdir = True
+        packages.append(pkg)
+    return MetaPackage(pmlfilename, build_worktree.build_config, name, packages)
+
+def make(pmlfilename, build_worktree):
+    """ create Package from a PmlFile.
+        Instanciate all Projects (crg, qibuild, ...) with correct arguments
+    """
+    builders = list()
+
+    if not os.path.isfile(pmlfilename):
+        raise Exception("Package xml file not found: %s" % pmlfilename)
+    pkg_path = os.path.dirname(pmlfilename)
+    ui.debug("opening file: ", pmlfilename)
+    root = qisys.qixml.read(pmlfilename).getroot()
+    if root.tag == "metapml":
+        return _parse_metapackage(pmlfilename, build_worktree)
+
+    name = root.get("name")
+    builders.append(crgbuilder.make(pmlfilename))
 
     #populate cmake_builder
     qibuild_nodes = root.findall("qibuild")
+    if len(qibuild_nodes) > 0:
+        cmake_builder = qibuild.cmake_builder.CMakeBuilder(build_worktree)
+        builders.append(cmake_builder)
+
     for qibuild_node in qibuild_nodes:
         qibname = qibuild_node.get("name")
         #create a cmake_builder for that project
         cmake_builder.add_project(qibname)
 
-    return Package(pmlfilename, cmake_builder.build_worktree.build_config, name, builders)
+    return Package(pmlfilename, build_worktree.build_config, name, builders)

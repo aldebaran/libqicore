@@ -11,5 +11,4 @@ import qibuild.cmake_builder
 
 def get_pkg_from_args(args):
     build_worktree = qibuild.parsers.get_build_worktree(args)
-    cmake_builder = qibuild.cmake_builder.CMakeBuilder(build_worktree)
-    return qipkg.package.make(args.input, cmake_builder)
+    return qipkg.package.make(args.input, build_worktree)
