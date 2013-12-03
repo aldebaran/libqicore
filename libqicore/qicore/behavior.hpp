@@ -51,8 +51,8 @@ namespace qi {
   };
 }
 
-QI_TYPE_STRUCT_REGISTER(::qi::BehaviorModel, nodes, transitions);
-QI_TYPE_STRUCT_REGISTER(::qi::BehaviorModel::Node, uid, interface, factory);
-QI_TYPE_STRUCT_REGISTER(::qi::BehaviorModel::Transition, uid, src, dst, filter);
+QI_TYPE_STRUCT(::qi::BehaviorModel, nodes, transitions);
+QI_TYPE_STRUCT(::qi::BehaviorModel::Node, uid, interface, factory);
+QI_TYPE_STRUCT(::qi::BehaviorModel::Transition, uid, src, dst, filter);
 
 #endif
