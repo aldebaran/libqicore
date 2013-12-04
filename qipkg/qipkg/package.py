@@ -77,7 +77,7 @@ class Package(object):
 #bah oui!
 MetaPackage = Package
 
-def _parse_metapackage(pmlfilename, build_worktree):
+def _parse_metapackage(pmlfilename, build_worktree, linguist_worktree):
     packages = list()
 
     if not os.path.isfile(pmlfilename):
@@ -88,12 +88,12 @@ def _parse_metapackage(pmlfilename, build_worktree):
     name = root.get("name")
     pml_nodes = root.findall("pml")
     for pml in pml_nodes:
-        pkg = make(pml.get("src"), build_worktree)
+        pkg = make(pml.get("src"), build_worktree, linguist_worktree)
         pkg.install_in_subdir = True
         packages.append(pkg)
     return MetaPackage(pmlfilename, build_worktree.build_config, name, packages)
 
-def make(pmlfilename, build_worktree):
+def make(pmlfilename, build_worktree, linguist_worktree):
     """ create Package from a PmlFile.
         Instanciate all Projects (crg, qibuild, ...) with correct arguments
     """
@@ -105,7 +105,7 @@ def make(pmlfilename, build_worktree):
     ui.debug("opening file: ", pmlfilename)
     root = qisys.qixml.read(pmlfilename).getroot()
     if root.tag == "metapml":
-        return _parse_metapackage(pmlfilename, build_worktree)
+        return _parse_metapackage(pmlfilename, build_worktree, linguist_worktree)
 
     name = root.get("name")
     builders.append(crgbuilder.make(pmlfilename))
@@ -120,5 +120,15 @@ def make(pmlfilename, build_worktree):
         qibname = qibuild_node.get("name")
         #create a cmake_builder for that project
         cmake_builder.add_project(qibname)
+
+    #populate qilinguist_builder
+    qilinguist_nodes = root.findall("qilinguist")
+    if len(qilinguist_nodes) > 0:
+        qilinguist_builder = qilinguist.builder.QiLinguistBuilder(linguist_worktree)
+        builders.append(qilinguist_builder)
+
+    for qilinguist_node in qilinguist_nodes:
+        qilname = qilinguist_node.get("name")
+        qilinguist_builder.add_project(qilname)
 
     return Package(pmlfilename, build_worktree.build_config, name, builders)

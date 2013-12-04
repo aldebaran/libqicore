@@ -8,7 +8,11 @@ import os
 import qipkg.package
 import qibuild.parsers
 import qibuild.cmake_builder
+import qilinguist.parsers
+
 
 def get_pkg_from_args(args):
     build_worktree = qibuild.parsers.get_build_worktree(args)
-    return qipkg.package.make(args.input, build_worktree)
+    qilinguist_worktree = qilinguist.parsers.get_linguist_worktree(args)
+    return qipkg.package.make(args.input, build_worktree, qilinguist_worktree)
+
