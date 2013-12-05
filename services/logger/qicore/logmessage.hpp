@@ -26,6 +26,6 @@ namespace qi
     std::string message;
   };
 }
-QI_TYPE_STRUCT_REGISTER(::qi::LogMessage, source, level, timestamp, category, location, message);
+QI_TYPE_STRUCT(::qi::LogMessage, source, level, timestamp, category, location, message);
 
 #endif // !QICORE_LOG_HPP_
