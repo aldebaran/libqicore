@@ -9,23 +9,24 @@ import os
 
 from qisys import ui
 import qisys.sh
-import qisys.parsers
-import qipkg.parsers
+import qibuild.parsers
 import qipkg.package
 
 
 def configure_parser(parser):
     """Configure parser for this action"""
-    qisys.parsers.worktree_parser(parser)
-    #qibuild.parsers.project_parser(parser)
-    group = parser.add_argument_group("Install options")
+    qibuild.parsers.build_parser(parser)
+    group = parser.add_argument_group("qipkg options")
     group.add_argument("input", help=".pml package xml input file")
-    group.add_argument("output", help="directory destination")
+    qibuild.parsers.deploy_parser(parser)
+
 
 
 def do(args):
     """Main entry point"""
+    urls = qibuild.parsers.get_deploy_urls(args)
     pkg = qipkg.parsers.get_pkg_from_args(args)
 
-    ui.info(ui.green, "Deploying package", ui.reset, pkg.name, ui.green, "into", ui.reset, args.output)
-    pkg.deploy(args.output)
+    for url in urls:
+        ui.info(ui.green, "Deploying package", ui.reset, pkg.name, ui.green, "into", ui.reset, url)
+        pkg.deploy(url)

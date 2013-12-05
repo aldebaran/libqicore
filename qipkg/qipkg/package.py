@@ -9,6 +9,8 @@ import qisys.qixml
 from qisys import ui
 from . import crgbuilder
 import qibuild.parsers
+import qibuild.deploy
+import qilinguist.builder
 import zipfile
 
 def gen_package(output_file, basedir, files):
@@ -49,7 +51,7 @@ class Package(object):
         for builder in self.builders:
             builder.build(*args, **kwargs)
 
-    def install(self, dest, listing=None):
+    def install(self, dest, *args, **kwargs):
         """ install the package's content into 'dest'
             return: the list of file installed
         """
@@ -58,21 +60,25 @@ class Package(object):
         ui.debug("Installing inside:", dest)
         filelisting = list()
         for builder in self.builders:
-            filelisting.extend(builder.install(dest))
+            filelisting.extend(builder.install(dest, *args, **kwargs))
         return filelisting
 
     def _cached_install(self):
         bdir = self.build_config.build_directory("build-pkg-%s" % self.name)
-        install_dest = os.path.join(self.pml_dir, bdir)
+        install_dest = os.path.join(self.pml_dir, bdir, "sdk")
         return (install_dest, self.install(install_dest))
 
     def package(self, dest):
         install_dest, files = self._cached_install()
         gen_package(dest, install_dest, files)
 
-    def deploy(self, dest):
+    def deploy(self, url):
         install_dest, files = self._cached_install()
-        raise NotImplementedError
+        bdir = self.build_config.build_directory("build-pkg-%s" % self.name)
+        install_man = os.path.join(self.pml_dir, bdir, "install_manifest.txt")
+        with open(install_man, "w") as f:
+            f.writelines([ "%s\n" % x for x in files])
+        qibuild.deploy.deploy(install_dest, url, filelist=install_man)
 
 #bah oui!
 MetaPackage = Package
@@ -114,6 +120,7 @@ def make(pmlfilename, build_worktree, linguist_worktree):
     qibuild_nodes = root.findall("qibuild")
     if len(qibuild_nodes) > 0:
         cmake_builder = qibuild.cmake_builder.CMakeBuilder(build_worktree)
+        cmake_builder.dep_types = ["runtime"]
         builders.append(cmake_builder)
 
     for qibuild_node in qibuild_nodes:

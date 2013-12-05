@@ -40,7 +40,7 @@ class CrgBuilder(AbstractBuilder):
             dest = os.path.join(output_dir, arcname)
             qisys.sh.mkdir(os.path.dirname(dest), recursive=True)
             shutil.copy(f, dest)
-            filelisting.append(dest)
+            filelisting.append("/" + arcname)
             ui.info("-- Installing:", f)
 
         for f in self.resources:
