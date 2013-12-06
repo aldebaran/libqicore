@@ -60,11 +60,11 @@ class Package(object):
         ui.debug("Installing inside:", dest)
         filelisting = list()
         for builder in self.builders:
-            flisting = builder.install(dest, *args, **kwargs)
+            blisting = builder.install(dest, *args, **kwargs)
             if self.install_in_subdir:
-                flisting.extend([os.path.join(self.name, x) for x in flisting])
+                filelisting.extend([os.path.join(self.name, x.strip("/")) for x in blisting])
             else:
-                filelisting.extend(flisting)
+                filelisting.extend(blisting)
         return filelisting
 
     def _cached_install(self):
