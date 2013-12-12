@@ -167,8 +167,9 @@ namespace qi
 
     input << "    if(not self._safeCallOfUserMethod('" << "onInput_"
           << inp->metaMethod().name() << "', " << arg << ")):\n";
-    input << "      self.releaseResource()\n"
-          << "      return\n";
+    if(interface->hasResource())
+      input << "      self.releaseResource()\n";
+    input << "      return\n";
 
     if(interface->hasTimeline() || interface->hasFlowDiagram())
     {
@@ -291,8 +292,10 @@ namespace qi
       if(interface->hasTimeline())
         resource << "    self.getTimeline.stop()\n";
 
-      resource << "    self.releaseResource()\n"
-               << "    if(not bExists):\n"
+      if(interface->hasResource())
+        resource << "    self.releaseResource()\n";
+
+      resource << "    if(not bExists):\n"
                << "      try:\n"
                << "        self.onStopped()\n"
                << "      expect:\n"
@@ -306,9 +309,10 @@ namespace qi
       if(interface->hasTimeline())
         resource << "    self.getTimeline.pause()\n";
 
-      resource << "    self.releaseResource()\n"
-               << "    self.waitResourceFree()\n"
-               << "    self.waitResources()\n";
+      if(interface->hasResource())
+        resource << "    self.releaseResource()\n"
+                 << "    self.waitResourceFree()\n"
+                 << "    self.waitResources()\n";
 
       if(interface->hasTimeline())
         resource << "    self.getTimeline.play()\n";

@@ -36,24 +36,31 @@ namespace qi
 
     typedef std::map<std::string, int> FrameNameKey;
     typedef std::map<std::string, qi::AnyObject> ObjectMap;
-    BehaviorExecuterPrivate::BehaviorExecuterPrivate(const std::string &dir, Session &session, bool debug) :
+    BehaviorExecuterPrivate::BehaviorExecuterPrivate(const std::string &dir, boost::shared_ptr<Session> session, bool debug) :
       _project(dir),
+      _session(session),
       _debug(debug),
       _running(0)
     {
       std::stringstream p;
-      p << session.url().port();
+      p << _session->url().port();
 
       _pythonCreator = PythonBoxLoader();
-      _pythonCreator.initPython(session.url().host(), p.str(), dir);
-      _behaviorService = session.service("BehaviorService").value().call<qi::AnyObject>("create");
-      _alresourcemanager = session.service("ALResourceManager");
-      _almotion = session.service("ALMotion");
-      _almemory = session.service("ALMemory");
+      _pythonCreator.initPython(session->url().host(), p.str(), dir, _session);
+      _behaviorService = session->service("BehaviorService").value().call<qi::AnyObject>("create");
+      _session->registerService("Behavior", _behaviorService);
+      _behaviorService.connect("onTaskError",
+          boost::function<void(const std::string&, const std::string&)>(
+            boost::bind(&BehaviorExecuterPrivate::onFailed, this, _1, _2)));
+      _alresourcemanager = session->service("ALResourceManager");
+      _almotion = session->service("ALMotion");
+      _almemory = session->service("ALMemory");
     }
 
     BehaviorExecuterPrivate::~BehaviorExecuterPrivate()
     {
+      // Close the session before we uninitialize Python
+      _session->close();
       {
         py::GILScopedLock l;
         _timelines.clear();
@@ -325,7 +332,8 @@ namespace qi
         _behaviorService.call<void>("call", instance->uid(), "setParentTimeline", args);
       }
 
-      _behaviorService.call<void>("call", instance->uid(), "__onLoad__", std::vector<qi::AnyValue>());
+      if (!_behaviorService.call<bool>("call", instance->uid(), "__onLoad__", std::vector<qi::AnyValue>()))
+        throw std::runtime_error("A box failed onLoad");
 
       // connect to end output to know when the behavior is finished
       if (rootBox)
@@ -344,6 +352,11 @@ namespace qi
     }
 
     void BehaviorExecuterPrivate::onFinished(AnyValue v)
+    {
+      _finished.setValue(0);
+    }
+
+    void BehaviorExecuterPrivate::onFailed(const std::string& box, const std::string& error)
     {
       _finished.setValue(0);
     }
@@ -428,7 +441,7 @@ namespace qi
       }
     }
 
-    BehaviorExecuter::BehaviorExecuter(const std::string &dir, Session &session, bool debug)
+    BehaviorExecuter::BehaviorExecuter(const std::string &dir, boost::shared_ptr<Session> session, bool debug)
       : _p(new BehaviorExecuterPrivate(dir, session, debug))
     {
 
@@ -523,7 +536,11 @@ namespace qi
         qiCoreMemoryWatcher.call<void>("subscribe", s);
       }
 
-      _p->initialiseBox(root, qi::AnyObject(), true);
+      try {
+        _p->initialiseBox(root, qi::AnyObject(), true);
+      } catch (...) {
+        return false;
+      }
 
       //Set ObjectThreadingModel to prevent deadlock.
       //Infact, A.method trigger A.signal (so A is locked)

@@ -23,7 +23,7 @@ namespace qi
     {
       friend class BehaviorExecuter;
     public:
-      BehaviorExecuterPrivate(const std::string &dir, qi::Session &session, bool debug);
+      BehaviorExecuterPrivate(const std::string &dir, boost::shared_ptr<qi::Session> session, bool debug);
       ~BehaviorExecuterPrivate();
 
       bool loadFlowDiagram(FlowDiagramModel *diagram,
@@ -51,6 +51,7 @@ namespace qi
       qi::AnyObject _alresourcemanager;
       qi::AnyObject _almotion;
       qi::AnyObject _almemory;
+      boost::shared_ptr<qi::Session> _session;
       boost::mutex _waiter;
       boost::condition_variable _waitcondition;
       std::map<std::string, qi::AnyObject> _timelines;
@@ -61,6 +62,7 @@ namespace qi
       qi::Promise<void> _finished;
 
       void onFinished(AnyValue v);
+      void onFailed(const std::string& box, const std::string& error);
     };
     typedef std::map<std::string, qi::AnyObject> TimlineMap;
   }

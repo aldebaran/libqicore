@@ -94,7 +94,7 @@ qi_create_lib(qicore_compat SHARED SRC
   src/behaviorexecuter.cpp
   src/behaviorexecuter_p.hpp)
 
-qi_use_lib(qicore_compat QI QICORE QIPYTHON ALSERIAL ALMATHINTERNAL ALPROXIES BOOST_PYTHON)
+qi_use_lib(qicore_compat QI QICORE QIMESSAGING QIPYTHON ALSERIAL ALMATHINTERNAL ALPROXIES BOOST_PYTHON)
 qi_stage_lib(qicore_compat)
 
 add_subdirectory("tests")

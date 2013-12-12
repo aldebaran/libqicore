@@ -74,17 +74,20 @@ class Behavior(object):
       return True
     except BaseException, err:
       import traceback
+      import __main__
       if('onError' in dir(self)):
         try:
           self.onError(self.getName() + ':' + str(err))
         except BaseException, err2:
           self.logger.error(traceback.format_exc())
+          __main__.session.service('Behavior').onTaskError(self.name, traceback.format_exc())
       else:
         self.logger.error(traceback.format_exc())
-    return False
+        __main__.session.service('Behavior').onTaskError(self.name, traceback.format_exc())
+      return False
 
   def __onLoad__(self):
-    self._safeCallOfUserMethod('onLoad',None)
+    return self._safeCallOfUserMethod('onLoad',None)
 
   def __onUnload__(self):
     if(self.resource):

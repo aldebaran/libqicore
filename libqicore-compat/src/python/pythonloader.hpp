@@ -8,6 +8,7 @@
 
 #include <string>
 #include <boost/python.hpp>
+#include <qimessaging/session.hpp>
 #include "pythonboxgenerator.hpp"
 
 namespace qi
@@ -23,7 +24,7 @@ namespace qi
     PythonBoxLoader();
 
     bool registerPythonClass(BoxInstanceModelPtr instance);
-    void initPython(const std::string &ip, const std::string &port, const std::string &dir);
+    void initPython(const std::string &ip, const std::string &port, const std::string &dir, boost::shared_ptr<qi::Session> session);
     PyInterpreterState *getInterpreter();
     void terminate();
 

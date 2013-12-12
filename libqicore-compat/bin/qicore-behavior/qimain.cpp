@@ -65,10 +65,10 @@ int main(int argc, char **argv)
     return 0;
   }
 
-  qi::Session session;
+  boost::shared_ptr<qi::Session> session(new qi::Session);
   try
   {
-    session.connect(masterAddress);
+    session->connect(masterAddress);
   }
   catch(qi::FutureUserException e)
   {
@@ -77,14 +77,13 @@ int main(int argc, char **argv)
   }
 
   qi::os::dlopen("behavior");
-  qi::FutureSync<unsigned int> f = session.registerService("BehaviorService", qi::createObject("BehaviorService"));
+  qi::FutureSync<unsigned int> f = session->registerService("BehaviorService", qi::createObject("BehaviorService"));
   {
     qi::compat::BehaviorExecuter behavior(behavior_path, session, debug_mode);
     if(!behavior.load())
-      return -1;
+      return 2;
     behavior.execute();
   }
 
-  session.close();
   return 0;
 }
