@@ -28,7 +28,7 @@ qiLogCategory("qiCore.Timeline");
 namespace qi
 {
 
-TimelinePrivate::TimelinePrivate(AnyObject motion, Timeline *timeline, PyInterpreterState *mainInterpreterState)
+TimelinePrivate::TimelinePrivate(AnyObject motion, Timeline *timeline)
   : _executer(new asyncExecuter(1000 / 25)),
     _fps(0),
     _enabled(false),
@@ -41,7 +41,6 @@ TimelinePrivate::TimelinePrivate(AnyObject motion, Timeline *timeline, PyInterpr
     _methodMonitor(),
     _framesFlagsMap(),
     _timeline(timeline),
-    _mainInterpreterState(mainInterpreterState),
     _isValid(true)
 {
   try
@@ -714,8 +713,8 @@ void TimelinePrivate::rebuildBezierAutoTangents(ActuatorCurveModelPtr curve)
 }
 
 /* -- Public -- */
-Timeline::Timeline( AnyObject motion, PyInterpreterState *mainInterpreterState)
-  : _p (new TimelinePrivate(motion, this, mainInterpreterState))
+Timeline::Timeline( AnyObject motion)
+  : _p (new TimelinePrivate(motion, this))
 {
 }
 

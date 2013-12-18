@@ -25,13 +25,11 @@ namespace qi
 
     bool registerPythonClass(BoxInstanceModelPtr instance);
     void initPython(const std::string &ip, const std::string &port, const std::string &dir, boost::shared_ptr<qi::Session> session);
-    PyInterpreterState *getInterpreter();
     void terminate();
 
   private:
     py::object _main;
     py::object _mainNamespace;
-    PyThreadState *_mainThread;
   };
 }
 

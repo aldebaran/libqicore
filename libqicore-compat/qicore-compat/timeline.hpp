@@ -31,7 +31,7 @@ class QICORECOMPAT_API Timeline
 {
   public:
     /// Constructor, take a memory and motion object
-    Timeline(AnyObject motion = AnyObject(), PyInterpreterState *mainInterpreterState = 0);
+    Timeline(AnyObject motion = AnyObject());
     ~Timeline();
 
     /// Play the timeline

@@ -15,6 +15,7 @@
 #include <qitype/objectfactory.hpp>
 #include <qipython/gil.hpp>
 #include <qipython/pysession.hpp>
+#include <qipython/pyinit.hpp>
 
 #include <qicore-compat/model/boxinterfacemodel.hpp>
 #include <qicore-compat/model/boxinstancemodel.hpp>
@@ -40,16 +41,8 @@ namespace qi
 
   void PythonBoxLoader::initPython(const std::string &ip, const std::string &port, const std::string &dir, boost::shared_ptr<qi::Session> session)
   {
-    PyEval_InitThreads();
-    Py_Initialize();
-    _mainThread = PyThreadState_Swap(NULL);
-    // Py_Initialize takes the GIL, so we release it
-    PyEval_ReleaseLock();
+    py::initialise();
 
-    // We will now execute python code, so we take the lock with a nice scoped
-    // lock. This lock must be released at the end of the function because we
-    // will call python function through qimessaging after that and qimessaging
-    // will take the lock in other threads.
     py::GILScopedLock lock;
     //create main namespace
     _main = py::import("__main__");
@@ -136,15 +129,6 @@ namespace qi
         PyErr_Print();
       }
     }
-
-    PyEval_AcquireLock();
-    PyThreadState_Swap(_mainThread);
-    Py_Finalize();
-  }
-
-  PyInterpreterState *PythonBoxLoader::getInterpreter()
-  {
-    return _mainThread->interp;
   }
 
   bool PythonBoxLoader::registerPythonClass(BoxInstanceModelPtr instance)

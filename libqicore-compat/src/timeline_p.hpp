@@ -39,7 +39,7 @@ class TimelinePrivate
 public:
   friend class Timeline;
 
-  TimelinePrivate(AnyObject motion, Timeline* timeline, PyInterpreterState *mainInterpreterState);
+  TimelinePrivate(AnyObject motion, Timeline* timeline);
   virtual ~TimelinePrivate();
 
   /**
@@ -145,7 +145,6 @@ private:
   std::map<std::string, int>            _framesFlagsMapRev;
   AnimationModel* _animation;
   Timeline* _timeline;
-  PyInterpreterState *_mainInterpreterState;
   bool _isValid;
 
   std::vector<boost::thread*> _flowdiagrams;

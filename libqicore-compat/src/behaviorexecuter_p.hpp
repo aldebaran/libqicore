@@ -58,6 +58,7 @@ namespace qi
       std::vector<std::string> _stmvalues;
       bool _debug;
       qi::Atomic<int> _running;
+      unsigned int _behaviorServiceId;
 
       qi::Promise<void> _finished;
 

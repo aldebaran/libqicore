@@ -48,7 +48,7 @@ namespace qi
       _pythonCreator = PythonBoxLoader();
       _pythonCreator.initPython(session->url().host(), p.str(), dir, _session);
       _behaviorService = session->service("BehaviorService").value().call<qi::AnyObject>("create");
-      _session->registerService("Behavior", _behaviorService);
+      _behaviorServiceId = _session->registerService("Behavior", _behaviorService);
       _behaviorService.connect("onTaskError",
           boost::function<void(const std::string&, const std::string&)>(
             boost::bind(&BehaviorExecuterPrivate::onFailed, this, _1, _2)));
@@ -59,8 +59,7 @@ namespace qi
 
     BehaviorExecuterPrivate::~BehaviorExecuterPrivate()
     {
-      // Close the session before we uninitialize Python
-      _session->close();
+      _session->unregisterService(_behaviorServiceId);
       {
         py::GILScopedLock l;
         _timelines.clear();
@@ -255,7 +254,7 @@ namespace qi
       if(behaviorAnimation.isValid())
       {
         qi::AnyObject timeline;
-        qi::Timeline* t = new qi::Timeline(_almotion, _pythonCreator.getInterpreter());
+        qi::Timeline* t = new qi::Timeline(_almotion);
         timeline = qi::AnyReference::fromPtr(t).toObject();
         timeline.call<void>("setAnimation",
                              behaviorAnimation.ptr<AnimationModel>());
@@ -401,7 +400,7 @@ namespace qi
       else
       {
         //create timeline
-        timeline = qi::AnyReference::fromPtr(new qi::Timeline(_almotion, _pythonCreator.getInterpreter())).toObject();
+        timeline = qi::AnyReference::fromPtr(new qi::Timeline(_almotion)).toObject();
         _timelines[uid] = timeline;
       }
       std::map<std::string, int> ret;
