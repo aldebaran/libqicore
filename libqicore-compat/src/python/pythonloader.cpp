@@ -3,9 +3,10 @@
 * Aldebaran Robotics (c) 2013 All Rights Reserved
 */
 
+#include <boost/python.hpp>
+
 #include <fstream>
 
-#include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
@@ -119,7 +120,8 @@ namespace qi
       std::stringstream delalbroker;
       delalbroker <<
         "al.shutdown()\n"
-        "del al\n";
+        "del al\n"
+        "setSession(None)\n";
 
       try {
         py::exec(py::str(delalbroker.str().c_str()), _mainNamespace);

@@ -3,6 +3,8 @@
 * Aldebaran Robotics (c) 2013 All Rights Reserved
 */
 
+#include <boost/python.hpp>
+
 #include <qicore-compat/model/boxinterfacemodel.hpp>
 #include <qicore-compat/model/boxinstancemodel.hpp>
 #include <qicore-compat/model/linkmodel.hpp>
@@ -22,7 +24,6 @@
 #include <qipython/gil.hpp>
 #include "behaviorexecuter_p.hpp"
 
-#include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -167,11 +168,17 @@ namespace qi
 
         std::string signal = src->interface()->findSignal(signalid);
         if(signal.empty())
+        {
+          qiLogError() << "One of the output signal does not exist: " << signalid;
           return false;
+        }
 
         std::string method = dst->interface()->findMethod(methodid);
         if(method.empty())
+        {
+          qiLogError() << "One of the input method does not exist: " << methodid;
           return false;
+        }
 
         //If signalid is STM input
         const InputModelMap &inputs = src->interface()->inputs();
@@ -499,12 +506,18 @@ namespace qi
     bool BehaviorExecuter::load()
     {
       if(!_p->_project.loadFromFile())
+      {
+        qiLogError() << "Failed to load project from file";
         return false;
+      }
 
       BoxInstanceModelPtr root = _p->_project.rootBox();
 
       if(!root)
+      {
+        qiLogError() << "No root box";
         return false;
+      }
 
       //Register root box
       BehaviorModel::Node node;
@@ -521,7 +534,10 @@ namespace qi
       _p->_model.nodes[nodeal.uid] = nodeal;
 
       if(!_p->declaredBox(root))
+      {
+        qiLogError() << "Failed to declare root box";
         return false;
+      }
 
       _p->_behaviorService.call<void>("setModel", _p->_model);
       _p->_behaviorService.call<void>("loadObjects", _p->_debug);
@@ -538,6 +554,7 @@ namespace qi
       try {
         _p->initialiseBox(root, qi::AnyObject(), true);
       } catch (...) {
+        qiLogError() << "Failed to initialise boxes";
         return false;
       }
 

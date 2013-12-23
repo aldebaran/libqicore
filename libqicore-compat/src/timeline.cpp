@@ -85,7 +85,7 @@ void TimelinePrivate::killMotionOrders()
 
 void TimelinePrivate::play()
 {
-  qiLogDebug() << "Play timeline";
+  qiLogDebug() << "Play timeline " << _name;
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
   if (_enabled == false || _fps == 0)
@@ -100,14 +100,14 @@ void TimelinePrivate::play()
 
 void TimelinePrivate::pause()
 {
-  qiLogDebug() << "Pause timeline";
+  qiLogDebug() << "Pause timeline " << _name;
   _executer->waitUntilPauseExecuter();
   killMotionOrders();
 }
 
 void TimelinePrivate::stop(bool join)
 {
-  qiLogDebug() << "Stopping timeline";
+  qiLogDebug() << "Stopping timeline " << _name;
   _executer->stopExecuter(join);
 
   {
@@ -120,7 +120,7 @@ void TimelinePrivate::stop(bool join)
 
   _timeline->onTimelineFinished();
 
-  qiLogDebug() << "Timeline stopped";
+  qiLogDebug() << "Timeline " << _name << " stopped";
 }
 
 void TimelinePrivate::goTo(int pFrame)

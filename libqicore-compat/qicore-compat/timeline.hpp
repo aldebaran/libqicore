@@ -10,8 +10,6 @@
 
 #include <string>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/python.hpp>
 #include <qicore-compat/api.hpp>
 #include <qitype/anyobject.hpp>
 
