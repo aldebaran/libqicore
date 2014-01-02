@@ -539,9 +539,14 @@ namespace qi
         return false;
       }
 
-      _p->_behaviorService.call<void>("setModel", _p->_model);
-      _p->_behaviorService.call<void>("loadObjects", _p->_debug);
-      _p->_behaviorService.call<void>("setTransitions", _p->_debug, (int)qi::MetaCallType_Direct);
+      try {
+        _p->_behaviorService.call<void>("setModel", _p->_model);
+        _p->_behaviorService.call<void>("loadObjects", _p->_debug);
+        _p->_behaviorService.call<void>("setTransitions", _p->_debug, (int)qi::MetaCallType_Direct);
+      } catch (...) {
+        qiLogError() << "A box failed to load";
+        return false;
+      }
 
       //QiCoreMemoryWatcher set watching value
       ObjectMap objects = _p->_behaviorService.call<ObjectMap>("objects");
