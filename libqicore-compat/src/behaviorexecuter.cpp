@@ -149,7 +149,8 @@ namespace qi
         node.uid = instance->uid();
         node.factory = instance->uid();
         node.interface = "";//not use
-        //TODO node.parameters
+        foreach(const boost::shared_ptr<ParameterModel>& param, instance->interface()->parameters())
+          node.parameters[param->metaProperty().name()] = param->defaultValue();
 
         _model.nodes[node.uid] = node;
       }
@@ -176,8 +177,17 @@ namespace qi
         std::string method = dst->interface()->findMethod(methodid);
         if(method.empty())
         {
-          qiLogError() << "One of the input method does not exist: " << methodid;
-          return false;
+          boost::shared_ptr<qi::ParameterModel> param = dst->interface()->findParameter(methodid);
+          if (param)
+          {
+            qiLogDebug() << methodid << " recognized as a parameter";
+            method = param->metaProperty().name();
+          }
+          else
+          {
+            qiLogError() << "One of the input method/property does not exist: " << methodid;
+            return false;
+          }
         }
 
         //If signalid is STM input
@@ -543,8 +553,8 @@ namespace qi
         _p->_behaviorService.call<void>("setModel", _p->_model);
         _p->_behaviorService.call<void>("loadObjects", _p->_debug);
         _p->_behaviorService.call<void>("setTransitions", _p->_debug, (int)qi::MetaCallType_Direct);
-      } catch (...) {
-        qiLogError() << "A box failed to load";
+      } catch (std::exception& e) {
+        qiLogError() << "A box failed to load: " << e.what();
         return false;
       }
 
@@ -558,8 +568,8 @@ namespace qi
 
       try {
         _p->initialiseBox(root, qi::AnyObject(), true);
-      } catch (...) {
-        qiLogError() << "Failed to initialise boxes";
+      } catch (std::exception& e) {
+        qiLogError() << "Failed to initialise boxes: " << e.what();
         return false;
       }
 

@@ -245,7 +245,7 @@ void Behavior::setTransitions(bool debugmode, qi::MetaCallType type)
     }
     if (prop)
     {
-      Signature sigD = makeTupleSignature(prop->signature());
+      Signature sigD = prop->signature();
       float score = sigS.isConvertibleTo(sigD);
       qiLogDebugF("scoring %s -> %s : %s", sigS.toString(), sigD.toString(), score);
       if (score > bestScore)
@@ -297,6 +297,7 @@ typedef qi::TaskCall<qi::Future<qi::AnyValue> > TaskAdapter;
 AnyObject Behavior::makeObject(const std::string& model, const std::string& factory,
   const qi::BehaviorModel::ParameterMap& parameters)
 {
+  qiLogDebug() << "Making object (model: " << model << ", factory:" << factory << ")";
   size_t p = factory.find_first_of(':');
   if (p == factory.npos)
   {
@@ -342,6 +343,7 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
       boost::shared_ptr<qi::TaskCall<qi::Future<qi::GenericValue> > > pTask(task);
       return qi::GenericValueRef(pTask).to<qi::ObjectPtr>();*/
     }
+    qiLogDebug() << "Trying to get " << object << " as a service";
     AnyObject s;
     try
     {
@@ -354,6 +356,7 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
     {
       // not a service, try local factory from loaded shared objects
       // FIXME: auto-load some .so
+      qiLogDebug() << object << " is not a service, trying to create it through factory";
       s = qi::createObject(object);
       if (!s)
         throw std::runtime_error(object +" is neither a service nor available through factory");
@@ -361,14 +364,22 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
     // Heuristic: autodetect factory and invoke create
     // Do we realy want that?
     if (method.empty() && !s.metaObject().findMethod("create").empty())
+    {
+      qiLogDebug() << "It's a factory, calling create";
       method = "create";
+    }
     if (!method.empty())
     {
       s = s.call<AnyObject>(method);
     }
     for (qi::BehaviorModel::ParameterMap::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
     {
-      s.setProperty(it->first, it->second);
+      try {
+        s.setProperty(it->first, it->second);
+      } catch (std::exception& e) {
+        qiLogError() << "Cannot set property " << it->first << " on " << object << ": " << e.what();
+        throw std::runtime_error("Cannot set a property");
+      }
     }
     return s;
   }

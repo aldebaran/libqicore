@@ -102,7 +102,7 @@ class Behavior(object):
       self.logger.debug("STM Input " + pDataName + " in " + self.name + " launch signal")
       self.stminput[pDataName](pValue)
     else:
-      self.logger.error("STM Input " + pDataName + " in " + self.name + "not found")
+      self.logger.error("STM Input " + pDataName + " in " + self.name + " not found")
 
   def setParentTimeline(self, timeline):
     self.parentTimeline = timeline

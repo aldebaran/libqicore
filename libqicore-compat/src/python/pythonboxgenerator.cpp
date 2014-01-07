@@ -27,6 +27,8 @@ namespace qi
   static std::string specialInputNatureAction(InputModel::InputNature nature, bool hasAnimation, bool hasResource);
   static std::string internalOutput(OutputModelPtr out, BoxInterfaceModelPtr interface);
   static std::string internalResource(BoxInterfaceModelPtr interface);
+  static bool isSpecialChar(char c);
+  static std::string pythonStringize(const std::string& str);
 
   std::string initInput(BoxInstanceModelPtr instance)
   {
@@ -108,7 +110,10 @@ namespace qi
       std::string name = param->metaProperty().name();
       std::string sig =  param->metaProperty().signature().toString();
 
-      parameter << "    self.parameters['" << name << "'] = qi.Property('" << sig << "')\n";
+      std::string param_name = "self.param_" + pythonStringize(name);
+      parameter << "    " << param_name << " = qi.Property('" << sig << "')\n";
+      parameter << "    " << param_name << ".__qi_name__ = '" << name << "'\n";
+      parameter << "    self.parameters['" << name << "'] = " << param_name << "\n";
     }
 
     return parameter.str();
@@ -476,5 +481,21 @@ namespace qi
     }
 
     return generatedClass.str();
+  }
+
+  bool isSpecialChar(char c)
+  {
+    return !(
+        (c >= 'a' && c <= 'z') ||
+        (c >= 'A' && c <= 'Z') ||
+        (c >= '0' && c <= '9') ||
+        c == '_');
+  }
+
+  std::string pythonStringize(const std::string& str)
+  {
+    std::string out = str;
+    std::replace_if(out.begin(), out.end(), isSpecialChar, '_');
+    return out;
   }
 }
