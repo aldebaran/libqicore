@@ -216,23 +216,10 @@ namespace qi
           qi::BehaviorModel::Transition tStart;
           std::stringstream sindex;
           sindex << index;
-          //Set transition for start flowdiagram in a behaviorsequence.
-          std::string onStartMethod = dst->interface()->findInput(InputModel::InputNature_OnStop);
           tStart.src = BehaviorModel::Slot(src->uid() + "_controlflowdiagram_" + sindex.str(),
                                        "startFlowdiagram");
           tStart.dst = BehaviorModel::Slot(dst->uid(), method);
-          if (!onStartMethod.empty())
-            addTransition(tStart);
-
-          std::string onStopMethod = dst->interface()->findInput(InputModel::InputNature_OnStop);
-          qi::BehaviorModel::Transition tStop;
-          tStop.src = BehaviorModel::Slot(src->uid() + "_controlflowdiagram_" + sindex.str(),
-                                          "stopFlowdiagram");
-          tStop.dst = BehaviorModel::Slot(dst->uid(), onStopMethod);
-
-          //Set transition for stop flowdiagram in a behaviorsequence (if onStop input exist)
-          if(!onStopMethod.empty())
-            addTransition(tStop);
+          addTransition(tStart);
         }
         else
         {

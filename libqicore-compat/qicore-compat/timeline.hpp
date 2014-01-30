@@ -43,6 +43,12 @@ class QICORECOMPAT_API Timeline
     void goTo(const int &pFrame);
     /// Goto to a frame
     void goTo(const std::string &pFrame);
+    /// Goto to a frame and stop
+    template <typename T>
+    void gotoAndStop(const T& pFrame);
+    /// Goto to a frame and play
+    template <typename T>
+    void gotoAndPlay(const T& pFrame);
 
     /// Return the number of frames in the timeline
     int getSize() const;
@@ -70,6 +76,20 @@ class QICORECOMPAT_API Timeline
   private:
     TimelinePrivate* _p;
 };
+
+template <typename T>
+void Timeline::gotoAndStop(const T& pFrame)
+{
+  goTo(pFrame);
+  stop();
+}
+
+template <typename T>
+void Timeline::gotoAndPlay(const T& pFrame)
+{
+  goTo(pFrame);
+  play();
+}
 
 }
 

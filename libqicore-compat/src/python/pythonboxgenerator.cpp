@@ -424,10 +424,10 @@ namespace qi
                      << "    self.getTimeline().stop()\n"
                      << "\n"
                      << "  def gotoAndStop(self, frame):\n"
-                     << "    self.getTimeline().gotoAndStop()\n"
+                     << "    self.getTimeline().gotoAndStop(frame)\n"
                      << "\n"
                      << "  def gotoAndPlay(self, frame):\n"
-                     << "    self.getTimeline().gotoAndPlay()\n"
+                     << "    self.getTimeline().gotoAndPlay(frame)\n"
                         //Def timeline setter
                      << "\n"
                      << "  def setTimeline(self, timeline, frames):\n"
@@ -458,10 +458,10 @@ namespace qi
                      << "    self.parentTimeline.stop()\n"
                      << "\n"
                      << "  def gotoAndStopParent(self, frame):\n"
-                     << "    self.parentTimeline.gotoAndStop()\n"
+                     << "    self.parentTimeline.gotoAndStop(frame)\n"
                      << "\n"
                      << "  def gotoAndPlayParent(self, frame):\n"
-                     << "    self.parentTimeline.gotoAndPlay()\n";
+                     << "    self.parentTimeline.gotoAndPlay(frame)\n";
     }
 
     if(interface->hasResource())

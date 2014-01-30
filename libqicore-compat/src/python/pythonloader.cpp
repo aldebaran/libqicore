@@ -111,6 +111,13 @@ namespace qi
     {
       PyErr_Print();
     }
+    try {
+      py::exec(py::str(std::string("global ALMemory\nALMemory = ALProxy('ALMemory')\n")), _mainNamespace);
+    }
+    catch(py::error_already_set const&)
+    {
+      PyErr_Print();
+    }
   }
 
   void PythonBoxLoader::terminate()
@@ -121,6 +128,8 @@ namespace qi
       delalbroker <<
         "al.shutdown()\n"
         "del al\n"
+        "del ALLeds\n"
+        "del ALMemory\n"
         "setSession(None)\n";
 
       try {

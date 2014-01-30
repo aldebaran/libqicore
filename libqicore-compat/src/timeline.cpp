@@ -32,6 +32,7 @@ TimelinePrivate::TimelinePrivate(AnyObject motion, Timeline *timeline)
   : _executer(new asyncExecuter(1000 / 25)),
     _fps(0),
     _enabled(false),
+    _currentFrame(0),
     _startFrame(0),
     _endFrame(-1),
     _lastFrame(-1),
@@ -91,7 +92,10 @@ void TimelinePrivate::play()
   if (_enabled == false || _fps == 0)
   {
     if (_currentFrame == _startFrame)
+    {
       ++_currentFrame;
+      update();
+    }
     return;
   }
 
@@ -114,11 +118,7 @@ void TimelinePrivate::stop(bool join)
     boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
     killMotionOrders();
-    _currentFrame = -1;
-    _currentFrame = _startFrame;
   }
-
-  _timeline->onTimelineFinished();
 
   qiLogDebug() << "Timeline " << _name << " stopped";
 }
@@ -127,10 +127,9 @@ void TimelinePrivate::goTo(int pFrame)
 {
   qiLogDebug() << "goto timeline with : " << pFrame;
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
-  if (!_enabled)
-    return;
   _currentFrame = pFrame;
   killMotionOrders();
+  update();
 }
 
 void TimelinePrivate::goTo(const std::string& pFrame)
@@ -241,12 +240,6 @@ bool TimelinePrivate::update()
 {
   boost::unique_lock<boost::recursive_mutex> _lock(_methodMonitor);
 
-  if (_enabled == false)
-  {
-    // update is not necessary
-    return true;
-  }
-
   /* Send commands to the Flowdiagram if needed */
   std::map<int, std::string>::const_iterator it = _framesFlagsMap.find(_currentFrame);
 
@@ -254,7 +247,11 @@ bool TimelinePrivate::update()
   if (it != _framesFlagsMap.end())
     startFlowdiagramAsync(it->first);
 
-
+  if (_enabled == false)
+  {
+    // update is not necessary
+    return true;
+  }
 
   // if on the end frame
   if ( ((_endFrame >= 1) && (_currentFrame >= _endFrame))
@@ -269,6 +266,8 @@ bool TimelinePrivate::update()
     // Do *not* join, we are in the thread here, we would attempt to join with
     // ourself
     stop(false);
+
+    _timeline->onTimelineFinished();
 
     return false;
   }
@@ -720,7 +719,6 @@ Timeline::Timeline( AnyObject motion)
 
 Timeline::~Timeline()
 {
-  _p->stop();
   delete _p;
 }
 
@@ -799,6 +797,10 @@ static bool _qiregisterTimeline()
       static_cast<void(Timeline::*)(const int&)>(&Timeline::goTo));
   b.advertise("goTo",
       static_cast<void(Timeline::*)(const std::string&)>(&Timeline::goTo));
+  b.advertise("gotoAndStop", &Timeline::gotoAndStop<std::string>);
+  b.advertise("gotoAndStop", &Timeline::gotoAndStop<int>);
+  b.advertise("gotoAndPlay", &Timeline::gotoAndPlay<std::string>);
+  b.advertise("gotoAndPlay", &Timeline::gotoAndPlay<int>);
   b.advertise("setFPS", &Timeline::setFPS);
   b.advertise("setFrames", &Timeline::setFrames);
   b.advertise("setFrameNames", &Timeline::setFrameNames);

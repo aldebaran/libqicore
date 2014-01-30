@@ -57,6 +57,9 @@ void asyncExecuter::waitUntilPauseExecuter()
 {
   boost::mutex::scoped_lock pauseLock(_pauseRequestMutex);
 
+  if (!_isPlaying)
+    return;
+
   if (_pauseRequest == true)
     return;
   _pauseRequest = true;
