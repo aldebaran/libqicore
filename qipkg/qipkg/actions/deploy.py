@@ -2,26 +2,31 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
-""" Generate a binary package, ready to be used for a behavior """
+""" Deploy a complete package on the robot. This use rsync to be fast
+"""
+
+import os
 
 from qisys import ui
-import qipkg.parsers
+import qisys.sh
 import qibuild.parsers
-
 import qipkg.package
 
 
 def configure_parser(parser):
     """Configure parser for this action"""
     qibuild.parsers.build_parser(parser)
-    group = parser.add_argument_group("Package build options")
+    group = parser.add_argument_group("qipkg options")
     group.add_argument("input", help=".pml package xml input file")
-    group.add_argument("output", help=".pkg package output file")
+    qibuild.parsers.deploy_parser(parser)
+
 
 
 def do(args):
     """Main entry point"""
+    urls = qibuild.parsers.get_deploy_urls(args)
     pkg = qipkg.parsers.get_pkg_from_args(args)
 
-    ui.info(ui.green, "Generating package for:", ui.reset, pkg.name)
-    pkg.package(args.output)
+    for url in urls:
+        ui.info(ui.green, "Deploying package", ui.reset, pkg.name, ui.green, "into", ui.reset, url)
+        pkg.deploy(url)

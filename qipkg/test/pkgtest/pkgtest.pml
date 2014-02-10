@@ -7,7 +7,12 @@
 
   <behavior src="subfolder">
     <file src="manifest.xml"/>
-    <file src="super.xar"/>
   </behavior>
+
+  <resources>
+    <file src="res1"/>
+  </resources>
+
+  <qibuild name="libqi"/>
 
 </package>

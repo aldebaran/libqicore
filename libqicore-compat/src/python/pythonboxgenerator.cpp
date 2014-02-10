@@ -134,7 +134,7 @@ namespace qi
         }
 
         input << "    try:\n"
-              << "      self.waitResourcesCallback('onResource')\n"
+              << "      self.waitResourcesCallback('__onResource__')\n"
               << "    except BaseException, errRes:\n"
               << "      try:\n"
               << "        self.onResourceError()\n"

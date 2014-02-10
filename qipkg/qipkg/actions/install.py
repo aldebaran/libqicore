@@ -13,27 +13,29 @@ from qisys import ui
 import qisys.sh
 import qisys.parsers
 import qipkg.parsers
+import qipkg.package
 import qibuild.parsers
-import qipkg.worktree
 
+def _generate_listing(output_file, filelisting):
+    with open(output_file, "w") as f:
+        for fname in filelisting:
+            f.write("%s\n" % fname)
 
 def configure_parser(parser):
     """Configure parser for this action"""
-    qisys.parsers.worktree_parser(parser)
-    qibuild.parsers.project_parser(parser)
+    qibuild.parsers.build_parser(parser)
     group = parser.add_argument_group("Install options")
+    group.add_argument("input", help=".pml package xml input file")
     group.add_argument("output", help="directory destination")
-
+    group.add_argument("--listing", help="generate a listing of all installed files to the specified file")
+    group.set_defaults(listing=None)
 
 def do(args):
     """Main entry point"""
+    pkg = qipkg.parsers.get_pkg_from_args(args)
 
-    if not os.path.isdir(args.output):
-        raise Exception("Destination is not a folder: %s" % args.output)
-    pkg_worktree = qipkg.parsers.get_pkg_worktree(args)
+    ui.info(ui.green, "Installing package", ui.reset, pkg.name, ui.green, "into", ui.reset, args.output)
+    filelisting = pkg.install(args.output)
 
-    topackage = qipkg.parsers.get_pkg_projects(pkg_worktree, args)
-
-    for tp in topackage:
-        ui.info(ui.green, "Generating package for:", ui.reset, tp.name)
-        tp.do_install(args.output)
+    if args.listing:
+        _generate_listing(args.listing, filelisting)

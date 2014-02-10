@@ -12,6 +12,7 @@
 #include <qitype/anyobject.hpp>
 #include <qitype/proxysignal.hpp>
 #include <qitype/proxyproperty.hpp>
+#include <qicore/logmessage.hpp>
 
 
 namespace qi
