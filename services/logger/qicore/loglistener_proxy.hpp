@@ -43,17 +43,17 @@ public:
   qi::FutureSync<void > clearFilters(::qi::MetaCallType callType = ::qi::MetaCallType_Auto) {
     return _obj.call<void >(callType,"clearFilters");
   }
-  qi::ProxySignal<void(LogMessage)> onLogMessage;
-  qi::ProxyProperty<qi::LogLevel> verbosity;
+  qi::Signal<LogMessage> onLogMessage;
+  qi::Property<qi::LogLevel> verbosity;
 
 
 
 };
 
 QI_REGISTER_PROXY(LogListenerProxy);
+
 } // !qi
 
 
-QI_TYPE_PROXY(qi::LogListenerProxy);
 
 #endif //_LOGLISTENER_PROXY_HPP_

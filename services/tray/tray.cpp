@@ -72,7 +72,6 @@ private:
 };
 
 QI_REGISTER_OBJECT(Tray, setIcon, setToolTip, showMessage, visible, setVisible);
-QI_TYPE_NOT_CLONABLE(Tray);
 
 QI_REGISTER_OBJECT_FACTORY_BUILDER(Tray);
 

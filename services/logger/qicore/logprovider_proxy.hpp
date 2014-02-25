@@ -47,9 +47,8 @@ public:
 };
 
 QI_REGISTER_PROXY(LogProviderProxy);
+
 } // !qi
 
-
-QI_TYPE_PROXY(qi::LogProviderProxy);
 
 #endif //_LOGPROVIDER_PROXY_HPP_

@@ -107,7 +107,5 @@ namespace qi
   };
 } // !qi
 
-QI_TYPE_NOT_CLONABLE(qi::LogListener);
-QI_TYPE_NOT_CLONABLE(qi::LogManager);
 
 #endif // !LOGMANAGER_HPP_
