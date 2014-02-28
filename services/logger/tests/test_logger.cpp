@@ -87,7 +87,7 @@ TEST(Logger, Test)
   startClient(*p.client(), loggerName);
   ASSERT_TRUE(listener);
 
-  int id = startProvider(*p.server(), loggerName);
+  startProvider(*p.server(), loggerName);
 
   listener->clearFilters();
   listener->setCategory("foo", qi::LogLevel_Debug);
