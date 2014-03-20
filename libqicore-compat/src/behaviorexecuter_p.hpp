@@ -7,6 +7,7 @@
 #define BEHAVIORLOADER_P_HPP_
 
 #include <qimessaging/session.hpp>
+#include <qi/atomic.hpp>
 #include <qitype/anyobject.hpp>
 #include <qicore/behavior.hpp>
 #include <qicore-compat/model/flowdiagrammodel.hpp>
@@ -22,7 +23,8 @@ namespace qi
     {
       friend class BehaviorExecuter;
     public:
-      BehaviorExecuterPrivate(const std::string &dir, qi::Session &session, bool debug);
+      BehaviorExecuterPrivate(const std::string &dir, boost::shared_ptr<qi::Session> session, bool debug);
+      ~BehaviorExecuterPrivate();
 
       bool loadFlowDiagram(FlowDiagramModel *diagram,
                            bool behaviorsequence = false,
@@ -31,8 +33,8 @@ namespace qi
       bool loadBehaviorSequence(BehaviorSequenceModel *behaviorSequence);
       bool declaredBox(BoxInstanceModelPtr instance);
       bool declaredPythonBox(BoxInstanceModelPtr instance);
-      void initialiseBox(BoxInstanceModelPtr instance);
-      void initialiseFlowDiagram(FlowDiagramModel* diagram);
+      void initialiseBox(BoxInstanceModelPtr instance, qi::AnyObject timeline = qi::AnyObject(), bool rootBox = false);
+      void initialiseFlowDiagram(FlowDiagramModel* diagram, qi::AnyObject timeline);
       std::map<std::string, int> initialiseBehaviorSequence(BehaviorSequenceModel* seq,
                                                             const std::string &uid);
       void addTransition(BehaviorModel::Transition &t);
@@ -49,11 +51,19 @@ namespace qi
       qi::AnyObject _alresourcemanager;
       qi::AnyObject _almotion;
       qi::AnyObject _almemory;
+      boost::shared_ptr<qi::Session> _session;
       boost::mutex _waiter;
       boost::condition_variable _waitcondition;
       std::map<std::string, qi::AnyObject> _timelines;
       std::vector<std::string> _stmvalues;
       bool _debug;
+      qi::Atomic<int> _running;
+      unsigned int _behaviorServiceId;
+
+      qi::Promise<void> _finished;
+
+      void onFinished(AnyValue v);
+      void onFailed(const std::string& box, const std::string& error);
     };
     typedef std::map<std::string, qi::AnyObject> TimlineMap;
   }

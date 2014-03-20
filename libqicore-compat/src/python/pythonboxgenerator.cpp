@@ -27,6 +27,8 @@ namespace qi
   static std::string specialInputNatureAction(InputModel::InputNature nature, bool hasAnimation, bool hasResource);
   static std::string internalOutput(OutputModelPtr out, BoxInterfaceModelPtr interface);
   static std::string internalResource(BoxInterfaceModelPtr interface);
+  static bool isSpecialChar(char c);
+  static std::string pythonStringize(const std::string& str);
 
   std::string initInput(BoxInstanceModelPtr instance)
   {
@@ -108,7 +110,10 @@ namespace qi
       std::string name = param->metaProperty().name();
       std::string sig =  param->metaProperty().signature().toString();
 
-      parameter << "    self.parameters['" << name << "'] = qi.Property('" << sig << "')\n";
+      std::string param_name = "self.param_" + pythonStringize(name);
+      parameter << "    " << param_name << " = qi.Property('" << sig << "')\n";
+      parameter << "    " << param_name << ".__qi_name__ = '" << name << "'\n";
+      parameter << "    self.parameters['" << name << "'] = " << param_name << "\n";
     }
 
     return parameter.str();
@@ -167,8 +172,9 @@ namespace qi
 
     input << "    if(not self._safeCallOfUserMethod('" << "onInput_"
           << inp->metaMethod().name() << "', " << arg << ")):\n";
-    input << "      self.releaseResource()\n"
-          << "      return\n";
+    if(interface->hasResource())
+      input << "      self.releaseResource()\n";
+    input << "      return\n";
 
     if(interface->hasTimeline() || interface->hasFlowDiagram())
     {
@@ -238,6 +244,7 @@ namespace qi
     if(out->nature() == OutputModel::OutputNature_Stopped)
     {
       std::stringstream output;
+
       if(interface->hasResource())
         output << "      self.releaseResource()\n";
 
@@ -255,9 +262,17 @@ namespace qi
                 << "      self.logger.error(str(err))\n"
                 << "      pass\n";
       }
+
+      if(interface->hasTimeline())
+        outputs << "    self.stimulateIO('" << out->metaSignal().name() << "', p)\n";
     }
 
-    outputs << "    self.stimulateIO('" << out->metaSignal().name() << "', p)\n";
+    if(out->nature() == OutputModel::OutputNature_Stopped && interface->hasTimeline())
+      outputs << "  def onStopped__(self):\n"
+              << "    self.stimulateIO('" << out->metaSignal().name() << "', None)\n";
+    else
+      outputs << "    self.stimulateIO('" << out->metaSignal().name() << "', p)\n";
+
     return outputs.str();
   }
 
@@ -282,8 +297,10 @@ namespace qi
       if(interface->hasTimeline())
         resource << "    self.getTimeline.stop()\n";
 
-      resource << "    self.releaseResource()\n"
-               << "    if(not bExists):\n"
+      if(interface->hasResource())
+        resource << "    self.releaseResource()\n";
+
+      resource << "    if(not bExists):\n"
                << "      try:\n"
                << "        self.onStopped()\n"
                << "      expect:\n"
@@ -297,9 +314,10 @@ namespace qi
       if(interface->hasTimeline())
         resource << "    self.getTimeline.pause()\n";
 
-      resource << "    self.releaseResource()\n"
-               << "    self.waitResourceFree()\n"
-               << "    self.waitResources()\n";
+      if(interface->hasResource())
+        resource << "    self.releaseResource()\n"
+                 << "    self.waitResourceFree()\n"
+                 << "    self.waitResources()\n";
 
       if(interface->hasTimeline())
         resource << "    self.getTimeline.play()\n";
@@ -353,7 +371,8 @@ namespace qi
         fps = behaviorSequence.ptr<BehaviorSequenceModel>()->fps();
       }
       generatedClass << "    self.timeline = Timeline(" << fps << ")\n"
-                     << "    ALFrameManager.addTimeline(self.name, " << fps << ", self.timeline)\n";
+                     << "    ALFrameManager.addTimeline(self.name, " << fps << ", self.timeline)\n"
+                     << "    self.getTimeline().onTimelineFinished.connect(self.onStopped__)\n";
     }
 
     if(interface->hasResource())
@@ -405,10 +424,10 @@ namespace qi
                      << "    self.getTimeline().stop()\n"
                      << "\n"
                      << "  def gotoAndStop(self, frame):\n"
-                     << "    self.getTimeline().gotoAndStop()\n"
+                     << "    self.getTimeline().gotoAndStop(frame)\n"
                      << "\n"
                      << "  def gotoAndPlay(self, frame):\n"
-                     << "    self.getTimeline().gotoAndPlay()\n"
+                     << "    self.getTimeline().gotoAndPlay(frame)\n"
                         //Def timeline setter
                      << "\n"
                      << "  def setTimeline(self, timeline, frames):\n"
@@ -439,10 +458,10 @@ namespace qi
                      << "    self.parentTimeline.stop()\n"
                      << "\n"
                      << "  def gotoAndStopParent(self, frame):\n"
-                     << "    self.parentTimeline.gotoAndStop()\n"
+                     << "    self.parentTimeline.gotoAndStop(frame)\n"
                      << "\n"
                      << "  def gotoAndPlayParent(self, frame):\n"
-                     << "    self.parentTimeline.gotoAndPlay()\n";
+                     << "    self.parentTimeline.gotoAndPlay(frame)\n";
     }
 
     if(interface->hasResource())
@@ -462,5 +481,21 @@ namespace qi
     }
 
     return generatedClass.str();
+  }
+
+  bool isSpecialChar(char c)
+  {
+    return !(
+        (c >= 'a' && c <= 'z') ||
+        (c >= 'A' && c <= 'Z') ||
+        (c >= '0' && c <= '9') ||
+        c == '_');
+  }
+
+  std::string pythonStringize(const std::string& str)
+  {
+    std::string out = str;
+    std::replace_if(out.begin(), out.end(), isSpecialChar, '_');
+    return out;
   }
 }

@@ -5,7 +5,10 @@ class MyClass(GeneratedClass):
     self.bIsRunning = False;
 
   def onUnload(self):
+    import time
     self.onInput_onStop(); # will stop current loop execution
+    while self.bIsRunning:
+      time.sleep(0.1)
 
   def onInput_onStart(self):
     #self.log( self.getName() + ": start - begin" );

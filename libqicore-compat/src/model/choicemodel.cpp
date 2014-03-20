@@ -29,25 +29,25 @@ namespace qi {
     {
       bool valueBool;
       elt->getAttribute("value", valueBool);
-      _value = AnyReference(&valueBool).clone();
+      _value = AnyReference::from(&valueBool).clone();
     }
     else if(type.isConvertibleTo(Signature::fromType(Signature::Type_Int32)))
     {
       int valueInt;
       elt->getAttribute("value", valueInt);
-      _value = AnyReference(&valueInt).clone();
+      _value = AnyReference::from(&valueInt).clone();
     }
     else if(type.isConvertibleTo(Signature::fromType(Signature::Type_Double)))
     {
       double valueDouble;
       elt->getAttribute("value", valueDouble);
-      _value = AnyReference(&valueDouble).clone();
+      _value = AnyReference::from(&valueDouble).clone();
     }
     else if(type.isConvertibleTo(Signature::fromType(Signature::Type_String)))
     {
       std::string valueString;
       elt->getAttribute("value", valueString);
-      _value = AnyReference(&valueString).clone();
+      _value = AnyReference::from(&valueString).clone();
     }
     else
     {

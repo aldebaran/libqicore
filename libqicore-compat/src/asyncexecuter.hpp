@@ -42,7 +42,7 @@ class asyncExecuter
      * When exiting this function, the executer is paused
      */
     void waitUntilPauseExecuter();
-    void stopExecuter();
+    void stopExecuter(bool join = true);
 
   private:
     void executerLoop();
@@ -58,7 +58,6 @@ class asyncExecuter
     bool                                  _isPlaying;
 
     unsigned int                          _interval;
-    bool                                  _mustExit;
 
     boost::function<bool (void)>          _callback;
 };

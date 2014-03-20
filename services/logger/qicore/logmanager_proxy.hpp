@@ -54,6 +54,5 @@ public:
 QI_REGISTER_PROXY(LogManagerProxy);
 } // !qi
 
-QI_TYPE_PROXY(qi::LogManagerProxy);
 
 #endif //_LOGMANAGER_PROXY_HPP_

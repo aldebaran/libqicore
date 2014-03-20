@@ -12,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <qicore-compat/api.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace qi {
   class AnimationModelPrivate;

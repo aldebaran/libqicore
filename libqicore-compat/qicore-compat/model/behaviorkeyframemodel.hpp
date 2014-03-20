@@ -10,6 +10,7 @@
 
 #include <qicore-compat/api.hpp>
 #include <alserial/alserial.h>
+#include <boost/noncopyable.hpp>
 
 namespace qi {
 

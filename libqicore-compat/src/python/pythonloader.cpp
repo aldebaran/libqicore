@@ -3,9 +3,10 @@
 * Aldebaran Robotics (c) 2013 All Rights Reserved
 */
 
+#include <boost/python.hpp>
+
 #include <fstream>
 
-#include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
@@ -13,6 +14,9 @@
 #include <qi/log.hpp>
 #include <qi/path.hpp>
 #include <qitype/objectfactory.hpp>
+#include <qipython/gil.hpp>
+#include <qipython/pysession.hpp>
+#include <qipython/pyinit.hpp>
 
 #include <qicore-compat/model/boxinterfacemodel.hpp>
 #include <qicore-compat/model/boxinstancemodel.hpp>
@@ -36,11 +40,11 @@ namespace qi
   {
   }
 
-  void PythonBoxLoader::initPython(const std::string &ip, const std::string &port, const std::string &dir)
+  void PythonBoxLoader::initPython(const std::string &ip, const std::string &port, const std::string &dir, boost::shared_ptr<qi::Session> session)
   {
-    PyEval_InitThreads();
-    Py_Initialize();
-    _mainThread = PyThreadState_Get();
+    py::initialise();
+
+    py::GILScopedLock lock;
     //create main namespace
     _main = py::import("__main__");
     _mainNamespace = _main.attr("__dict__");
@@ -74,6 +78,22 @@ namespace qi
       PyErr_Print();
     }
 
+    //Session
+    std::stringstream gsession;
+    gsession << "global session\n"
+             << "def setSession(s):\n"
+             << "    global session\n"
+             << "    session = s\n\n";
+
+    try {
+      py::exec(py::str(gsession.str().c_str()), _mainNamespace);
+      _mainNamespace["setSession"](qi::py::makePySession(session));
+    }
+    catch(py::error_already_set const&)
+    {
+      PyErr_Print();
+    }
+
     std::stringstream initalframemanger;
     initalframemanger << "ALFrameManager.setBehaviorPath('" << dir << "')\n";
     try {
@@ -91,46 +111,49 @@ namespace qi
     {
       PyErr_Print();
     }
-  }
-
-  void PythonBoxLoader::terminate()
-  {
-    std::stringstream delalbroker;
-    delalbroker << "del al\n";
-
     try {
-      py::exec(py::str(delalbroker.str().c_str()), _mainNamespace);
+      py::exec(py::str(std::string("global ALMemory\nALMemory = ALProxy('ALMemory')\n")), _mainNamespace);
     }
     catch(py::error_already_set const&)
     {
       PyErr_Print();
     }
-
-    Py_Finalize();
   }
 
-  PyInterpreterState *PythonBoxLoader::getInterpreter()
+  void PythonBoxLoader::terminate()
   {
-    return _mainThread->interp;
-  }
+    {
+      py::GILScopedLock lock;
+      std::stringstream delalbroker;
+      delalbroker <<
+        "al.shutdown()\n"
+        "del al\n"
+        "del ALLeds\n"
+        "del ALMemory\n"
+        "setSession(None)\n";
 
-  void PythonBoxLoader::switchMainThread()
-  {
-    PyThreadState_Swap(_mainThread);
+      try {
+        py::exec(py::str(delalbroker.str().c_str()), _mainNamespace);
+      }
+      catch(py::error_already_set const&)
+      {
+        PyErr_Print();
+      }
+    }
   }
 
   bool PythonBoxLoader::registerPythonClass(BoxInstanceModelPtr instance)
   {
+    py::GILScopedLock lock;
     std::string code = generatedClass(instance);
 
-    if(instance->uid() == "root_1_Diagnostic_20_init_Bumpers_2")
-      std::cout << code;
     //Execute generated code
     try {
       py::exec(py::str(code.c_str()), _mainNamespace);
     }
     catch(py::error_already_set const&)
     {
+      qiLogError() << "Error during generated class evaluation";
       PyErr_Print();
       return false;
     }
@@ -165,6 +188,7 @@ namespace qi
     }
     catch(py::error_already_set const&)
     {
+      qiLogError() << "Error during user class evaluation";
       PyErr_Print();
       return false;
     }
@@ -174,18 +198,18 @@ namespace qi
 
     if(pyfile)
     {
-    script = std::string("qi.registerObjectFactory('")
+      script = std::string("qi.registerObjectFactory('")
         + unique_id
         + std::string("', MyClass)\n");
     }
     else
     {
       script = std::string("qi.registerObjectFactory('")
-          + unique_id
-          + std::string("', GeneratedClass_") + unique_id + std::string(")\n");
+        + unique_id
+        + std::string("', GeneratedClass_") + unique_id + std::string(")\n");
     }
 
-    qiLogDebug() << "Srcipt register : " + script;
+    qiLogDebug() << "Script register : " + script;
     py::str ex(script);
 
     try {
@@ -193,6 +217,7 @@ namespace qi
     }
     catch(py::error_already_set const&)
     {
+      qiLogError() << "Error during object registration";
       PyErr_Print();
       return false;
     }

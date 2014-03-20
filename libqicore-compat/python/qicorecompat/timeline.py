@@ -4,13 +4,17 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
+import qi
+
 class Timeline:
   def __init__(self, fps):
     self.fps = fps
+    self.onTimelineFinished = qi.Signal()
 
   def setTimeline(self, timeline, frames):
     self.timeline = timeline
     self.frames = frames
+    self.timeline.onTimelineFinished.connect(self.onTimelineFinished)
 
   def play(self):
     self.timeline.call('play')

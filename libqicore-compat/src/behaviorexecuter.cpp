@@ -3,6 +3,8 @@
 * Aldebaran Robotics (c) 2013 All Rights Reserved
 */
 
+#include <boost/python.hpp>
+
 #include <qicore-compat/model/boxinterfacemodel.hpp>
 #include <qicore-compat/model/boxinstancemodel.hpp>
 #include <qicore-compat/model/linkmodel.hpp>
@@ -19,9 +21,9 @@
 #include <qicore-compat/timeline.hpp>
 #include <qitype/objectfactory.hpp>
 #include <qitype/dynamicobject.hpp>
+#include <qipython/gil.hpp>
 #include "behaviorexecuter_p.hpp"
 
-#include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -35,19 +37,39 @@ namespace qi
 
     typedef std::map<std::string, int> FrameNameKey;
     typedef std::map<std::string, qi::AnyObject> ObjectMap;
-    BehaviorExecuterPrivate::BehaviorExecuterPrivate(const std::string &dir, Session &session, bool debug) :
+    BehaviorExecuterPrivate::BehaviorExecuterPrivate(const std::string &dir, boost::shared_ptr<Session> session, bool debug) :
       _project(dir),
-      _debug(debug)
+      _session(session),
+      _debug(debug),
+      _running(0)
     {
       std::stringstream p;
-      p << session.url().port();
+      p << _session->url().port();
 
       _pythonCreator = PythonBoxLoader();
-      _pythonCreator.initPython(session.url().host(), p.str(), dir);
-      _behaviorService = session.service("BehaviorService").value().call<qi::AnyObject>("create");
-      _alresourcemanager = session.service("ALResourceManager");
-      _almotion = session.service("ALMotion");
-      _almemory = session.service("ALMemory");
+      _pythonCreator.initPython(session->url().host(), p.str(), dir, _session);
+      _behaviorService = session->service("BehaviorService").value().call<qi::AnyObject>("create");
+      _behaviorServiceId = _session->registerService("Behavior", _behaviorService);
+      _behaviorService.connect("onTaskError",
+          boost::function<void(const std::string&, const std::string&)>(
+            boost::bind(&BehaviorExecuterPrivate::onFailed, this, _1, _2)));
+      _alresourcemanager = session->service("ALResourceManager");
+      _almotion = session->service("ALMotion");
+      _almemory = session->service("ALMemory");
+    }
+
+    BehaviorExecuterPrivate::~BehaviorExecuterPrivate()
+    {
+      _session->unregisterService(_behaviorServiceId);
+      {
+        py::GILScopedLock l;
+        _timelines.clear();
+        _behaviorService = qi::AnyObject();
+        _alresourcemanager = qi::AnyObject();
+        _almotion = qi::AnyObject();
+        _almemory = qi::AnyObject();
+      }
+      _pythonCreator.terminate();
     }
 
     bool BehaviorExecuterPrivate::declaredBox(BoxInstanceModelPtr instance)
@@ -127,12 +149,10 @@ namespace qi
         node.uid = instance->uid();
         node.factory = instance->uid();
         node.interface = "";//not use
-        //TODO node.parameters
+        foreach(const boost::shared_ptr<ParameterModel>& param, instance->interface()->parameters())
+          node.parameters[param->metaProperty().name()] = param->defaultValue();
 
         _model.nodes[node.uid] = node;
-
-        if(instance->uid() == "root_1_Diagnostic_20_diagnostic_Crouch_8")
-        qiLogError() << node.uid << " " << node.factory;
       }
 
       //Linking box
@@ -149,11 +169,26 @@ namespace qi
 
         std::string signal = src->interface()->findSignal(signalid);
         if(signal.empty())
+        {
+          qiLogError() << "One of the output signal does not exist: " << signalid;
           return false;
+        }
 
         std::string method = dst->interface()->findMethod(methodid);
         if(method.empty())
-          return false;
+        {
+          boost::shared_ptr<qi::ParameterModel> param = dst->interface()->findParameter(methodid);
+          if (param)
+          {
+            qiLogDebug() << methodid << " recognized as a parameter";
+            method = param->metaProperty().name();
+          }
+          else
+          {
+            qiLogError() << "One of the input method/property does not exist: " << methodid;
+            return false;
+          }
+        }
 
         //If signalid is STM input
         const InputModelMap &inputs = src->interface()->inputs();
@@ -181,21 +216,10 @@ namespace qi
           qi::BehaviorModel::Transition tStart;
           std::stringstream sindex;
           sindex << index;
-          //Set transition for start flowdiagram in a behaviorsequence.
           tStart.src = BehaviorModel::Slot(src->uid() + "_controlflowdiagram_" + sindex.str(),
                                        "startFlowdiagram");
           tStart.dst = BehaviorModel::Slot(dst->uid(), method);
-
-
-          std::string onStopMethod = dst->interface()->findInput(InputModel::InputNature_OnStop);
-          qi::BehaviorModel::Transition tStop;
-          tStop.src = BehaviorModel::Slot(src->uid() + "_controlflowdiagram_" + sindex.str(),
-                                          "stopFlowdiagram");
-          tStop.dst = BehaviorModel::Slot(dst->uid(), onStopMethod);
-
-          //Set transition for stop flowdiagram in a behaviorsequence (if onStop input exist)
-          if(!onStopMethod.empty())
-            addTransition(tStop);
+          addTransition(tStart);
         }
         else
         {
@@ -220,12 +244,12 @@ namespace qi
       qiLogDebug() << t.toString();
     }
 
-    void BehaviorExecuterPrivate::initialiseBox(BoxInstanceModelPtr instance)
+    void BehaviorExecuterPrivate::initialiseBox(BoxInstanceModelPtr instance, qi::AnyObject timeline, bool rootBox)
     {
       //If FlowDiagram
       qi::AnyReference diagram = instance->content(ContentModel::ContentType_FlowDiagram);
       if(diagram.isValid())
-        initialiseFlowDiagram(diagram.ptr<FlowDiagramModel>());
+        initialiseFlowDiagram(diagram.ptr<FlowDiagramModel>(), timeline);
 
       std::map<std::string, int> frames;
 
@@ -234,7 +258,7 @@ namespace qi
       if(behaviorAnimation.isValid())
       {
         qi::AnyObject timeline;
-        qi::Timeline* t = new qi::Timeline(_almotion, _pythonCreator.getInterpreter());
+        qi::Timeline* t = new qi::Timeline(_almotion);
         timeline = qi::AnyReference::fromPtr(t).toObject();
         timeline.call<void>("setAnimation",
                              behaviorAnimation.ptr<AnimationModel>());
@@ -300,10 +324,44 @@ namespace qi
         }
 
         timeline.call<void>("setFrames", framesKey);
+        timeline.call<void>("setFrameNames", frames);
         _behaviorService.call<void>("call", instance->uid(), "setTimeline", args);
       }
 
-      _behaviorService.call<void>("call", instance->uid(), "__onLoad__", std::vector<qi::AnyValue>());
+      if(timeline)
+      {
+        std::vector<qi::AnyObject> args;
+        args.push_back(timeline);
+        _behaviorService.call<void>("call", instance->uid(), "setParentTimeline", args);
+      }
+
+      if (!_behaviorService.call<bool>("call", instance->uid(), "__onLoad__", std::vector<qi::AnyValue>()))
+        throw std::runtime_error("A box failed onLoad");
+
+      // connect to end output to know when the behavior is finished
+      if (rootBox)
+      {
+        boost::shared_ptr<BoxInterfaceModel> interface = instance->interface();
+        const std::map<int, boost::shared_ptr<OutputModel> >& outputs = interface->outputs();
+        for (std::map<int, boost::shared_ptr<OutputModel> >::const_iterator
+              iter = outputs.begin();
+            iter != outputs.end();
+            ++iter)
+        {
+          // We suppose the object returned by behaviorService is always local
+          _behaviorService.call<AnyObject>("object", instance->uid()).value().connect(iter->second->metaSignal().name() + "Signal", boost::function<void(AnyValue)>(boost::bind(&BehaviorExecuterPrivate::onFinished, this, _1)));
+        }
+      }
+    }
+
+    void BehaviorExecuterPrivate::onFinished(AnyValue v)
+    {
+      _finished.setValue(0);
+    }
+
+    void BehaviorExecuterPrivate::onFailed(const std::string& box, const std::string& error)
+    {
+      _finished.setValue(0);
     }
 
     void BehaviorExecuterPrivate::connect(qi::AnyObject src,
@@ -346,7 +404,7 @@ namespace qi
       else
       {
         //create timeline
-        timeline = qi::AnyReference::fromPtr(new qi::Timeline(_almotion, _pythonCreator.getInterpreter())).toObject();
+        timeline = qi::AnyReference::fromPtr(new qi::Timeline(_almotion)).toObject();
         _timelines[uid] = timeline;
       }
       std::map<std::string, int> ret;
@@ -370,23 +428,23 @@ namespace qi
           connect(timeline, boxdelay, "stopFlowdiagram", "stop");
 
           //Load flowdiagram
-          initialiseFlowDiagram(key->diagram().get());
+          initialiseFlowDiagram(key->diagram().get(), timeline);
         }
       }
 
       return ret;
     }
 
-    void BehaviorExecuterPrivate::initialiseFlowDiagram(FlowDiagramModel* diagram)
+    void BehaviorExecuterPrivate::initialiseFlowDiagram(FlowDiagramModel* diagram, qi::AnyObject timeline)
     {
       BoxInstanceModelMap instances = diagram->boxsInstance();
       foreach(BoxInstanceModelMap::value_type &instance, instances)
       {
-        initialiseBox(instance.second);
+        initialiseBox(instance.second, timeline);
       }
     }
 
-    BehaviorExecuter::BehaviorExecuter(const std::string &dir, Session &session, bool debug)
+    BehaviorExecuter::BehaviorExecuter(const std::string &dir, boost::shared_ptr<Session> session, bool debug)
       : _p(new BehaviorExecuterPrivate(dir, session, debug))
     {
 
@@ -394,12 +452,17 @@ namespace qi
 
     BehaviorExecuter::~BehaviorExecuter()
     {
-      _p->_pythonCreator.terminate();
       delete _p;
     }
 
     void BehaviorExecuter::execute()
     {
+      if (!_p->_running.setIfEquals(0, 1))
+      {
+        qiLogError() << "Cannot execute behavior, already running";
+        return;
+      }
+
       //Search start input
       BoxInstanceModelPtr root = _p->_project.rootBox();
 
@@ -412,6 +475,9 @@ namespace qi
       qiLogDebug() << "Start Behavior " << root->behaviorPath();
       std::vector<qi::AnyValue> args;
       args.push_back(qi::AnyValue("args"));
+
+      _p->_finished = qi::Promise<void>();
+
       _p->_behaviorService.call<void>("call", root->uid(), inputStart, args);
 
       if(!_p->_timelines.empty())
@@ -421,27 +487,34 @@ namespace qi
           val.second.call<void>("waitForTimelineCompletion");
         }
       }
-      qiLogDebug() << "Stop Behavior " << root->behaviorPath();
 
-      qiLogDebug() << "Unload box";
-      _p->_pythonCreator.switchMainThread();
+      _p->_finished.future().wait();
+      qiLogDebug() << "Behavior " << root->behaviorPath() << " finished";
       ObjectMap objects = _p->_behaviorService.call<ObjectMap>("objects");
       foreach(ObjectMap::value_type const &val, objects)
       {
         qi::AnyObject o = val.second;
         o.call<void>("__onUnload__");
       }
+
+      _p->_running = 0;
     }
 
     bool BehaviorExecuter::load()
     {
       if(!_p->_project.loadFromFile())
+      {
+        qiLogError() << "Failed to load project from file";
         return false;
+      }
 
       BoxInstanceModelPtr root = _p->_project.rootBox();
 
       if(!root)
+      {
+        qiLogError() << "No root box";
         return false;
+      }
 
       //Register root box
       BehaviorModel::Node node;
@@ -458,11 +531,19 @@ namespace qi
       _p->_model.nodes[nodeal.uid] = nodeal;
 
       if(!_p->declaredBox(root))
+      {
+        qiLogError() << "Failed to declare root box";
         return false;
+      }
 
-      _p->_behaviorService.call<void>("setModel", _p->_model);
-      _p->_behaviorService.call<void>("loadObjects", _p->_debug);
-      _p->_behaviorService.call<void>("setTransitions", _p->_debug, (int)qi::MetaCallType_Direct);
+      try {
+        _p->_behaviorService.call<void>("setModel", _p->_model);
+        _p->_behaviorService.call<void>("loadObjects", _p->_debug);
+        _p->_behaviorService.call<void>("setTransitions", _p->_debug, (int)qi::MetaCallType_Direct);
+      } catch (std::exception& e) {
+        qiLogError() << "A box failed to load: " << e.what();
+        return false;
+      }
 
       //QiCoreMemoryWatcher set watching value
       ObjectMap objects = _p->_behaviorService.call<ObjectMap>("objects");
@@ -472,7 +553,12 @@ namespace qi
         qiCoreMemoryWatcher.call<void>("subscribe", s);
       }
 
-      _p->initialiseBox(root);
+      try {
+        _p->initialiseBox(root, qi::AnyObject(), true);
+      } catch (std::exception& e) {
+        qiLogError() << "Failed to initialise boxes: " << e.what();
+        return false;
+      }
 
       //Set ObjectThreadingModel to prevent deadlock.
       //Infact, A.method trigger A.signal (so A is locked)
@@ -481,7 +567,7 @@ namespace qi
       foreach(ObjectMap::value_type const &val, objects)
       {
         qi::AnyObject obj = val.second;
-        DynamicObject* dynamic = reinterpret_cast<DynamicObject*>(obj.get()->value);
+        DynamicObject* dynamic = reinterpret_cast<DynamicObject*>(obj.asGenericObject()->value);
         dynamic->setThreadingModel(ObjectThreadingModel_MultiThread);
       }
 

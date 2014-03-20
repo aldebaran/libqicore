@@ -2,12 +2,12 @@ QiCore-Compat Readme
 ========================================================================================
 
 This lib is a fork of the "frameManager", it aims to execute behaviors that
-was previous executed with the frameManager but with much more flexibility.
+were previously executed with the frameManager but with much more flexibility.
 
 QiCore-Compat is only a compatibility layer.
 
 QiCore-Compat and the frameManager are independant, meaning that you can execute behaviors
-with both of us.
+with both of them.
 
 ========================================================================================
 Getting Started:
@@ -32,7 +32,7 @@ Use qicore-behavior to execute a behavior
 Architecture of executor:
 --------------------------
 
- - qicorecompat python bendings:
+ - qicorecompat python bindings:
      Behavior : Base class for boxes.
      ControlFlowdiagram : This class help timeline to launch and stop Flowdiagram.
      FrameManager : Reimplement ALFrameManager python bindings for compat.
@@ -50,37 +50,39 @@ Architecture of executor:
 
 Python box and no script box
 ------------------------------
-  Python box and no script box is the only box supported by qicore-compat.
-  All box is based on qicorecompat.Behavior
-  A python box is generate from xml models (xml models is used to generate
-  GeneratedClass) and MyClass when py file exist.
-  A python box no script box is simply instantiate with GeneratedClass.
+  Python box and no script box are the only boxes supported by qicore-compat.
+  All boxes are based on qicorecompat.Behavior
+  A python box is generated from xml models (xml models are used to generate
+  GeneratedClass) and MyClass when the .py file exist.
+  A python box or no script box is simply instantiated with GeneratedClass.
 
 How to qicore-compat load Box and Flowdiagram
 ------------------------------------------------
   Qicore use BehaviorService to instantiate and link boxes.
-  So BehaviorExecuter fill a qi::BehaviorModel with informations stocked in a
-  Flowdiagram (in BehaviorExecuterPrivate is the role of the function loadFlowDiagram)
-  For instantiate boxes BehaviorService use the qitype factory, then BehaviorExecuter
-  register the boxes in the factory with PythonLoader.
+  So BehaviorExecuter fills a qi::BehaviorModel with informations stored in a
+  Flowdiagram (in BehaviorExecuterPrivate it is the role of the function
+  loadFlowDiagram).
+  To instantiate boxes, BehaviorService uses the qitype factory, then
+  BehaviorExecuter registers the boxes in the factory with PythonLoader.
 
 How to qicore-compat handle BehaviorSequence
 ---------------------------------------------
-  A BehaviorSequence contains flowdiagram that must be launch with a delay.
-  So timeline handle the start of this flowdiagram and for this purpose the input of a
-  the Flowdiagram is connected with the signal startFlowdiagram of the
-  ControlFlowdiagram and the output of the flowdiagram is connected with the signal
-  stopFlowdiagram of the ControlFlowdiagram, one ControlFlowdiagram is use for
-  one BehaviorSequence.
-  ControlFlowdiagram is connected by BehaviorService in the input of the flowdiagram
-  but ControlFlowdiagram and Timeline is connected manualy.
+  A BehaviorSequence contains a flowdiagram that must be launched with a delay.
+  So timeline handles the start of this flowdiagram and for this purpose the
+  input of a the Flowdiagram is connected with the signal startFlowdiagram of
+  the ControlFlowdiagram and the output of the flowdiagram is connected with
+  the signal stopFlowdiagram of the ControlFlowdiagram, one ControlFlowdiagram
+  is used for one BehaviorSequence.
+  ControlFlowdiagram is connected by BehaviorService in the input of the
+  flowdiagram but ControlFlowdiagram and Timeline is connected manualy.
 
 How to qicore-compat handle STMValue
 --------------------------------------
-  QiCoreMemoryWatcher is a naoqi module written in python. When a box input is type STMValue
-  QiCoreMemoryWatcher subscribe on the ALMemory's event and send a qi.Signal on
-  all box (with a input STMValue of course) when the event is raise. This signal is connected
-  with box.handleSTM this method trigger the real input attached in this STMValue.
+  QiCoreMemoryWatcher is a naoqi module written in python. When a box input has
+  the type STMValue QiCoreMemoryWatcher subscribes on the ALMemory's event and
+  send a qi.Signal to all the boxes (with an input STMValue of course) when the
+  event is raised. This signal is connected with box.handleSTM, this method
+  trigger the real input attached in this STMValue.
 
 XML Model
 -----------

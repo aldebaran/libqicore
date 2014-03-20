@@ -80,7 +80,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 qi_create_lib(logmanager
   #SRC src/logmanager.cpp qicore/logmessage.hpp ${_loggermanager_proxy} ${_logprovider_proxy} ${_loggermanager_bind} ${_loglistener_bind} ${_loglistener_proxy}
-  SRC src/logmanager.cpp qicore/logmessage.hpp qicore/logmanager_proxy.hpp qicore/logprovider_proxy.hpp qicore/logmanager_bind.hpp qicore/loglistener_bind.cpp qicore/loglistener_proxy.hpp
+  SRC src/logmanager.cpp qicore/logmessage.hpp qicore/logprovider.hpp qicore/logmanager_proxy.hpp qicore/logprovider_proxy.hpp qicore/logmanager_bind.hpp qicore/loglistener_bind.cpp qicore/loglistener_proxy.hpp
   MODULE
   DEPENDS QITYPE
 )

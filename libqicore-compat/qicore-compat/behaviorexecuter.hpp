@@ -17,7 +17,7 @@ namespace qi
     class QICORECOMPAT_API BehaviorExecuter : private boost::noncopyable
     {
     public:
-      BehaviorExecuter(const std::string &dir, qi::Session &session, bool debug);
+      BehaviorExecuter(const std::string &dir, boost::shared_ptr<qi::Session> session, bool debug);
       virtual ~BehaviorExecuter();
 
       void execute();

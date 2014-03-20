@@ -134,6 +134,10 @@ TEST(QiTimeline, goToAfterStart)
   delete anim;
 }
 
+void noop_deleter(qi::Session*)
+{
+}
+
 int main(int argc, char** argv)
 {
   qi::Application app(argc, argv);
@@ -147,27 +151,17 @@ int main(int argc, char** argv)
   }
   file = std::string(argv[1]);
   boost::shared_ptr<AL::ALBroker> broker;
+  qi::Session lsession;
   try
   {
-    broker = AL::ALBroker::createBroker(
-          "testbroker",      // broker name
-          "127.0.0.1", 9600, // ip, port
-          "", 0,            // parent ip, parent port empty -> standalone broker
-          0,                 // default flags
-          "",                // default path
-          false              // load ALNetwork
-          );
-    AL::Launcher launcher(broker);
-    launcher.loadLibrary("albase");
-    launcher.loadLibrary("alresourcemanager");
-    launcher.loadLibrary("motion");
-    qi::Session &session = broker->session();
-    memory = session.service("ALMemory");
-    motion = session.service("ALMotion");
+    qi::os::dlopen("behavior");
+    lsession.connect(qi::Url("tcp://127.0.0.1:9559"));
+    memory = lsession.service("ALMemory");
+    motion = lsession.service("ALMotion");
   }
   catch(const std::exception &e)
   {
-    std::cerr << "Failed to create a test broker" << std::endl
+    std::cerr << "Failed to connect session" << std::endl
               << "Error was: " << std::endl
               << e.what() ;
     return 1;

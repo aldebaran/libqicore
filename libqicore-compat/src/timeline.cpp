@@ -14,7 +14,6 @@
 #include <qitype/objecttypebuilder.hpp>
 
 #include "timeline_p.hpp"
-#include "python/pyregisterthread.hpp"
 #include <qicore-compat/timeline.hpp>
 #include <qicore-compat/model/actuatorlistmodel.hpp>
 #include <qicore-compat/model/actuatorcurvemodel.hpp>
@@ -24,13 +23,16 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+qiLogCategory("qiCore.Timeline");
+
 namespace qi
 {
 
-TimelinePrivate::TimelinePrivate(AnyObject motion, Timeline *timeline, PyInterpreterState *mainInterpreterState)
+TimelinePrivate::TimelinePrivate(AnyObject motion, Timeline *timeline)
   : _executer(new asyncExecuter(1000 / 25)),
     _fps(0),
     _enabled(false),
+    _currentFrame(0),
     _startFrame(0),
     _endFrame(-1),
     _lastFrame(-1),
@@ -40,7 +42,6 @@ TimelinePrivate::TimelinePrivate(AnyObject motion, Timeline *timeline, PyInterpr
     _methodMonitor(),
     _framesFlagsMap(),
     _timeline(timeline),
-    _mainInterpreterState(mainInterpreterState),
     _isValid(true)
 {
   try
@@ -50,12 +51,12 @@ TimelinePrivate::TimelinePrivate(AnyObject motion, Timeline *timeline, PyInterpr
   }
   catch (AL::ALError& e)
   {
-    qiLogError("Timeline") << "Cannot create proxy on ALMotion :" << std::endl << e.what() << std::endl;
+    qiLogError() << "Cannot create proxy on ALMotion :" << std::endl << e.what() << std::endl;
     _isValid = false;
   }
 }
 
-TimelinePrivate::~TimelinePrivate(void)
+TimelinePrivate::~TimelinePrivate()
 {
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
@@ -79,19 +80,22 @@ void TimelinePrivate::killMotionOrders()
   }
   catch(AL::ALError& e)
   {
-    qiLogError("Timeline") << _name << e.what() << std::endl;
+    qiLogError() << _name << e.what() << std::endl;
   }
 }
 
 void TimelinePrivate::play()
 {
-  qiLogDebug("qiCore.Timeline") << "Play timeline";
+  qiLogDebug() << "Play timeline " << _name;
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
   if (_enabled == false || _fps == 0)
   {
     if (_currentFrame == _startFrame)
+    {
       ++_currentFrame;
+      update();
+    }
     return;
   }
 
@@ -100,35 +104,45 @@ void TimelinePrivate::play()
 
 void TimelinePrivate::pause()
 {
-  qiLogDebug("qiCore.Timeline") << "Pause timeline";
+  qiLogDebug() << "Pause timeline " << _name;
   _executer->waitUntilPauseExecuter();
   killMotionOrders();
 }
 
-void TimelinePrivate::stop()
+void TimelinePrivate::stop(bool join)
 {
-  qiLogDebug("qiCore.Timeline") << "Stopping timeline";
-  _executer->stopExecuter();
+  qiLogDebug() << "Stopping timeline " << _name;
+  _executer->stopExecuter(join);
 
   {
     boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
 
     killMotionOrders();
-    _currentFrame = -1;
-    _currentFrame = _startFrame;
   }
 
-  qiLogDebug("qiCore.Timeline") << "Timeline stopped";
+  qiLogDebug() << "Timeline " << _name << " stopped";
 }
 
 void TimelinePrivate::goTo(int pFrame)
 {
-  qiLogDebug("qiCore.Timeline") << "goto timeline with : " << pFrame;
+  qiLogDebug() << "goto timeline with : " << pFrame;
   boost::unique_lock<boost::recursive_mutex> lock(_methodMonitor);
-  if (!_enabled)
-    return;
   _currentFrame = pFrame;
   killMotionOrders();
+  update();
+}
+
+void TimelinePrivate::goTo(const std::string& pFrame)
+{
+  qiLogDebug() << "goto timeline with : " << pFrame;
+  std::map<std::string, int>::iterator iter =
+    _framesFlagsMapRev.find(pFrame);
+  if (iter == _framesFlagsMapRev.end())
+  {
+    qiLogWarning() << "Unknown frame to go to: " << pFrame;
+    return;
+  }
+  goTo(iter->second);
 }
 
 int TimelinePrivate::getSize() const
@@ -200,13 +214,12 @@ void TimelinePrivate::setAnimation(AnimationModel* anim)
 
 void TimelinePrivate::startFlowdiagram(int index)
 {
-   PyRegisterThread pyThread(_mainInterpreterState);
   _timeline->startFlowdiagram(index);
 }
 
 void TimelinePrivate::startFlowdiagramAsync(int index)
 {
-  qiLogDebug("qiCore.Timeline") << "Start Flowdiagram, frames : " << index;
+  qiLogDebug() << "Start Flowdiagram, frames : " << index;
   boost::thread* t = new boost::thread(boost::bind(&TimelinePrivate::startFlowdiagram, this, index));
 
   _flowdiagrams.push_back(t);
@@ -214,10 +227,7 @@ void TimelinePrivate::startFlowdiagramAsync(int index)
 
 void TimelinePrivate::stopFlowdiagram()
 {
-  {
-  PyRegisterThread pyThread(_mainInterpreterState);
   _timeline->stopFlowdiagram(-1);
-  }
 
   foreach(boost::thread *t, _flowdiagrams)
   {
@@ -226,15 +236,9 @@ void TimelinePrivate::stopFlowdiagram()
   }
 }
 
-bool TimelinePrivate::update(void)
+bool TimelinePrivate::update()
 {
   boost::unique_lock<boost::recursive_mutex> _lock(_methodMonitor);
-
-  if (_enabled == false)
-  {
-    // update is not necessary
-    return true;
-  }
 
   /* Send commands to the Flowdiagram if needed */
   std::map<int, std::string>::const_iterator it = _framesFlagsMap.find(_currentFrame);
@@ -243,17 +247,27 @@ bool TimelinePrivate::update(void)
   if (it != _framesFlagsMap.end())
     startFlowdiagramAsync(it->first);
 
-
+  if (_enabled == false)
+  {
+    // update is not necessary
+    return true;
+  }
 
   // if on the end frame
   if ( ((_endFrame >= 1) && (_currentFrame >= _endFrame))
     || (_currentFrame < _startFrame))
   {
-    stopFlowdiagram();
     _currentFrame = _startFrame;
+    qiLogDebug() << "Killing motion orders";
     killMotionOrders();
 
-    qiLogDebug("qiCore.Timeline") << "Timeline is done, invoking callback";
+    qiLogDebug() << "Timeline is done";
+
+    // Do *not* join, we are in the thread here, we would attempt to join with
+    // ourself
+    stop(false);
+
+    _timeline->onTimelineFinished();
 
     return false;
   }
@@ -316,7 +330,7 @@ bool TimelinePrivate::singleInterpolationCommand(int currentFrame)
   }
   catch(const AL::ALError& e)
   {
-    qiLogError("Timeline") << _name << " Error during .postAngleInterpolationWithSpeed in motion : Error #= " << e.what() << std::endl;
+    qiLogError() << _name << " Error during .postAngleInterpolationWithSpeed in motion : Error #= " << e.what() << std::endl;
   }
   return true;
 }
@@ -424,7 +438,7 @@ bool TimelinePrivate::sendInterpolationCommand(const std::vector<std::string>& n
     catch(AL::ALError& e)
     {
       // do nothing, just keep reading the timeline !
-      qiLogError("Timeline") << _name << ":sendInterpolationCommand failed with the error:\n" << e.what() << std::endl;
+      qiLogError() << _name << ":sendInterpolationCommand failed with the error:\n" << e.what() << std::endl;
     }
   }
 
@@ -434,7 +448,7 @@ bool TimelinePrivate::sendInterpolationCommand(const std::vector<std::string>& n
   }
   catch(AL::ALError& e)
   {
-    qiLogError("Timeline") << _name << " Error during .angleInterpolationBezier in motion : Error #= " << e.what() << std::endl;
+    qiLogError() << _name << " Error during .angleInterpolationBezier in motion : Error #= " << e.what() << std::endl;
   }
 
   return true;
@@ -698,33 +712,37 @@ void TimelinePrivate::rebuildBezierAutoTangents(ActuatorCurveModelPtr curve)
 }
 
 /* -- Public -- */
-Timeline::Timeline( AnyObject motion, PyInterpreterState *mainInterpreterState)
-  : _p (new TimelinePrivate(motion, this, mainInterpreterState))
+Timeline::Timeline( AnyObject motion)
+  : _p (new TimelinePrivate(motion, this))
 {
 }
 
 Timeline::~Timeline()
 {
-  _p->stop();
   delete _p;
 }
 
-void Timeline::play(void)
+void Timeline::play()
 {
   _p->play();
 }
 
-void Timeline::pause(void)
+void Timeline::pause()
 {
   _p->pause();
 }
 
-void Timeline::stop(void)
+void Timeline::stop()
 {
   _p->stop();
 }
 
 void Timeline::goTo(const int &pFrame)
+{
+  _p->goTo(pFrame);
+}
+
+void Timeline::goTo(const std::string &pFrame)
 {
   _p->goTo(pFrame);
 }
@@ -754,6 +772,11 @@ void Timeline::setFrames(const std::map<int, std::string> &frames)
   _p->_framesFlagsMap = frames;
 }
 
+void Timeline::setFrameNames(const std::map<std::string, int> &frames)
+{
+  _p->_framesFlagsMapRev = frames;
+}
+
 void Timeline::waitForTimelineCompletion()
 {
   _p->_executer->waitForExecuterCompletion();
@@ -763,5 +786,33 @@ bool Timeline::isValid() const
 {
   return _p->_isValid;
 }
-QI_REGISTER_OBJECT(Timeline, play, pause, stop, goTo, setFPS, setFrames, setAnimation, startFlowdiagram, stopFlowdiagram, waitForTimelineCompletion);
+
+static bool _qiregisterTimeline()
+{
+  ::qi::ObjectTypeBuilder<Timeline> b;
+  b.advertise("play", &Timeline::play);
+  b.advertise("pause", &Timeline::pause);
+  b.advertise("stop", &Timeline::stop);
+  b.advertise("goTo",
+      static_cast<void(Timeline::*)(const int&)>(&Timeline::goTo));
+  b.advertise("goTo",
+      static_cast<void(Timeline::*)(const std::string&)>(&Timeline::goTo));
+  b.advertise("gotoAndStop", &Timeline::gotoAndStop<std::string>);
+  b.advertise("gotoAndStop", &Timeline::gotoAndStop<int>);
+  b.advertise("gotoAndPlay", &Timeline::gotoAndPlay<std::string>);
+  b.advertise("gotoAndPlay", &Timeline::gotoAndPlay<int>);
+  b.advertise("setFPS", &Timeline::setFPS);
+  b.advertise("setFrames", &Timeline::setFrames);
+  b.advertise("setFrameNames", &Timeline::setFrameNames);
+  b.advertise("setAnimation", &Timeline::setAnimation);
+  b.advertise("waitForTimelineCompletion", &Timeline::waitForTimelineCompletion);
+  b.advertise("startFlowdiagram", &Timeline::startFlowdiagram);
+  b.advertise("stopFlowdiagram", &Timeline::stopFlowdiagram);
+  b.advertise("onTimelineFinished", &Timeline::onTimelineFinished);
+  b.registerType();
+  return true;
+}
+
+static bool _qi_registration_Timeline = _qiregisterTimeline();
+
 }

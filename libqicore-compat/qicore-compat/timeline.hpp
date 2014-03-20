@@ -6,12 +6,10 @@
 #pragma once
 
 #ifndef TIMELINE_H_
-# define TIMELINE_H_
+#define TIMELINE_H_
 
 #include <string>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/python.hpp>
 #include <qicore-compat/api.hpp>
 #include <qitype/anyobject.hpp>
 
@@ -31,18 +29,26 @@ class QICORECOMPAT_API Timeline
 {
   public:
     /// Constructor, take a memory and motion object
-  Timeline(AnyObject motion = AnyObject(), PyInterpreterState *mainInterpreterState = 0);
+    Timeline(AnyObject motion = AnyObject());
     ~Timeline();
 
     /// Play the timeline
-    void play(void);
+    void play();
     /// Pause the timeline
-    void pause(void);
+    void pause();
     /// Stop the timeline
-    void stop(void);
+    void stop();
 
     /// Goto to a frame
     void goTo(const int &pFrame);
+    /// Goto to a frame
+    void goTo(const std::string &pFrame);
+    /// Goto to a frame and stop
+    template <typename T>
+    void gotoAndStop(const T& pFrame);
+    /// Goto to a frame and play
+    template <typename T>
+    void gotoAndPlay(const T& pFrame);
 
     /// Return the number of frames in the timeline
     int getSize() const;
@@ -54,6 +60,8 @@ class QICORECOMPAT_API Timeline
     void setAnimation(AnimationModel* anim);
     /// Set frames label
     void setFrames(const std::map<int, std::string> &frames);
+    /// Set frames label
+    void setFrameNames(const std::map<std::string, int> &frames);
 
     /// Wait untile the timeline execution is completed
     void waitForTimelineCompletion();
@@ -63,9 +71,25 @@ class QICORECOMPAT_API Timeline
     qi::Signal<int> startFlowdiagram;
     qi::Signal<int> stopFlowdiagram;
 
+    qi::Signal<void> onTimelineFinished;
+
   private:
     TimelinePrivate* _p;
 };
+
+template <typename T>
+void Timeline::gotoAndStop(const T& pFrame)
+{
+  goTo(pFrame);
+  stop();
+}
+
+template <typename T>
+void Timeline::gotoAndPlay(const T& pFrame)
+{
+  goTo(pFrame);
+  play();
+}
 
 }
 
