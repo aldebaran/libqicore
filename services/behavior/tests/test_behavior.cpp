@@ -403,7 +403,8 @@ TEST(Behavior, PropSet)
 
   b.call<void>("loadString", "a x PropHolder prop= [ 1 , 2 ]  prop2= \"foo\"  ");
   b.call<void>("loadObjects", false);
-  vi = boost::assign::list_of(1)(2);
+  // not c++11 compatible, but this line is not mandatory
+  //vi = boost::assign::list_of(1)(2);
   EXPECT_EQ(vi, prop.get().to<std::vector<int> >());
   EXPECT_EQ("foo", prop2.get().toString());
   b.call<void>("unloadObjects");
