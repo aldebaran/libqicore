@@ -49,8 +49,8 @@ public:
   typedef std::map<std::string, TransitionPtr> TransitionMap;
 
 public:
-  Behavior(): _session(new qi::Session) {}
-  ~Behavior() { delete _session;}
+  Behavior(qi::SessionPtr session): _session(session) {}
+  ~Behavior() { }
   AnyObject makeObject(const std::string& model, const std::string& factory, const qi::BehaviorModel::ParameterMap& params);
   void loadObjects(bool debugmode);
   void unloadObjects();
@@ -58,7 +58,6 @@ public:
   void removeTransitions();
   void loadFile(const std::string& path);
   void loadString(const std::string& data);
-  void connect(const std::string& url);
   AnyObject object(const std::string& name);
   qi::AnyValue call(const std::string& objUid, const std::string& fun, std::vector<qi::AnyValue> args);
 
@@ -71,7 +70,7 @@ public:
 
 public:
   void setModel(const qi::BehaviorModel &model) { _model = model; }
-  qi::Session&       session()     { return *_session;};
+  qi::SessionPtr     session()     { return _session;};
   qi::BehaviorModel& model()       { return _model; };
   ObjectMap&         objects()     { return _objects; };
   TransitionMap&     transitions() { return _transitions; };
@@ -91,11 +90,11 @@ private:
   qi::BehaviorModel _model;
   ObjectMap         _objects;
   TransitionMap     _transitions;
-  qi::Session*      _session;
+  qi::SessionPtr    _session;
 };
 
-QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, connect, call, onTransition, model, objects, transitions, setModel, onTaskRunning, onTaskError, object);
-QI_REGISTER_OBJECT_FACTORY_BUILDER(Behavior);
+QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, call, onTransition, model, objects, transitions, setModel, onTaskRunning, onTaskError, object);
+QI_REGISTER_OBJECT_FACTORY_BUILDER(Behavior, qi::SessionPtr);
 
 
 qi::AnyValue Behavior::call(const std::string& objUid, const std::string& fun,
@@ -129,11 +128,6 @@ qi::AnyValue Behavior::call(const std::string& objUid, const std::string& fun,
     break;
   }
   throw std::runtime_error("argument count not implemented");
-}
-
-void Behavior::connect(const std::string& url)
-{
-  session().connect(url);
 }
 
 static void onTaskErrorBounce(Behavior* b, const std::string& task, const std::string& err)
@@ -347,7 +341,7 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
     AnyObject s;
     try
     {
-      s = session().service(object);
+      s = session()->service(object);
     }
     catch(...)
     {
@@ -357,7 +351,7 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
       // not a service, try local factory from loaded shared objects
       // FIXME: auto-load some .so
       qiLogDebug() << object << " is not a service, trying to create it through factory";
-      s = qi::createObject(object);
+      s = qi::createObject(object, session());
       if (!s)
         throw std::runtime_error(object +" is neither a service nor available through factory");
     }
@@ -370,7 +364,7 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
     }
     if (!method.empty())
     {
-      s = s.call<AnyObject>(method);
+      s = s.call<AnyObject>(method, session());
     }
     for (qi::BehaviorModel::ParameterMap::const_iterator it = parameters.begin(); it != parameters.end(); ++it)
     {
