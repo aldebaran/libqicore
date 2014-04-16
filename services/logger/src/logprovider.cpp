@@ -46,7 +46,7 @@ namespace qi
     // Safety: avoid infinite loop
     ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, _subscriber);
     ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
-    ::qi::log::setCategory("qi.eventloop", qi::LogLevel_Silent, _subscriber);
+    ::qi::log::setCategory("qi.*", qi::LogLevel_Silent, _subscriber);
     ++_ready;
   }
 
