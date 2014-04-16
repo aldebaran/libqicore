@@ -245,7 +245,7 @@ void Behavior::setTransitions(bool debugmode, qi::MetaCallType type)
     }
     if (prop)
     {
-      Signature sigD = prop->signature();
+      Signature sigD = qi::makeTupleSignature(prop->signature());
       float score = sigS.isConvertibleTo(sigD);
       qiLogDebugF("scoring %s -> %s : %s", sigS.toString(), sigD.toString(), score);
       if (score > bestScore)
