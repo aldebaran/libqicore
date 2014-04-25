@@ -49,6 +49,8 @@ namespace qi {
     void load(std::istream& is);
     void clear();
   };
+
+  QICORE_API void displayModel(BehaviorModel model);
 }
 
 QI_TYPE_STRUCT(::qi::BehaviorModel, nodes, transitions);
