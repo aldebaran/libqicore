@@ -90,10 +90,10 @@ namespace qi {
     }
   }
 
-  void displayModel(BehaviorModel model)
+  void displayModel(const BehaviorModel& model)
   {
     std::cout << "display model" << std::endl;
-    for (qi::BehaviorModel::NodeMap::iterator n = model.nodes.begin();
+    for (qi::BehaviorModel::NodeMap::const_iterator n = model.nodes.begin();
          n != model.nodes.end();
          ++n)
     {
@@ -103,7 +103,7 @@ namespace qi {
                 << "****" << std::endl;
 
       std::cout << "Parameters:" << std::endl;
-      for (qi::BehaviorModel::ParameterMap::iterator p = (*n).second.parameters.begin();
+      for (qi::BehaviorModel::ParameterMap::const_iterator p = (*n).second.parameters.begin();
            p != (*n).second.parameters.end();
            ++p)
       {
@@ -112,7 +112,7 @@ namespace qi {
       std::cout << "***************************" << std::endl;
     }
 
-    for (qi::BehaviorModel::TransitionMap::iterator t = model.transitions.begin();
+    for (qi::BehaviorModel::TransitionMap::const_iterator t = model.transitions.begin();
          t != model.transitions.end();
          ++t)
     {
