@@ -23,14 +23,6 @@ qiLogCategory("qigen.behaviorModel");
 
 namespace qilang {
 
-static inline std::pair<std::string, std::string> splitString2(const std::string& s, char sep)
-{
-  size_t p = s.find_first_of(sep);
-  if (p == s.npos)
-    throw std::runtime_error("separator not found");
-  return std::make_pair(s.substr(0, p), s.substr(p+1));
-}
-
 
 // Construct a BehaviorModel
 class QiLangGenBehaviorModel:
@@ -105,7 +97,7 @@ protected:
     if (expr->value == "Graph")
     {
       currentModel = new qi::BehaviorModel();
-
+      currentModel->name = node->name;
       // iterate over all statements
       for (unsigned int i = 0; i < node->values.size(); ++i) {
         acceptStmt(node->values.at(i));
@@ -139,14 +131,21 @@ protected:
     currentNode->parameters[node->name] = data;
   }
 
+  std::pair<std::string, std::string> resolveTransition(const std::string& trans) {
+    size_t p = trans.find_first_of('.');
+    if (p != std::string::npos) {
+      return std::make_pair(trans.substr(0, p), trans.substr(p+1));
+    }
+    return std::make_pair(currentNode->uid, trans);
+  }
 
   void visitStmt(AtNode* node) {
 
     std::string transition_uid = node->receiver + "|" + node->sender;
     qi::BehaviorModel::Transition& currentTransition = currentModel->transitions[transition_uid];
     currentTransition.uid = transition_uid;
-    currentTransition.src = splitString2(node->sender, '.');
-    currentTransition.dst = splitString2(node->receiver, '.');
+    currentTransition.src = resolveTransition(node->sender);
+    currentTransition.dst = resolveTransition(node->receiver);
   }
 
   void visitStmt(VarDefNode* node) {

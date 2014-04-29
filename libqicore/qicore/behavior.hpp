@@ -50,7 +50,7 @@ namespace qi {
     typedef std::map<std::string, Transition> TransitionMap;
     NodeMap       nodes;
     TransitionMap transitions;
-
+    std::string   name;
     void load(std::istream& is);
     void clear();
   };
@@ -59,7 +59,7 @@ namespace qi {
   QICORE_API void displayModel(const BehaviorModel& model);
 }
 
-QI_TYPE_STRUCT(::qi::BehaviorModel, nodes, transitions);
+QI_TYPE_STRUCT(::qi::BehaviorModel, nodes, transitions, name);
 QI_TYPE_STRUCT(::qi::BehaviorModel::Node, uid, interface, factory);
 QI_TYPE_STRUCT(::qi::BehaviorModel::Transition, uid, src, dst, filter);
 

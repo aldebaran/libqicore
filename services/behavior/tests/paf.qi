@@ -1,0 +1,16 @@
+#package testg
+
+object Graph "paf"
+  object TestObjectService.create "a"
+    at v: b.add
+  end
+  object TestObjectService.create "b"
+    at onAdd: c.add
+  end
+  object TestObjectService.create "c"
+  end
+  object TestObjectService.create "d"
+  end
+  object TestObjectService.create "f"
+  end
+end

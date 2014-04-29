@@ -341,7 +341,7 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
       // this fails qi::GenericValueRef(task).to<qi::GenericObject*>();
       /*
       boost::shared_ptr<qi::TaskCall<qi::Future<qi::GenericValue> > > pTask(task);
-      return qi::GenericValueRef(pTask).to<qi::ObjectPtr>();*/
+      return qi::GenericValueRef(pTask).to<qi::AnyObject>();*/
     }
     qiLogDebug() << "Trying to get " << object << " as a service";
     AnyObject s;
