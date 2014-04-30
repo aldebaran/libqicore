@@ -152,6 +152,9 @@ protected:
     throw std::runtime_error("unimplemented");
   }
 
+  void visitStmt(CommentNode* node) {
+  }
+
 };
 
 
