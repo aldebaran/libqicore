@@ -38,9 +38,9 @@ end
 fn newLogProvider(l LogManager) LogProvider
 
 interface LogListener
-  fn setVerbosity(level qi.LogLevel)
+  fn setVerbosity(level LogLevel)
   fn setCategory(cat str, level LogLevel)
-  #fn addFilter(cat str, level qi.LogLevel)
+  #fn addFilter(cat str, level LogLevel)
   #fn filters() [](str, qi.LogLevel)
   fn clearFilters()
 
