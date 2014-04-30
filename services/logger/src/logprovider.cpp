@@ -36,6 +36,14 @@ namespace qi
     return (logger->addProvider(ptr, qi::MetaCallType_Queued).async());
   }
 
+  static void silenceQiCategories(qi::log::SubscriberId subscriber)
+  {
+    // Safety: avoid infinite loop
+    ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, subscriber);
+    ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, subscriber);
+    ::qi::log::setCategory("qi.*", qi::LogLevel_Silent, subscriber);
+  }
+
   LogProvider::LogProvider(LogManagerProxyPtr logger)
     : _logger(logger)
   {
@@ -43,10 +51,7 @@ namespace qi
                                          boost::bind(&LogProvider::log, this, _1, _2, _3, _4, _5, _6, _7));
 
     DEBUG("LP subscribed " << _subscriber);
-    // Safety: avoid infinite loop
-    ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, _subscriber);
-    ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
-    ::qi::log::setCategory("qi.eventloop", qi::LogLevel_Silent, _subscriber);
+    silenceQiCategories(_subscriber);
     ++_ready;
   }
 
@@ -127,10 +132,7 @@ namespace qi
         setCategory(data[i].first, data[i].second);
     }
 
-    // Safety: avoid infinite loop
-    ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, _subscriber);
-    ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, _subscriber);
-    ::qi::log::setCategory("qi.eventloop", qi::LogLevel_Silent, _subscriber);
+    silenceQiCategories(_subscriber);
 
     if (wildcardIsSet)
       ::qi::log::setCategory("*", wildcardLevel, _subscriber);
