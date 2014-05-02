@@ -1,5 +1,7 @@
-<project name='libqicore'>
+<project version="3">
   <project src='libqicore-compat'/>
-  <depends names='gtest libqi' buildtime='true' />
-  <depends names='libqimessaging libqitype' buildtime='true' runtime='true' />
+  <qibuild name="libqicore">
+    <depends names='gtest libqi' buildtime='true' />
+    <depends names='libqimessaging libqitype' buildtime='true' runtime='true' />
+  </qibuild>
 </project>
