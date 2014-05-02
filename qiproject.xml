@@ -4,4 +4,5 @@
     <depends names='gtest libqi' buildtime='true' />
     <depends names='libqimessaging libqitype libqilang' buildtime='true' runtime='true' />
   </qibuild>
+  <project src='qipkg'/>
 </project>
