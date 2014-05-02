@@ -3,15 +3,19 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(name="qipkg",
-      version="0.0.1",
+      version="0.1",
       description="qiPackage Generator",
       author="Aldebaran Robotics",
-      author_email="cgestes@aldebaran-robotics.com",
-      packages=["qipkg", "qipkg.actions"],
+      author_email="contact@aldebaran-robotics.com",
+      packages=find_packages(),
       license="BSD",
-      scripts=['bin/qipkg'],
-      requires=['qibuild']
+      requires=['qibuild'],
+      entry_points = {
+          "console_scripts" : [
+              "qipkg = qisys.main:main"
+              ]
+          }
 )
