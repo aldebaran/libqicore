@@ -18,6 +18,10 @@ class PMLBuider(object):
         self.pml_path = pml_path
         self.base_dir = os.path.dirname(self.pml_path)
 
+        self.manifest_xml = os.path.join(self.base_dir, "manifest.xml")
+        if not os.path.exists(self.manifest_xml):
+            raise Exception("%s does not exist" % self.manifest_xml)
+
         # used to prepare deploying files and making packages,
         # so it must always exist but also always start empty
         dot_qi = self.worktree.dot_qi
@@ -39,7 +43,7 @@ class PMLBuider(object):
                 self.python_builder,
                 self.cmake_builder
         ]
-        self.file_list = list()
+        self.file_list = list([self.manifest_xml])
 
 
         self.load_pml(pml_path)
@@ -104,7 +108,7 @@ class PMLBuider(object):
                 builder.install(destination, components=["runtime"])
             else:
                 builder.install(destination)
-        # # Also use file from file_list
+        # Also use file from file_list
         for src in self.file_list:
             full_src = os.path.join(self.base_dir, src)
             qisys.sh.install(full_src, destination)
