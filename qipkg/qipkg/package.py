@@ -29,25 +29,32 @@ class Package(object):
         pkg_name(self.manifest_xml)
         self.output = "%s-%s.pkg" % (self.name, self.version)
 
-    def make(self, pml_builder, output=None):
+    def make_package(self, pml_builder, output=None):
+        stage_path = pml_builder.stage_path
         if not output:
             name = pkg_name(self.manifest_xml)
             output = os.path.join(os.getcwd(), name)
-        # Step1: install everything in the stage path
+
+        archive = zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED)
+        #  Add the manifest
+        manifest_xml = pml_builder.manifest_xml
+        archive.write(manifest_xml, "manifest.xml")
+
+        # Add everything from the staged path
+        pml_builder.install(pml_builder.stage_path)
         stage_path = pml_builder.stage_path
-        manifest = pml_builder.install(stage_path)
+        for root,_, filenames in os.walk(stage_path):
+            for filename in filenames:
+                full_path = os.path.join(root, filename)
+                rel_path  = os.path.relpath(full_path, stage_path)
+                print "adding", full_path, filename
+                archive.write(full_path, rel_path)
+        archive.close()
 
-        # Step2: zip the result with the manifest.xml inside
-        archive = qisys.archive.compress(stage_path)
-        qisys.sh.mv(archive, output)
-
-        # add manifest.xml if it exists
-        if os.path.exists(self.manifest_xml):
-            zip = zipfile.ZipFile(output, "a")
-            zip.write(self.manifest_xml, "manifest.xml")
         ui.info(ui.green, "Package generated in",
                 ui.reset, ui.bold, output)
         return output
+
 
 def pkg_name(manifest_xml):
     "Return a tuple name, version"

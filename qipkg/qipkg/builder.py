@@ -25,7 +25,7 @@ class PMLBuider(object):
         # used to prepare deploying files and making packages,
         # so it must always exist but also always start empty
         dot_qi = self.worktree.dot_qi
-        self.stage_path = os.path.join(self, dot_qi, "staged", config)
+        self.stage_path = os.path.join(dot_qi, "staged", config)
         qisys.sh.rm(self.stage_path)
         qisys.sh.mkdir(self.stage_path, recursive=True)
 
@@ -43,7 +43,7 @@ class PMLBuider(object):
                 self.python_builder,
                 self.cmake_builder
         ]
-        self.file_list = list([self.manifest_xml])
+        self.file_list = list()
 
 
         self.load_pml(pml_path)
@@ -111,15 +111,17 @@ class PMLBuider(object):
         # Also use file from file_list
         for src in self.file_list:
             full_src = os.path.join(self.base_dir, src)
-            qisys.sh.install(full_src, destination)
+            rel_src = os.path.relpath(full_src, self.base_dir)
+            full_dest = os.path.join(destination, rel_src)
+            qisys.sh.install(full_src, full_dest)
 
     def deploy(self, url):
         package = self.package(output=None)
         qisys.sh.mv(package, self.stage_path)
-        qisys.remote.deploy(self.stage_path, url)
+        # qisys.remote.deploy_file(package.url)
 
 
     def package(self, output=None):
         package = qipkg.package.Package(self.pml_path)
-        return package.make(self, output=output)
+        return package.make_package(self, output=output)
 

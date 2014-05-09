@@ -14,11 +14,12 @@ import qipkg.package
 def configure_parser(parser):
     """Configure parser for this action"""
     qipkg.parsers.pml_parser(parser)
-    parser.add_argument("output", nargs="?")
+    parser.add_argument("-o", "--output")
 
 
 def do(args):
     """Main entry point"""
+    output = args.output
     pml_builder = qipkg.parsers.get_pml_builder(args)
-    pml_builder.package(output=args.output)
-
+    package = qipkg.package.Package(args.pml_path)
+    package.make_package(pml_builder, output=output)
