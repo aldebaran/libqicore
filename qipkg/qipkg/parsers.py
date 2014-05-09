@@ -9,10 +9,10 @@ import qipkg.builder
 
 def pml_parser(parser):
     qisys.parsers.worktree_parser(parser)
+    parser.add_argument("-c", "--config", help="Config of the builders to use")
     parser.add_argument("pml_path")
 
 def get_pml_builder(args):
     pml_path = args.pml_path
     worktree = qisys.parsers.get_worktree(args)
-    return qipkg.builder.PMLBuider(worktree, pml_path)
-
+    return qipkg.builder.PMLBuider(worktree, pml_path, config=args.config)

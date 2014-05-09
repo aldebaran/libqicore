@@ -12,7 +12,7 @@ from qibuild.worktree import BuildWorkTree
 from qibuild.cmake_builder import CMakeBuilder
 
 class PMLBuider(object):
-    def __init__(self, worktree, pml_path, config="default"):
+    def __init__(self, worktree, pml_path, config=None):
         self.worktree = worktree
         self.config = config
         self.pml_path = pml_path
@@ -22,17 +22,15 @@ class PMLBuider(object):
         if not os.path.exists(self.manifest_xml):
             raise Exception("%s does not exist" % self.manifest_xml)
 
-        # used to prepare deploying files and making packages,
-        # so it must always exist but also always start empty
-        dot_qi = self.worktree.dot_qi
-        self.stage_path = os.path.join(dot_qi, "staged", config)
-        qisys.sh.rm(self.stage_path)
-        qisys.sh.mkdir(self.stage_path, recursive=True)
 
         self.build_worktree = BuildWorkTree(self.worktree)
         self.cmake_builder = CMakeBuilder(self.build_worktree)
         self.cmake_builder.projects = list()
         self.cmake_builder.dep_types = ["runtime"]
+        # quick hack until cmake_builder as just one string for all the config
+        self.cmake_builder.build_config.active_config = config
+        if config is None:
+            config = "default"
 
         self.python_worktree = PythonWorkTree(self.worktree)
         self.python_builder = PythonBuilder(self.python_worktree,
@@ -47,7 +45,13 @@ class PMLBuider(object):
 
 
         self.load_pml(pml_path)
+
+        # used to prepare deploying files and making packages,
+        # so it must always exist but also always start empty
         dot_qi = self.worktree.dot_qi
+        self.stage_path = os.path.join(dot_qi, "staged", config)
+        qisys.sh.rm(self.stage_path)
+        qisys.sh.mkdir(self.stage_path, recursive=True)
 
     def load_pml(self, pml_path):
         tree= qisys.qixml.read(pml_path)
@@ -116,12 +120,14 @@ class PMLBuider(object):
             qisys.sh.install(full_src, full_dest)
 
     def deploy(self, url):
-        package = self.package(output=None)
-        qisys.sh.mv(package, self.stage_path)
-        # qisys.remote.deploy_file(package.url)
+        qisys.remote.deploy(self.stage_path, url)
 
+    def deploy_package(self, url):
+        package = self.make_package(output=None)
+        # waiting for qiys.remote.deploy_file
+        # qisys.remote.deploy_file(package)
 
-    def package(self, output=None):
+    def make_package(self, output=None):
         package = qipkg.package.Package(self.pml_path)
         return package.make_package(self, output=output)
 
