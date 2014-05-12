@@ -115,14 +115,14 @@ int main(int argc, char *argv[])
   std::stringstream ss(behavior);
 */
 
-  qilang::ParseResult pr = qilang::parse(qilang::newFileReader(filename));
+  qilang::ParseResultPtr pr = qilang::parse(qilang::newFileReader(filename));
   //qilang::ParseResult pr = qilang::parse(qilang::newFileReader(&ss, "<!stream!>"));
-  if (pr.hasError()) {
-    pr.printMessage(std::cout);
+  if (pr->hasError()) {
+    pr->printMessage(std::cout);
     return 1;
   }
-  std::cout << qilang::format(pr.ast) << std::endl;
-  qi::BehaviorModel bm = qi::loadBehaviorModel(pr.ast);
+  std::cout << qilang::format(pr->ast) << std::endl;
+  qi::BehaviorModel bm = qi::loadBehaviorModel(pr->ast);
 
   b.call<void>("setModel", bm);
 

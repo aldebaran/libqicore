@@ -61,7 +61,7 @@ public:
       case NodeKind_Stmt:
         acceptStmt(boost::dynamic_pointer_cast<StmtNode>(node));
         break;
-      case NodeKind_ConstData:
+      case NodeKind_Literal:
       case NodeKind_Decl:
       case NodeKind_Expr:
       case NodeKind_TypeExpr:
