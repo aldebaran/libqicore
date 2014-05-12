@@ -102,6 +102,7 @@ int main(int argc, char *argv[])
   qi::AnyObject b = ses->service("BehaviorService").value().call<qi::AnyObject>("create");
   b.call<void>("connect", ses->url());
 
+  /*
   std::string behavior = STRING(
     a Whatever TestObjectService.create;
     b Whatever TestObjectService.create;
@@ -110,7 +111,9 @@ int main(int argc, char *argv[])
     bc b.onAdd -> c.add;
   );
 
+
   std::stringstream ss(behavior);
+*/
 
   qilang::ParseResult pr = qilang::parse(qilang::newFileReader(filename));
   //qilang::ParseResult pr = qilang::parse(qilang::newFileReader(&ss, "<!stream!>"));
@@ -124,13 +127,12 @@ int main(int argc, char *argv[])
   b.call<void>("setModel", bm);
 
   b.call<void>("loadObjects", true);
-  b.call<void>("call", "a", "setv", arguments(42));
   //ASSERT_EQ(42, b.call<int>("call", "a", "getv", arguments()));
-  b.call<void>("call", "b", "setv", arguments(1));
-  b.call<void>("call", "c", "setv", arguments(2));
   b.call<void>("setTransitions", false, qi::MetaCallType_Auto);
   //ASSERT_EQ(2, b.call<int>("call", "c", "getv", arguments()));
   b.call<void>("call", "a", "setv", arguments(3));
+  int res = b.call<int>("call", "c", "lastAdd", arguments());
+  std::cout << "last res: " << res << std::endl;
   qi::os::msleep(1000);
   //ASSERT_EQ(6, b.call<int>("call", "c", "lastAdd", arguments()));
 

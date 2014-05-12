@@ -123,11 +123,11 @@ protected:
   }
 
   void visitStmt(PropertyDefNode *node) {
-
-
     qi::AnyValue data = qilang::toAnyValue(node->data);
 
-    //TODO check for already existing
+    if (currentNode->parameters.find(node->name) != currentNode->parameters.end())
+      qiLogWarning() << "Redefinition of property " << node->name << std::endl;
+
     currentNode->parameters[node->name] = data;
   }
 

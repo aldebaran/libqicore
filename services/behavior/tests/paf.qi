@@ -2,12 +2,15 @@
 
 object Graph "paf"
   object TestObjectService.create "a"
+    v: 42
     at v: b.add
   end
   object TestObjectService.create "b"
+    v: 1
     at onAdd: c.add
   end
   object TestObjectService.create "c"
+    v: 2
   end
   object TestObjectService.create "d"
   end
