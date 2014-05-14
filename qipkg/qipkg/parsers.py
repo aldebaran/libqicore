@@ -7,12 +7,20 @@
 import qisys.parsers
 import qipkg.builder
 
+import qibuild.parsers
+import qipy.parsers
+
+
 def pml_parser(parser):
-    qisys.parsers.worktree_parser(parser)
-    parser.add_argument("-c", "--config", help="Config of the builders to use")
+    qisys.parsers.build_parser(parser)
     parser.add_argument("pml_path")
 
 def get_pml_builder(args):
     pml_path = args.pml_path
     worktree = qisys.parsers.get_worktree(args)
-    return qipkg.builder.PMLBuider(worktree, pml_path, config=args.config)
+    build_worktree = qibuild.parsers.get_build_worktree(args)
+    # here we build a CMakeBuilder from scratch becaues we won't read
+    # the project names from the command line
+    cmake_builder = qibuild.cmake_builder.CMakeBuilder(build_worktree)
+    python_builder = qipy.parsers.get_python_builder(args)
+    return qipkg.builder.PMLBuider(pml_path, cmake_builder, python_builder)

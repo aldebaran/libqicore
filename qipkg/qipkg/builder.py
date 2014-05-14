@@ -12,44 +12,34 @@ from qibuild.worktree import BuildWorkTree
 from qibuild.cmake_builder import CMakeBuilder
 
 class PMLBuider(object):
-    def __init__(self, worktree, pml_path, config=None):
-        self.worktree = worktree
-        self.config = config
+    def __init__(self, pml_path,
+                 cmake_builder,
+                 python_builder):
+
         self.pml_path = pml_path
         self.base_dir = os.path.dirname(self.pml_path)
-
         self.manifest_xml = os.path.join(self.base_dir, "manifest.xml")
         if not os.path.exists(self.manifest_xml):
             raise Exception("%s does not exist" % self.manifest_xml)
 
+        self.cmake_builder = cmake_builder
+        self.python_builder = python_builder
 
-        self.build_worktree = BuildWorkTree(self.worktree)
-        self.cmake_builder = CMakeBuilder(self.build_worktree)
-        self.cmake_builder.projects = list()
-        self.cmake_builder.dep_types = ["runtime"]
-        # quick hack until cmake_builder as just one string for all the config
-        self.cmake_builder.build_config.active_config = config
-        if config is None:
-            config = "default"
+        self.build_worktree = self.cmake_builder.build_worktree
+        self.python_worktree = self.python_builder.python_worktree
+        self.builders = [self.cmake_builder, self.python_builder]
+        self.worktree = self.build_worktree.worktree
 
-        self.python_worktree = PythonWorkTree(self.worktree)
-        self.python_builder = PythonBuilder(self.python_worktree,
-                                            build_worktree=self.build_worktree)
-        self.python_builder.projects = list()
-
-        self.builders = [
-                self.python_builder,
-                self.cmake_builder
-        ]
         self.file_list = list()
-
 
         self.load_pml(pml_path)
 
         # used to prepare deploying files and making packages,
         # so it must always exist but also always start empty
         dot_qi = self.worktree.dot_qi
-        self.stage_path = os.path.join(dot_qi, "staged", config)
+        build_config = self.cmake_builder.build_config
+        name = build_config.build_directory(prefix="qipkg")
+        self.stage_path = os.path.join(dot_qi, name)
         qisys.sh.rm(self.stage_path)
         qisys.sh.mkdir(self.stage_path, recursive=True)
 
