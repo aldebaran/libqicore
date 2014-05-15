@@ -99,6 +99,7 @@ class PMLBuider(object):
         # Use every available builder to install
         for builder in self.builders:
             if isinstance(builder, CMakeBuilder):
+                builder.dep_types=["runtime"]
                 builder.install(destination, components=["runtime"])
             else:
                 builder.install(destination)
