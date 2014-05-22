@@ -6,19 +6,22 @@
 ** Copyright (C) 2013 Aldebaran Robotics
 */
 
-#include <boost/make_shared.hpp>
+#include <qitype/objectfactory.hpp>
+#include <qitype/objecttypebuilder.hpp>
 
-#include <qicore/logmessage.hpp>
-#include "src/logmanager.hpp"
+#include <qicore/logmanager.hpp>
 
-#include <qi/os.hpp>
+#include "src/logmanagerimpl.hpp"
+#include "src/loglistenerimpl.hpp"
 
-#include <qicore/logprovider_proxy.hpp>
+QI_TYPE_INTERFACE(LogManager);
+
+qiLogCategory("log.manager");
 
 static bool debug = getenv("LOG_DEBUG");
 #define DEBUG(a)                                \
   do {                                          \
-  if (debug) std::cerr << a << std::endl;     \
+    if (debug) std::cerr << a << std::endl;     \
   } while(0)
 
 /* We have multiple inputs: logproviders that push messages and that we
@@ -41,131 +44,29 @@ static bool debug = getenv("LOG_DEBUG");
  * Delegating all the work to the local logger of the service is tempting,
  * but the task is subtly different
  */
-
 namespace qi
 {
-bool set_verbosity(qi::LogListener* ll,
-                   qi::LogLevel& level,
-                   const qi::LogLevel& newvalue)
-{
-  DEBUG("LL verbosity prop " << level);
-  qi::LogLevel old = level;
-  level = newvalue;
-  ll->_logger.recomputeVerbosities(old, newvalue);
-
-  return true;
-}
-
-  // LogListener Class
-  LogListener::LogListener(LogManager& l)
-    : _logger(l)
-    , verbosity(qi::Property<qi::LogLevel>::Getter(),
-                boost::bind(&set_verbosity, this, _1, _2))
-  {
-    DEBUG("LL ctor logger: " << &_logger <<  " this: " << this);
-    verbosity.set(qi::LogLevel_Debug);
-    onLogMessage.setCallType(qi::MetaCallType_Queued);
-  }
-
-  LogListener::~LogListener()
-  {
-    DEBUG("LL ~LogListener logger: " << &_logger <<  " this: " << this);
-  }
-
-  void LogListener::setVerbosity(qi::LogLevel level)
-  {
-    DEBUG("LL verbosity " << level << " logger: " << &_logger << " this: " << this);
-    verbosity.set(level);
-  }
-
-  void LogListener::clearFilters()
-  {
-    DEBUG("LL clearFilters logger: " << &_logger << " this: " << this);
-    {
-      boost::mutex::scoped_lock filtersLock(_filtersMutex);
-      _filters.clear();
-    }
-    _logger.recomputeCategories();
-  }
-
-  void LogListener::setCategory(const std::string& cat,
-                                qi::LogLevel level)
-  {
-    DEBUG("LL setCategory logger: " << &_logger << " this: " << this);
-    {
-      boost::mutex::scoped_lock filtersLock(_filtersMutex);
-      _filters[cat] = level;
-    }
-    _logger.recomputeCategories();
-  }
-
-  std::map<std::string, qi::LogLevel> LogListener::filters()
-  {
-    DEBUG("LL filters");
-    FilterMap filtersCpy;
-    {
-      boost::mutex::scoped_lock filtersLock(_filtersMutex);
-      filtersCpy = _filters;
-    }
-    return filtersCpy;
-  }
-
-  void LogListener::log(const LogMessage& msg)
-  {
-    DEBUG("LL:log: " << msg.message);
-    if (msg.level > verbosity.get())
-      return;
-
-    // Check filters.
-    // map ordering will give us more generic globbing filter first
-    // so we must not stop on first negative filter, but go on
-    // to see if a positive filter overrides it@
-    bool pass = true;
-    {
-      boost::mutex::scoped_lock filtersLock(_filtersMutex);
-
-      for (FilterMap::iterator it = _filters.begin(); it != _filters.end(); ++it)
-      {
-        const std::string& f = it->first;
-        if (f == msg.category ||
-            (f.find('*') != f.npos && qi::os::fnmatch(f, msg.category)))
-        {
-          pass = msg.level <= it->second;
-        }
-      }
-    }
-
-    DEBUG("LL:log filter " << pass);
-    if (pass)
-      onLogMessage(msg);
-  }
-
-
-  LogManagerPtr make_LogPtr()
-  {
-    return boost::make_shared<LogManager>();
-  }
-
-  // LogManager Class
-  LogManager::LogManager()
+  // LogManagerImpl Class
+  LogManagerImpl::LogManagerImpl()
     : _maxLevel(qi::LogLevel_Silent)
   {
     DEBUG("LM instanciating");
   }
 
-  LogManager::~LogManager()
+  LogManagerImpl::~LogManagerImpl()
   {
     DEBUG("LM ~LogManager");
   }
 
-  void LogManager::log(const LogMessage& msg)
+  void LogManagerImpl::log(const LogMessage& msg)
   {
     boost::mutex::scoped_lock dataLock(_dataMutex);
-    DEBUG("LM:log " << _listeners.size());
+    DEBUG("LM:log listeners' numbers " << _listeners.size());
+    DEBUG("LM:log providers' numbers " << _providers.size());
     for (int listenerIt = 0; listenerIt < _listeners.size();)
     {
       bool remove = true;
-      if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
+      if (boost::shared_ptr<LogListenerImpl> l = _listeners[listenerIt].lock())
       {
         l->log(msg);
         remove = false;
@@ -181,29 +82,29 @@ bool set_verbosity(qi::LogListener* ll,
         ++listenerIt;
       }
     }
-    DEBUG("LM::log exit " << _listeners.size());
+    DEBUG("LM:log done");
   }
 
 
-  LogListenerPtr LogManager::getListener()
+  LogListenerPtr LogManagerImpl::getListener()
   {
     DEBUG("LM getListener");
-
-    LogListenerPtr ptr = boost::make_shared<LogListener>(boost::ref(*this));
-    boost::weak_ptr<LogListener> l(ptr);
+    boost::shared_ptr<LogListenerImpl> ptr =
+        boost::make_shared<LogListenerImpl>(boost::ref(*this));
+    boost::weak_ptr<LogListenerImpl> l(ptr);
 
     boost::mutex::scoped_lock dataLock(_dataMutex);
     _listeners.push_back(l);
 
-    DEBUG("LM getListener ptr: " << ptr << " listener: " << ptr.get());
+    DEBUG("LM getListener ptr: " << ptr);
     return ptr;
   }
 
-  void LogManager::recomputeVerbosities(qi::LogLevel from,
-                                        qi::LogLevel to)
+  void LogManagerImpl::recomputeVerbosities(qi::LogLevel from,
+                                            qi::LogLevel to)
   {
     DEBUG("LM recomputeVerbosities");
-    // clean proxy sync
+    // clean object sync
     gcProviders();
     if (_maxLevel >= from && _maxLevel >= to)
       return;
@@ -215,9 +116,9 @@ bool set_verbosity(qi::LogListener* ll,
       for (int listenerIt = 0; listenerIt < _listeners.size();)
       {
         bool remove = true;
-        if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
+        if (boost::shared_ptr<LogListenerImpl> l = _listeners[listenerIt].lock())
         {
-          newMax = std::max(newMax, l->verbosity.get());
+          newMax = std::max(newMax, l->logLevel.get());
           remove = false;
         }
 
@@ -235,31 +136,29 @@ bool set_verbosity(qi::LogListener* ll,
       if (newMax != _maxLevel)
       {
         _maxLevel = newMax;
-        std::map<int, LogProviderProxyPtr >::iterator providersIt;
+        std::map<int, LogProviderPtr >::iterator providersIt;
         for (providersIt = _providers.begin(); providersIt != _providers.end(); ++providersIt)
         {
-          providersIt->second->setVerbosity(_maxLevel).async().connect(
-                &LogManager::providerCallback, this, _1, providersIt->first);
+          providersIt->second.async<void>("setLevel", _maxLevel).connect(&LogManagerImpl::providerCallback, this, _1, providersIt->first);
         }
       }
     }
   }
 
-  int LogManager::addProvider(LogProviderProxyPtr provider)
+  int LogManagerImpl::addProvider(LogProviderPtr provider)
   {
-    DEBUG("LM addProvider");
+    DEBUG("LM addProvider this: " << &provider);
     boost::mutex::scoped_lock dataLock(_dataMutex);
     int id = ++_providerId;
     _providers[id] = provider;
-    provider->setVerbosity(_maxLevel).async().connect(
-          &LogManager::providerCallback, this, _1, id);
-    provider->clearAndSet(_filters).async().connect(
-          &LogManager::providerCallback, this, _1, id);
+
+    provider.async<void>("setLevel", _maxLevel).connect(&LogManagerImpl::providerCallback, this, _1, id);
+    provider.async<void>("setFilters", _filters).connect(&LogManagerImpl::providerCallback, this, _1, id);
 
     return id;
   }
 
-  void LogManager::providerCallback(qi::Future<void> fut, int idProvider)
+  void LogManagerImpl::providerCallback(qi::Future<void> fut, int idProvider)
   {
     DEBUG("LM providerCallback id " << idProvider);
     if (fut.hasError())
@@ -272,7 +171,7 @@ bool set_verbosity(qi::LogListener* ll,
   }
 
 
-  void LogManager::gcProviders()
+  void LogManagerImpl::gcProviders()
   {
     DEBUG("LM gcProviders");
     boost::mutex::scoped_lock invalidProviderIdsLock(_invalidProviderIdsMutex);
@@ -289,23 +188,24 @@ bool set_verbosity(qi::LogListener* ll,
     return;
   }
 
-  void LogManager::removeProvider(int idProvider)
+  void LogManagerImpl::removeProvider(int idProvider)
   {
     DEBUG("LM removeProvider id " << idProvider);
     boost::mutex::scoped_lock dataLock(_dataMutex);
     _providers.erase(idProvider);
+    _providers[idProvider].reset();
   }
 
-  void LogManager::recomputeCategories()
+  void LogManagerImpl::recomputeCategories()
   {
     DEBUG("LM recomputeCategories");
 
-    // clean proxy sync
+    // clean object sync
     gcProviders();
     // Soon you will know why this function is at the end of the source file...
     // Merge requests in one big map, keeping most verbose, ignoring globbing
     // Then, make a second pass that removes rules that overrides others and reduce verbosity
-    typedef LogListener::FilterMap FilterMap;
+    typedef LogListenerImpl::FilterMap FilterMap;
     FilterMap map;
     {
       boost::mutex::scoped_lock dataLock(_dataMutex);
@@ -313,17 +213,16 @@ bool set_verbosity(qi::LogListener* ll,
       {
         // easy case
         _filters.clear();
-        if (boost::shared_ptr<LogListener> l = _listeners.front().lock())
+        if (boost::shared_ptr<LogListenerImpl> l = _listeners.front().lock())
         {
           FilterMap listenerFilters = l->filters();
           _filters.insert(_filters.begin(), listenerFilters.begin(), listenerFilters.end());
-          std::map<int, LogProviderProxyPtr >::iterator providersIt;
+          std::map<int, LogProviderPtr >::iterator providersIt;
           for (providersIt = _providers.begin();
                providersIt != _providers.end();
                ++providersIt)
           {
-            providersIt->second->clearAndSet(_filters).async().connect(
-                  &LogManager::providerCallback, this, _1, providersIt->first);
+            providersIt->second.async<void>("setFilters", _filters).connect(&LogManagerImpl::providerCallback, this, _1, providersIt->first);
           }
         }
         else
@@ -337,7 +236,7 @@ bool set_verbosity(qi::LogListener* ll,
       for (int listenerIt = 0; listenerIt < _listeners.size();)
       {
         bool remove = true;
-        if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
+        if (boost::shared_ptr<LogListenerImpl> l = _listeners[listenerIt].lock())
         {
           remove = false;
           FilterMap listenerFilters = l->filters();
@@ -414,13 +313,14 @@ bool set_verbosity(qi::LogListener* ll,
     }
 bailout:
     boost::mutex::scoped_lock dataLock(_dataMutex);
-    std::map<int, LogProviderProxyPtr >::iterator providersIt;
+    std::map<int, LogProviderPtr >::iterator providersIt;
     for (providersIt = _providers.begin(); providersIt != _providers.end(); ++providersIt)
     {
-      providersIt->second->clearAndSet(_filters).async().connect(
-            &LogManager::providerCallback, this, _1, providersIt->first);
+      providersIt->second.async<void>("setFilters", _filters).connect(&LogManagerImpl::providerCallback, this, _1, providersIt->first);
     }
   }
-} // !qi
 
-#include <qicore/logmanager_bind.hpp>
+  QI_REGISTER_MT_OBJECT(LogManager, log, getListener, addProvider, removeProvider);
+  QI_REGISTER_IMPLEMENTATION(LogManager, LogManagerImpl);
+  QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR_FOR(LogManager, LogManagerImpl);
+} // !qi

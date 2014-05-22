@@ -13,8 +13,8 @@
 
 #include <qicore/logmessage.hpp>
 #include <qicore/logprovider.hpp>
-#include <qicore/logmanager_proxy.hpp>
-#include <qicore/loglistener_proxy.hpp>
+#include <qicore/logmanager.hpp>
+#include <qicore/loglistener.hpp>
 
 void ping()
 {
@@ -49,13 +49,12 @@ int main(int argc, char** argv)
     target = argv[1];
 
   s.connect(target);
-  qi::AnyObject glogger = s.service("LogManager");
-  qi::LogManagerProxyPtr logger(new qi::LogManagerProxy(glogger));
+  qi::LogManagerPtr logger = s.service("LogManager");
   assert(logger);
-  qi::LogListenerProxyPtr listener = logger->getListener();
+  qi::LogListenerPtr listener = logger->getListener();
   assert(listener);
   listener->onLogMessage.connect(&onLogMessage2);
-  listener->setVerbosity(::qi::LogLevel_Info);
+  listener->setLevel(::qi::LogLevel_Info);
   //listener->asObject()->connect("onLogMessage", &onLogMessage);
   qi::registerToLogger(logger);
   boost::thread t(&ping);

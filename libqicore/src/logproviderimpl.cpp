@@ -6,23 +6,27 @@
 ** Copyright (C) 2013 Aldebaran Robotics
 */
 
-#include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <qicore/logprovider.hpp>
+#include <qitype/objectfactory.hpp>
+#include <qitype/objecttypebuilder.hpp>
+
+#include "src/logproviderimpl.hpp"
+
+QI_TYPE_INTERFACE(LogProvider);
 
 qiLogCategory("log.provider");
 
 static bool logDebug = getenv("LOG_DEBUG");
-#define DEBUG(a)                                        \
-do {                                                  \
-if (logDebug) std::cerr << a << std::endl;       \
-} while(0)
+#define DEBUG(a)                                \
+  do {                                          \
+    if (logDebug) std::cerr << a << std::endl;  \
+  } while(0)
 
 namespace qi
 {
   static LogProviderPtr instance;
-  qi::Future<int> registerToLogger(LogManagerProxyPtr logger)
+  qi::Future<int> registerToLogger(LogManagerPtr logger)
   {
     DEBUG("registering new provider");
     if (instance)
@@ -31,9 +35,20 @@ namespace qi
       return qi::Future<int>(-1);
     }
 
-    LogProviderPtr ptr = boost::make_shared<LogProvider>(logger);
+    LogProviderPtr ptr;
+    try
+    {
+      ptr = qi::createObject("LogProvider", logger);
+    }
+    catch (const std::exception& e)
+    {
+      qiLogError() << e.what();
+    }
+
     instance = ptr;
-    return (logger->addProvider(ptr, qi::MetaCallType_Queued).async());
+    DEBUG("LP registerToLogger " << &ptr);
+
+    return logger.async<int>("addProvider", ptr);
   }
 
   static void silenceQiCategories(qi::log::SubscriberId subscriber)
@@ -44,30 +59,33 @@ namespace qi
     ::qi::log::setCategory("qi.*", qi::LogLevel_Silent, subscriber);
   }
 
-  LogProvider::LogProvider(LogManagerProxyPtr logger)
+  LogProviderImpl::LogProviderImpl(LogManagerPtr logger)
     : _logger(logger)
   {
+    DEBUG("LP subscribed this " << this);
     _subscriber = qi::log::addLogHandler("remoteLogger",
-                                         boost::bind(&LogProvider::log, this, _1, _2, _3, _4, _5, _6, _7));
+                                         boost::bind(&LogProviderImpl::log,
+                                                     this,
+                                                     _1, _2, _3, _4, _5, _6, _7));
 
     DEBUG("LP subscribed " << _subscriber);
     silenceQiCategories(_subscriber);
     ++_ready;
   }
 
-  LogProvider::~LogProvider()
+  LogProviderImpl::~LogProviderImpl()
   {
-    DEBUG("LP ~LogProvider");
+    DEBUG("LP ~LogProviderImpl");
     qi::log::removeLogHandler("remoteLogger");
   }
 
-  void LogProvider::log(qi::LogLevel level,
-                        qi::os::timeval tv,
-                        const char* category,
-                        const char* message,
-                        const char* file,
-                        const char* function,
-                        int line)
+  void LogProviderImpl::log(qi::LogLevel level,
+                            qi::os::timeval tv,
+                            const char* category,
+                            const char* message,
+                            const char* file,
+                            const char* function,
+                            int line)
   {
     DEBUG("LP log callback: " <<  message << " " << file <<  " " << function);
     if (!*_ready)
@@ -84,31 +102,32 @@ namespace qi
     msg.category = category;
     msg.location = qi::os::getMachineId() + ":" + boost::lexical_cast<std::string>(qi::os::getpid());
     msg.message = message;
-    _logger->log(msg, qi::MetaCallType_Queued).async();
 
-    DEBUG("LP log done");
+    _logger->log(msg);
+
+    DEBUG("LP:log done");
   }
 
-  void LogProvider::setVerbosity(qi::LogLevel level)
+  void LogProviderImpl::setLevel(qi::LogLevel level)
   {
     DEBUG("LP verb " << level);
     ::qi::log::setVerbosity(level, _subscriber);
   }
 
-  void LogProvider::setCategory(const std::string& cat,
-                                qi::LogLevel level)
+  void LogProviderImpl::addFilter(const std::string& filter,
+                                  qi::LogLevel level)
   {
-    DEBUG("LP setCategory level: " << level << " cat: " << cat);
+    DEBUG("LP addFilter level: " << level << " cat: " << filter);
     {
       boost::mutex::scoped_lock sl(_setCategoriesMutex);
-      _setCategories.insert(cat);
+      _setCategories.insert(filter);
     }
-    ::qi::log::setCategory(cat, level, _subscriber);
+    ::qi::log::setCategory(filter, level, _subscriber);
   }
 
-  void LogProvider::clearAndSet(const std::vector<std::pair<std::string, qi::LogLevel> >& data)
+  void LogProviderImpl::setFilters(const std::vector<std::pair<std::string, qi::LogLevel> >& filters)
   {
-    DEBUG("LP clearAndSet");
+    DEBUG("LP setFilters");
     {
       boost::mutex::scoped_lock sl(_setCategoriesMutex);
       for (std::set<std::string>::iterator it = _setCategories.begin(); it != _setCategories.end(); ++it)
@@ -121,15 +140,15 @@ namespace qi
     }
     qi::LogLevel wildcardLevel = qi::LogLevel_Silent;
     bool wildcardIsSet = false;
-    for (unsigned i = 0; i < data.size(); ++i)
+    for (unsigned i = 0; i < filters.size(); ++i)
     {
-      if (data[i].first == "*")
+      if (filters[i].first == "*")
       {
-        wildcardLevel = data[i].second;
+        wildcardLevel = filters[i].second;
         wildcardIsSet = true;
       }
       else
-        setCategory(data[i].first, data[i].second);
+        addFilter(filters[i].first, filters[i].second);
     }
 
     silenceQiCategories(_subscriber);
@@ -138,7 +157,7 @@ namespace qi
       ::qi::log::setCategory("*", wildcardLevel, _subscriber);
   }
 
+  QI_REGISTER_MT_OBJECT(LogProvider, setLevel, addFilter, setFilters);
+  QI_REGISTER_IMPLEMENTATION(LogProvider, LogProviderImpl);
+  QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR_FOR(LogProvider, LogProviderImpl, LogManagerPtr);
 } // !qi
-
-// We need this include because the library is static.
-#include <qicore/logprovider_bind.cpp>
