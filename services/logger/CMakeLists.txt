@@ -77,22 +77,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 #   INCLUDE qicore/logmessage.hpp src/logmanager.hpp
 # )
 
-
-qi_create_lib(logmanager
-  #SRC src/logmanager.cpp qicore/logmessage.hpp ${_loggermanager_proxy} ${_logprovider_proxy} ${_loggermanager_bind} ${_loglistener_bind} ${_loglistener_proxy}
-  SRC src/logmanager.cpp qicore/logmessage.hpp qicore/logprovider.hpp qicore/logmanager_proxy.hpp qicore/logprovider_proxy.hpp qicore/logmanager_bind.hpp qicore/loglistener_bind.cpp qicore/loglistener_proxy.hpp
-  MODULE
-  DEPENDS QITYPE
-)
-
-qi_create_lib(logprovider
-  STATIC
-  #SRC qicore/logmessage.hpp src/logprovider.cpp ${_loglistener_proxy}  ${_logprovider_bind}
-  SRC qicore/logmessage.hpp src/logprovider.cpp qicore/loglistener_proxy.hpp
-  DEPENDS QI QITYPE QICORE
- )
-qi_stage_lib(logprovider)
-
 qi_stage_header_only_lib(logservice INCLUDE_DIRS
   "."
   )
@@ -106,6 +90,21 @@ qi_install_header(
   qicore/logprovider_proxy.hpp
   SUBFOLDER qicore
   )
+
+qi_create_lib(logmanager
+  #SRC src/logmanager.cpp qicore/logmessage.hpp ${_loggermanager_proxy} ${_logprovider_proxy} ${_loggermanager_bind} ${_loglistener_bind} ${_loglistener_proxy}
+  SRC src/logmanager.cpp qicore/logmessage.hpp qicore/logprovider.hpp qicore/logmanager_proxy.hpp qicore/logprovider_proxy.hpp qicore/logmanager_bind.hpp qicore/loglistener_bind.cpp qicore/loglistener_proxy.hpp
+  MODULE
+  DEPENDS QITYPE LOGSERVICE
+)
+
+qi_create_lib(logprovider
+  STATIC
+  #SRC qicore/logmessage.hpp src/logprovider.cpp ${_loglistener_proxy}  ${_logprovider_bind}
+  SRC qicore/logmessage.hpp src/logprovider.cpp qicore/loglistener_proxy.hpp
+  DEPENDS QI QITYPE QICORE LOGSERVICE
+ )
+qi_stage_lib(logprovider)
 
 # qi_install_data(
 #   ${idlfiles}
