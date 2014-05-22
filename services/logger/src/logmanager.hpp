@@ -46,6 +46,8 @@ namespace qi
       /// Remove all filters set by setCategory
       void clearFilters();
 
+      std::map<std::string, qi::LogLevel> filters();
+
     private:
       typedef std::map<std::string, qi::LogLevel> FilterMap;
       FilterMap    _filters;

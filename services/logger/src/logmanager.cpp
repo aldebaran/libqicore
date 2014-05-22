@@ -99,6 +99,17 @@ bool set_verbosity(qi::LogListener* ll,
     _logger.recomputeCategories();
   }
 
+  std::map<std::string, qi::LogLevel> LogListener::filters()
+  {
+    DEBUG("LL filters");
+    FilterMap filtersCpy;
+    {
+      boost::mutex::scoped_lock filtersLock(_filtersMutex);
+      filtersCpy = _filters;
+    }
+    return filtersCpy;
+  }
+
   void LogListener::log(const LogMessage& msg)
   {
     DEBUG("LL:log: " << msg.message);
@@ -304,7 +315,8 @@ bool set_verbosity(qi::LogListener* ll,
         _filters.clear();
         if (boost::shared_ptr<LogListener> l = _listeners.front().lock())
         {
-          _filters.insert(_filters.begin(), l->_filters.begin(), l->_filters.end());
+          FilterMap listenerFilters = l->filters();
+          _filters.insert(_filters.begin(), listenerFilters.begin(), listenerFilters.end());
           std::map<int, LogProviderProxyPtr >::iterator providersIt;
           for (providersIt = _providers.begin();
                providersIt != _providers.end();
@@ -328,8 +340,9 @@ bool set_verbosity(qi::LogListener* ll,
         if (boost::shared_ptr<LogListener> l = _listeners[listenerIt].lock())
         {
           remove = false;
-          for (FilterMap::iterator it = l->_filters.begin();
-               it != l->_filters.end();
+          FilterMap listenerFilters = l->filters();
+          for (FilterMap::iterator it = listenerFilters.begin();
+               it != listenerFilters.end();
                ++it)
           {
             // If we find a glob that has an other pattern than 'foo*', bailout
