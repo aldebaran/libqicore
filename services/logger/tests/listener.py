@@ -12,9 +12,9 @@ def main(argv):
     app.start()
     logmanager = app.session.service("LogManager")
     listener = logmanager.getListener()
-    listener.setCategory("*", qi.logging.DEBUG)
-    listener.setCategory("stats.*", qi.logging.SILENT)
-    listener.setCategory("core.naoqi", qi.logging.SILENT)
+    listener.addFilter("*", qi.logging.DEBUG)
+    listener.addFilter("stats.*", qi.logging.SILENT)
+    listener.addFilter("core.naoqi", qi.logging.SILENT)
     listener.onLogMessage.connect(onMessage)
     app.run()
 

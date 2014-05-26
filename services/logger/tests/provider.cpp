@@ -18,12 +18,15 @@ int main(int argc, char** argv)
 
   // register Logger Provider
   qi::LogProviderPtr provider = qi::createObject("LogProvider", logger);
-  logger->addProvider(provider);
-  qiLogFatal("wtf") << "fatal log";
-  qiLogError("wtf") << "error log";
-  qiLogWarning("wtf") << "warning log";
-  qiLogInfo("wtf") << "info log";
-  qiLogVerbose("wtf") << "verbose log";
-  qiLogDebug("wtf") << "debug log";
-
+  int id = logger->addProvider(provider);
+  qiLogFatal("myfoo.bar") << "fatal log";
+  qiLogError("myfoo.bar") << "error log";
+  qiLogWarning("myfoo.bar") << "warning log";
+  qiLogInfo("myfoo.bar") << "info log";
+  qiLogVerbose("myfoo.bar") << "verbose log";
+  qiLogDebug("myfoo.bar") << "debug log";
+  // since LogManager hold a "proxy" to the client object
+  // we need to explicitly destroy the remote provider to call
+  // the destructor
+  logger->removeProvider(id);
 }

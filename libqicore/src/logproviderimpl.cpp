@@ -7,6 +7,7 @@
 */
 
 #include <boost/lexical_cast.hpp>
+#include <boost/lockfree/queue.hpp>
 
 #include <qitype/objectfactory.hpp>
 #include <qitype/objecttypebuilder.hpp>
@@ -14,6 +15,8 @@
 #include "src/logproviderimpl.hpp"
 
 QI_TYPE_INTERFACE(LogProvider);
+
+#define MAX_MSGS_BUFFERS 128
 
 qiLogCategory("log.provider");
 
@@ -25,6 +28,8 @@ static bool logDebug = getenv("LOG_DEBUG");
 
 namespace qi
 {
+  boost::lockfree::queue<qi::LogMessage*> _pendingMessages(MAX_MSGS_BUFFERS);
+
   static LogProviderPtr instance;
   qi::Future<int> registerToLogger(LogManagerPtr logger)
   {
@@ -71,12 +76,43 @@ namespace qi
     DEBUG("LP subscribed " << _subscriber);
     silenceQiCategories(_subscriber);
     ++_ready;
+    sendTask.setName("LogProvider");
+    sendTask.setUsPeriod(100 * 1000); // 100ms
+    sendTask.setCallback(&LogProviderImpl::sendLogs, this);
+    sendTask.start();
   }
+
 
   LogProviderImpl::~LogProviderImpl()
   {
     DEBUG("LP ~LogProviderImpl");
+    sendTask.stop();
+    sendLogs();
     qi::log::removeLogHandler("remoteLogger");
+  }
+
+  void LogProviderImpl::sendLogs()
+  {
+    if (!_pendingMessages.empty() && _logger)
+    {
+      DEBUG("LP sendLogs");
+      std::vector<qi::LogMessage> msgs;
+      qi::LogMessage* msg;
+      while (_pendingMessages.pop(msg))
+      {
+        msgs.push_back(*msg);
+        delete msg;
+      }
+      try
+      {
+        _logger->log(msgs);
+      }
+      catch (const std::exception& e)
+      {
+        DEBUG(e.what());
+      }
+    }
+
   }
 
   void LogProviderImpl::log(qi::LogLevel level,
@@ -90,20 +126,22 @@ namespace qi
     DEBUG("LP log callback: " <<  message << " " << file <<  " " << function);
     if (!*_ready)
       return;
-    LogMessage msg;
+
+    LogMessage* msg = new LogMessage();
     std::string source(file);
     source += ':';
     source += function;
     source += ':';
     source += boost::lexical_cast<std::string>(line);
-    msg.source = source;
-    msg.level = level;
-    msg.timestamp = tv;
-    msg.category = category;
-    msg.location = qi::os::getMachineId() + ":" + boost::lexical_cast<std::string>(qi::os::getpid());
-    msg.message = message;
+    msg->source = source;
+    msg->level = level;
+    msg->timestamp = tv;
+    msg->category = category;
+    msg->location = qi::os::getMachineId() + ":" + boost::lexical_cast<std::string>(qi::os::getpid());
+    msg->message = message;
+    msg->id = -1;
 
-    _logger->log(msg);
+    _pendingMessages.push(msg);
 
     DEBUG("LP:log done");
   }

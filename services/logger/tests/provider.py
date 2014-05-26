@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import time
 import qi
 import qi.path
 import qi.logging
@@ -15,12 +16,17 @@ if __name__ == "__main__":
     # Create a provider
     provider = qi.createObject("LogProvider", logmanager)
     # Add the provider to LogManager
-    logmanager.addProvider(provider)
+    id = logmanager.addProvider(provider)
 
     # log!!!!!
     mylogger = qi.Logger("myfoo.bar")
-    mylogger.fatal("my fatal log")
-    mylogger.error("my error log")
-    mylogger.warning("my warning log")
-    mylogger.info("my info log")
-    mylogger.verbose("my verbose log")
+    mylogger.fatal("fatal log")
+    mylogger.error("error log")
+    mylogger.warning("warning log")
+    mylogger.info("info log")
+    mylogger.verbose("verbose log")
+
+    # since LogManager hold a "proxy" to the client object
+    # we need to explicitly destroy the remote provider to call
+    # the destructor
+    logmanager.removeProvider(id);

@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 {
   qi::Application app(argc, argv);
   qi::SessionPtr s = qi::makeSession();
-  s->connect("tcp://127.0.0.1:9559");
+  s->listenStandalone("tcp://127.0.0.1:6666");
 
   std::string loggerName = startService(s);
   qi::LogManagerPtr logger = s->service(loggerName);

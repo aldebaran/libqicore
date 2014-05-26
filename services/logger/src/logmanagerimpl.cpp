@@ -58,28 +58,37 @@ namespace qi
     DEBUG("LM ~LogManager");
   }
 
-  void LogManagerImpl::log(const LogMessage& msg)
+  void LogManagerImpl::log(const std::vector<LogMessage>& msgs)
   {
     boost::mutex::scoped_lock dataLock(_dataMutex);
     DEBUG("LM:log listeners' numbers " << _listeners.size());
     DEBUG("LM:log providers' numbers " << _providers.size());
-    for (int listenerIt = 0; listenerIt < _listeners.size();)
+    DEBUG("LM:log MSG' numbers " << msgs.size());
+    for (int msgsIt = 0; msgsIt < msgs.size(); ++msgsIt)
     {
-      bool remove = true;
-      if (boost::shared_ptr<LogListenerImpl> l = _listeners[listenerIt].lock())
-      {
-        l->log(msg);
-        remove = false;
-      }
+      DEBUG("LM:log MSG' it " << msgsIt);
 
-      if (remove)
+      for (int listenerIt = 0; listenerIt < _listeners.size();)
       {
-        std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
-        _listeners.pop_back();
-      }
-      else
-      {
-        ++listenerIt;
+        DEBUG("LM:log listener it " << listenerIt);
+        bool remove = true;
+        if (boost::shared_ptr<LogListenerImpl> l = _listeners[listenerIt].lock())
+        {
+          DEBUG("LM:log listener log " << listenerIt);
+          l->log(msgs[msgsIt]);
+          remove = false;
+        }
+
+        if (remove)
+        {
+          DEBUG("LM:log listener " << listenerIt << " remove.");
+          std::swap(_listeners[_listeners.size() - 1], _listeners[listenerIt]);
+          _listeners.pop_back();
+        }
+        else
+        {
+          ++listenerIt;
+        }
       }
     }
     DEBUG("LM:log done");

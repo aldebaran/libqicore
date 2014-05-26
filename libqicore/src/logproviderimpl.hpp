@@ -15,6 +15,7 @@
 
 # include <qi/log.hpp>
 # include <qi/os.hpp>
+# include <qi/periodictask.hpp>
 
 # include <qicore/api.hpp>
 
@@ -42,6 +43,7 @@ namespace qi
     virtual void setFilters(const std::vector<std::pair<std::string, qi::LogLevel> >& filters);
 
   private:
+    void sendLogs();
     virtual void log(qi::LogLevel level,
                      qi::os::timeval tv,
                      const char* category,
@@ -56,6 +58,8 @@ namespace qi
     LogManagerPtr _logger;
     qi::log::SubscriberId _subscriber;
     qi::Atomic<int> _ready;
+
+    qi::PeriodicTask sendTask;
   };
 } // !qi
 

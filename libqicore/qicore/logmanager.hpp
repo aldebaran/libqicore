@@ -25,7 +25,7 @@ namespace qi
   public:
     virtual ~LogManager() {};
 
-    virtual void log(const LogMessage& msg) = 0;
+    virtual void log(const std::vector<LogMessage>& msgs) = 0;
     virtual LogListenerPtr getListener() = 0;
     virtual int addProvider(LogProviderPtr provider) = 0;
     virtual void removeProvider(int idProvider) = 0;

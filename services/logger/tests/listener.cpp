@@ -27,7 +27,5 @@ int main(int argc, char** argv)
   listener->setLevel(qi::LogLevel_Info);
   listener->onLogMessage.connect(&onMessage);
 
-  std::cout << "onLogMessage.connect" << std::endl;
-
   app.run();
 }

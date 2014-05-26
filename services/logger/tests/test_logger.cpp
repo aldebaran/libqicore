@@ -95,20 +95,22 @@ TEST(Logger, Test)
   qi::LogListenerPtr listener = startClient(*p.client(), loggerName);
   ASSERT_TRUE(listener);
 
-  startProvider(*p.server(), loggerName);
+  int id = startProvider(*p.server(), loggerName);
 
   listener->clearFilters();
   listener->addFilter("foo", qi::LogLevel_Debug);
   listener->setLevel(qi::LogLevel_Info);
   listener->onLogMessage.connect(&onLogMessage);
-  qi::os::msleep(200);
+  qi::os::msleep(600);
   messagesCount = 0;
   qiLogError("foo") << "bar";
-  qi::os::msleep(200);
+  qi::os::msleep(600);
   ASSERT_TRUE(waitLogMessage(1, true));
   qiLogWarning("foo") << "bar";
   ASSERT_TRUE(waitLogMessage(2, true));
 
+  qi::LogManagerPtr logger = (*p.client()).service(loggerName);
+  logger->removeProvider(id);
   listener.reset();
 }
 
@@ -122,30 +124,29 @@ TEST(Logger, RemoveProviderTest)
   qi::LogListenerPtr listener = startClient(*p.client(), loggerName);
   ASSERT_TRUE(listener);
 
-
   int id = startProvider(*p.server(), loggerName);
 
   listener->clearFilters();
   listener->addFilter("foo", qi::LogLevel_Debug);
   listener->setLevel(qi::LogLevel_Info);
   listener->onLogMessage.connect(&onLogMessage);
-  qi::os::msleep(200);
+  qi::os::msleep(600);
   messagesCount = 0;
   qiLogError("foo") << "bar";
-  qi::os::msleep(200);
+  qi::os::msleep(600);
   ASSERT_TRUE(waitLogMessage(1, true));
   qiLogWarning("foo") << "bar";
   ASSERT_TRUE(waitLogMessage(2, true));
 
   qi::LogManagerPtr logger = (*p.client()).service(loggerName);
   logger->removeProvider(id);
-  qi::os::msleep(500);
+  qi::os::msleep(600);
 
   qiLogError("foo") << "bar";
-  qi::os::msleep(200); // if message isn't arrive yet it's probably it will never arrive
+  qi::os::msleep(600); // if message isn't arrive yet it's probably it will never arrive
   ASSERT_EQ(*messagesCount, 2);
   qiLogWarning("foo") << "bar";
-  qi::os::msleep(200);
+  qi::os::msleep(600);
   ASSERT_EQ(*messagesCount, 2);
 
   listener.reset();
@@ -163,21 +164,24 @@ TEST(Logger, KillProviderTest)
 
   qi::Session ses;
   ses.connect(p.serviceDirectoryEndpoints()[0]);
-  startProvider(ses, loggerName);
+  int id = startProvider(ses, loggerName);
   ses.close();
 
   listener->clearFilters();
   listener->addFilter("foo", qi::LogLevel_Debug);
   listener->setLevel(qi::LogLevel_Info);
   listener->onLogMessage.connect(&onLogMessage);
-  qi::os::msleep(200);
+  qi::os::msleep(600);
   messagesCount = 0;
   qiLogError("foo") << "bar";
-  qi::os::msleep(200); // if message isn't arrive yet it's probably it will never arrive
+  qi::os::msleep(600); // if message isn't arrive yet it's probably it will never arrive
   ASSERT_EQ(*messagesCount, 0);
   qiLogWarning("foo") << "bar";
-  qi::os::msleep(200);
+  qi::os::msleep(600);
   ASSERT_EQ(*messagesCount, 0);
+
+  qi::LogManagerPtr logger = (*p.client()).service(loggerName);
+  logger->removeProvider(id);
   listener.reset();
 }
 

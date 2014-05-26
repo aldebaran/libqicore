@@ -18,7 +18,7 @@ namespace qi
     {
     }
 
-    void log(const LogMessage& p0)
+    void log(const std::vector<LogMessage>& p0)
     {
       _obj.call<void>("log", p0);
     }
