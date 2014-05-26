@@ -5,7 +5,7 @@ import qi
 import qi.logging
 
 def onMessage(mess):
-    print mess['message'] # mess is a dictionnary with all known LogMessage information.
+    print mess['message'], "with id", mess['id'] # mess is a dictionnary with all known LogMessage information.
 
 def main(argv):
     app = qi.ApplicationSession(argv)

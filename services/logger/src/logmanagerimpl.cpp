@@ -24,6 +24,8 @@ static bool debug = getenv("LOG_DEBUG");
     if (debug) std::cerr << a << std::endl;     \
   } while(0)
 
+static qi::Atomic<unsigned int> msgId;
+
 /* We have multiple inputs: logproviders that push messages and that we
  * must configure to avoid them wasting bandwidth. They all have the same conf
  *
@@ -66,7 +68,7 @@ namespace qi
     DEBUG("LM:log MSG' numbers " << msgs.size());
     for (int msgsIt = 0; msgsIt < msgs.size(); ++msgsIt)
     {
-      DEBUG("LM:log MSG' it " << msgsIt);
+      DEBUG("LM:log MSG' it " << msgsIt << " value: " << msgs[msgsIt].message);
 
       for (int listenerIt = 0; listenerIt < _listeners.size();)
       {
@@ -75,7 +77,9 @@ namespace qi
         if (boost::shared_ptr<LogListenerImpl> l = _listeners[listenerIt].lock())
         {
           DEBUG("LM:log listener log " << listenerIt);
-          l->log(msgs[msgsIt]);
+          qi::LogMessage msg = msgs[msgsIt];
+          msg.id = ++msgId;
+          l->log(msg);
           remove = false;
         }
 
