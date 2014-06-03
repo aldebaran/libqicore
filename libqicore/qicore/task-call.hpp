@@ -24,7 +24,7 @@ namespace qi
     {
     }
     virtual bool interrupt() { return false;}
-    virtual void start(const AnyArguments& args)
+    virtual void start(const AnyVarArguments& args)
     {
       running.set(true);
       try
@@ -71,7 +71,7 @@ namespace qi
       qiLogDebug("TaskCall") << "~TaskCall " << this;
       *_live = false;
     }
-    virtual void start(const AnyArguments& args)
+    virtual void start(const AnyVarArguments& args)
     {
       qiLogDebug("TaskCall") << "start " << this;
       running.set(true);
