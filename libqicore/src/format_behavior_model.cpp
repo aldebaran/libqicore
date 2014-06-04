@@ -141,10 +141,10 @@ protected:
 
   void visitStmt(AtNode* node) {
 
-    std::string transition_uid = node->receiver + "|" + node->sender;
+    std::string transition_uid = node->receiver + "|" + node->sender();
     qi::BehaviorModel::Transition& currentTransition = currentModel->transitions[transition_uid];
     currentTransition.uid = transition_uid;
-    currentTransition.src = resolveTransition(node->sender);
+    currentTransition.src = resolveTransition(node->sender());
     currentTransition.dst = resolveTransition(node->receiver);
   }
 
