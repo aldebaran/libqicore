@@ -71,11 +71,12 @@ QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(TestObject2);
 
 int main(int argc, char *argv[])
 {
+  qi::ApplicationSession app(argc, argv);
+
   po::options_description desc("qilang options");
   desc.add_options()
       ("help,h", "produce help message")
       ("behavior,b", po::value<std::string>()->default_value(""), "the behavior to run")
-      ("url,u", po::value<std::string>()->default_value("tcp://127.0.0.1:9559"), "adress to connect to naoqi ( tcp://IP:PORT )")
       ;
 
   po::positional_options_description p;
@@ -90,18 +91,14 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-
   std::string filename = vm["behavior"].as<std::string>();
 
-  const qi::Url url(vm["url"].as<std::string>());
-
-  qi::ApplicationSession app(argc, argv, qi::ApplicationSession::Option_None, url);
   qi::SessionPtr ses = app.session();
   app.start();
 
   ses->loadService("behavior").size();
   qi::AnyObject b = ses->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", ses->url());
+  b.call<void>("connect", app.session()->url());
 
   qilang::ParseResultPtr pr = qilang::parse(qilang::newFileReader(filename));
   if (pr->hasError()) {
@@ -126,4 +123,3 @@ int main(int argc, char *argv[])
   ses->registerService(bm.name, b);
   app.run();
 }
-
