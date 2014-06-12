@@ -1,3 +1,4 @@
+
 function(qi_create_session_test name)
   if (DEFINED BUILD_TESTS AND NOT BUILD_TESTS)
     return()
@@ -15,7 +16,4 @@ function(qi_create_session_test name)
   endif()
 endfunction()
 
-qi_create_session_test(test_behavior           SRC test_behavior.cpp DEPENDS QI QIMESSAGING GTEST TESTSESSION TIMEOUT 10)
-
-
-qi_create_bin(qitestbehavior SRC qitestbehavior.cpp DEPENDS QIMESSAGING QILANG QICORE)
+qi_create_session_test(test_behavior SRC test_behavior.cpp DEPENDS QI QIMESSAGING GTEST TESTSESSION TIMEOUT 10)

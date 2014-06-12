@@ -10,8 +10,10 @@ qi_install_header(${PUBLIC_HEADERS})
 
 qi_create_lib(qicore SHARED SRC
   ${PUBLIC_HEADERS}
-  src/behavior.cpp src/format_behavior_model.cpp)
+  src/behavior.cpp src/behaviormodel.cpp src/format_behavior_model.cpp)
 
-qi_use_lib(qicore qitype qilang)
+qi_use_lib(qicore qitype qimessaging qilang)
 
 qi_stage_lib(qicore)
+
+add_subdirectory(tests)

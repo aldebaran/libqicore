@@ -1,7 +1,6 @@
 ## Copyright (c) 2013 Aldebaran Robotics. All rights reserved.
 
 add_subdirectory("logger")
-#add_subdirectory("behavior")
 
 qi_add_optional_package(QT_QTCORE "Enable QT")
 qi_add_optional_package(QT_QTGUI  "Enable QTGUI")
