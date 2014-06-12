@@ -121,6 +121,13 @@ namespace qi {
     //const ObjectMap&       objects() const     { return _objects; };
     //const TransitionMap&   transitions() const { return _transitions; };
 
+  public:
+    void start() { onStart(); }
+    void stop() {}
+
+    qi::Signal<void> onStart;
+    qi::Signal<void> onStop;
+
   private:
     void transition(qi::AnyValue argument, const std::string& transitionId);
 
@@ -135,7 +142,7 @@ namespace qi {
     qi::SessionPtr    _session;
   };
 
-  QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, call, onTransition, model, objects, transitions, setModel, onTaskRunning, onTaskError, object);
+  QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, call, onTransition, model, objects, transitions, setModel, onTaskRunning, onTaskError, object, start, stop, onStart, onStop);
   QI_REGISTER_OBJECT_FACTORY_BUILDER(Behavior, qi::SessionPtr);
 
 }

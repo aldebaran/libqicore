@@ -138,9 +138,27 @@ void Behavior::setTransitions(bool debugmode, qi::MetaCallType type)
   foreach(qi::BehaviorModel::TransitionMap::value_type& vt, _model.transitions)
   {
     qi::BehaviorModel::Transition& t = vt.second;
-    AnyObject src = find0Ptr(_objects, t.src.first);
-    AnyObject dst = find0Ptr(_objects, t.dst.first);
+    AnyObject src;
+    AnyObject dst;
+
+    //support connecting to the behavior itself
+    if (t.src.first == _model.name) {
+      qi::Object<Behavior> ao(this, &qi::Object<Behavior>::noDeleteT);
+      src = ao;
+    }
+    else
+      src = find0Ptr(_objects, t.src.first);
+
+    //support connecting to the behavior itself
+    if (t.dst.first == _model.name) {
+      qi::Object<Behavior> ao(this, &qi::Object<Behavior>::noDeleteT);
+      dst = ao;
+    }
+    else
+      dst = find0Ptr(_objects, t.dst.first);
     qiLogDebug() << "Connecting " << t.src.first << '.' << t.src.second << " to " << t.dst.first << '.' << t.dst.second;
+
+
     if (!src)
       throw std::runtime_error("No object " + t.src.first);
     if (!dst)
