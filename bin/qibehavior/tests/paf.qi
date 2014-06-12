@@ -4,7 +4,10 @@ object Graph "paf"
   object Foo "a"
     v: 42
     at v: b.add
+
+    at onHello: b.hellobar
   end
+
   object Bar "b"
     v: 1
     at onAdd: c.add
@@ -12,5 +15,7 @@ object Graph "paf"
   object Foo "c"
     v: 2
   end
+
+  at paf.onStart: a.hellofoo
 
 end

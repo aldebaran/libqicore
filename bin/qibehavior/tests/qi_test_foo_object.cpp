@@ -12,20 +12,34 @@
 #include <qitype/objectfactory.hpp>
 #include <qimessaging/session.hpp>
 
+qiLogCategory("qitestfooobject");
+
 class QI_TEST_FOO_OBJECT_API Foo
 {
 public:
   Foo(qi::SessionPtr s) {}
 
-  int getv() { return v.get();}
+  int getv()       { return v.get();}
   void setv(int i) { v.set(i);}
-  int add(int i) { int res =  i+v.get(); lastRes = res; onAdd(res); return res;}
-  int lastAdd() { return lastRes;}
+  int add(int i)   {
+    int res =  i+v.get();
+    lastRes = res;
+    onAdd(res);
+    return res;
+  }
+  int lastAdd()    { return lastRes;}
+
+  void hellofoo() {
+    qiLogInfo() << "Helllo from Foo";
+    onHello();
+  }
+
   qi::Property<int> v;
   qi::Signal<int> onAdd;
+  qi::Signal<void> onHello;
   int lastRes;
 };
-QI_REGISTER_OBJECT(Foo, add, getv, setv, v, onAdd, lastAdd);
+QI_REGISTER_OBJECT(Foo, add, getv, setv, v, onAdd, lastAdd, onHello, hellofoo);
 QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(Foo, qi::SessionPtr);
 
 
@@ -36,12 +50,25 @@ public:
 
   int getv() { return v.get();}
   void setv(int i) { v.set(i);}
-  int add(int i) { int res =  i+v.get(); lastRes = res; onAdd(res); return res;}
+  int add(int i) {
+    int res =  i+v.get();
+    lastRes = res;
+    onAdd(res);
+    return res;
+  }
   int lastAdd() { return lastRes;}
+
+  void hellobar() {
+    qiLogInfo() << "Helllo from Bar";
+    onHello();
+  }
+
+
   qi::Property<int> v;
+  qi::Signal<void> onHello;
   qi::Signal<int> onAdd;
   int lastRes;
 };
-QI_REGISTER_OBJECT(Bar, add, getv, setv, v, onAdd, lastAdd);
+QI_REGISTER_OBJECT(Bar, add, getv, setv, v, onAdd, lastAdd, onHello, hellobar);
 
 QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(Bar, qi::SessionPtr);

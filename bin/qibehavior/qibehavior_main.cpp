@@ -68,16 +68,11 @@ int main(int argc, char *argv[])
   //activate debug mode
   b->loadObjects(true);
   //activate debug mode
-  b->setTransitions(true, qi::MetaCallType_Auto);
-
-
-  //b.call<void>("call", "a", "setv", arguments(3));
-  //int res = b.call<int>("call", "c", "lastAdd", arguments());
-  //std::cout << "last res: " << res << std::endl;
-  qi::os::msleep(1000);
-  //ASSERT_EQ(6, b.call<int>("call", "c", "lastAdd", arguments()));
+  b->setTransitions(false, qi::MetaCallType_Auto);
 
   qiLogInfo() << "Registering behavior: " << "_Behavior" + bm.name;
   ses->registerService("_Behavior" + bm.name, b);
+
+  b->start();
   app.run();
 }
