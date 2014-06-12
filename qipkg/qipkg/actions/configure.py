@@ -2,28 +2,18 @@
 ## Use of this source code is governed by a BSD-style license that can be
 ## found in the COPYING file.
 
-""" Install a binary package on the robot
-
-    This will copy the content of the package into the output folder
+""" Configure all the projects of the given pml file
 """
 
-from qisys import ui
+import qisys.parsers
 import qipkg.parsers
-import qipkg.package
-import qibuild.parsers
-
 
 def configure_parser(parser):
     """Configure parser for this action"""
-    qibuild.parsers.build_parser(parser)
-    group = parser.add_argument_group("Install options")
-    group.add_argument("input", help=".pml package xml input file")
-    group.set_defaults(listing=None)
-
+    qipkg.parsers.pml_parser(parser)
 
 def do(args):
     """Main entry point"""
-    pkg = qipkg.parsers.get_pkg_from_args(args)
+    pml_builder = qipkg.parsers.get_pml_builder(args)
+    pml_builder.configure()
 
-    ui.info(ui.green, "Configuring package", ui.reset, pkg.name)
-    pkg.configure()

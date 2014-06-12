@@ -13,6 +13,11 @@
 #ifdef interface
   #undef interface
 #endif
+namespace qilang {
+  class Node;
+  typedef boost::shared_ptr<Node> NodePtr;
+  typedef std::vector<NodePtr>    NodePtrVector;
+}
 
 namespace qi {
 
@@ -41,17 +46,20 @@ namespace qi {
       }
     };
 
-    typedef std::map<std::string, Node> NodeMap;
+    typedef std::map<std::string, Node>       NodeMap;
     typedef std::map<std::string, Transition> TransitionMap;
     NodeMap       nodes;
     TransitionMap transitions;
-
+    std::string   name;
     void load(std::istream& is);
     void clear();
   };
+
+  QICORE_API BehaviorModel loadBehaviorModel(const qilang::NodePtrVector& nodes);
+  QICORE_API void displayModel(const BehaviorModel& model);
 }
 
-QI_TYPE_STRUCT(::qi::BehaviorModel, nodes, transitions);
+QI_TYPE_STRUCT(::qi::BehaviorModel, nodes, transitions, name);
 QI_TYPE_STRUCT(::qi::BehaviorModel::Node, uid, interface, factory);
 QI_TYPE_STRUCT(::qi::BehaviorModel::Transition, uid, src, dst, filter);
 

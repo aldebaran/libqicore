@@ -4,15 +4,23 @@
 
 """ Generate a binary package, ready to be used for a behavior """
 
-import os
-import qipkg.package
+import qisys.parsers
+import qipkg.builder
+
 import qibuild.parsers
-import qibuild.cmake_builder
-import qilinguist.parsers
+import qipy.parsers
 
 
-def get_pkg_from_args(args):
+def pml_parser(parser):
+    qisys.parsers.build_parser(parser)
+    parser.add_argument("pml_path")
+
+def get_pml_builder(args):
+    pml_path = args.pml_path
+    worktree = qisys.parsers.get_worktree(args)
     build_worktree = qibuild.parsers.get_build_worktree(args)
-    qilinguist_worktree = qilinguist.parsers.get_linguist_worktree(args)
-    return qipkg.package.make(args.input, build_worktree, qilinguist_worktree)
-
+    # here we build a CMakeBuilder from scratch becaues we won't read
+    # the project names from the command line
+    cmake_builder = qibuild.cmake_builder.CMakeBuilder(build_worktree)
+    python_builder = qipy.parsers.get_python_builder(args)
+    return qipkg.builder.PMLBuider(pml_path, cmake_builder, python_builder)

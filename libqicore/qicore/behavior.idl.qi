@@ -1,0 +1,78 @@
+#
+# @author Cedric GESTES <gestes@aldebaran.com>
+#
+
+#from qi import MetaCallType, SignalLink
+#from qi.messaging import Session
+
+struct Session
+end
+
+struct MetaCallType
+  ty int
+end
+
+struct SignalLink
+  link uint64
+end
+
+package qicore
+
+struct Node
+  uid        str
+  iface      str
+  factory    str
+  parameters [str]any
+end
+
+struct Transition
+  uid    str
+  src    [str]str
+  dst    [str]str
+  filter any
+end
+
+struct BehaviorModel
+  nodes       [str]Node
+  transitions [str]Transition
+  name        str
+end
+
+fn newBehavior(session Session) Behavior
+
+#fn loadBehaviorModel(const qilang::NodePtrVector& nodes) BehaviorModel
+#fn displayModel(const BehaviorModel& model)
+
+struct TransitionPtr
+  source obj
+  target obj
+  link SignalLink
+  property str          #the property name
+  targetMethod uint     # or target method id
+  debug bool
+end
+
+interface Behavior
+  fn makeObject(model str, factory str, params [str]any) obj
+  fn loadObjects(debugmode bool)
+  fn unloadObjects()
+  fn setTransitions(debugmode bool, t MetaCallType)
+  fn removeTransitions()
+  fn loadFile(path str)
+  fn loadString(data str)
+  fn connect(url str)
+  fn getObject(name str) obj
+  fn call(objUid str, fun str, args []any) any
+
+  # Triggered when a transition occurrs, if transitions were set in debug mode.
+  emit onTransition(str, any)
+  # Triggered when one of the tasks enter/leave an error state
+  emit onTaskError(str, str)
+  # Triggered when one of the tasks's running property changes state
+  emit onTaskRunning(str, bool)
+
+  fn setModel(model BehaviorModel)
+  fn model() BehaviorModel
+  fn objects() [str]obj
+  fn transitions() [str]TransitionPtr
+end

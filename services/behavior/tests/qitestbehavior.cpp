@@ -3,6 +3,15 @@
 #include <qimessaging/session.hpp>
 #include <qitype/anyobject.hpp>
 #include <qitype/objectfactory.hpp>
+#include <qimessaging/applicationsession.hpp>
+#include <qicore/behavior.hpp>
+#include <qilang/parser.hpp>
+#include <qilang/formatter.hpp>
+#include <boost/program_options.hpp>
+
+qiLogCategory("qi.behavior");
+
+namespace po = boost::program_options;
 
 QI_TYPE_ENUM_REGISTER(qi::MetaCallType);
 
@@ -62,38 +71,59 @@ QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(TestObject2);
 
 int main(int argc, char *argv[])
 {
-  qi::Application app(argc, argv);
-  std::string url = "tcp://127.0.0.1:9559";
-  qi::Session *ses = new qi::Session;
-  ses->connect(url);
+  po::options_description desc("qilang options");
+  desc.add_options()
+      ("help,h", "produce help message")
+      ("behavior,b", po::value<std::string>()->default_value(""), "the behavior to run")
+      ("url,u", po::value<std::string>()->default_value("tcp://127.0.0.1:9559"), "adress to connect to naoqi ( tcp://IP:PORT )")
+      ;
+
+  po::positional_options_description p;
+  p.add("behavior", 1);
+
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    std::cout << desc << std::endl;
+    return 0;
+  }
+
+
+  std::string filename = vm["behavior"].as<std::string>();
+
+  const qi::Url url(vm["url"].as<std::string>());
+
+  qi::ApplicationSession app(argc, argv, qi::ApplicationSession::Option_None, url);
+  qi::SessionPtr ses = app.session();
+  app.start();
 
   ses->loadService("behavior").size();
   qi::AnyObject b = ses->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", url);
-  std::string behavior = STRING(
-    a Whatever TestObjectService.create;
-    b Whatever TestObjectService.create;
-    c Whatever TestObject2;
-    ab a.v -> b.add;
-    bc b.onAdd -> c.add;
-    );
-  size_t pos = 0;
-  while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
-    behavior[pos] = '\n';
-  std::cerr << "INPUT: " << behavior << std::endl;
-  b.call<void>("loadString", behavior);
-  b.call<void>("loadObjects");
-  b.call<void>("call", "a", "setv", arguments(42));
-  //ASSERT_EQ(42, b->call<int>("call", "a", "getv", arguments()));
-  b.call<void>("call", "b", "setv", arguments(1));
-  b.call<void>("call", "c", "setv", arguments(2));
-  b.call<void>("setTransitions", false);
-  //ASSERT_EQ(2, b->call<int>("call", "c", "getv", arguments()));
-  b.call<void>("call", "a", "setv", arguments(3));
-  qi::os::msleep(1000);
-  //ASSERT_EQ(6, b->call<int>("call", "c", "lastAdd", arguments()));
+  b.call<void>("connect", ses->url());
 
-  ses->registerService("paf", b);
+  qilang::ParseResultPtr pr = qilang::parse(qilang::newFileReader(filename));
+  if (pr->hasError()) {
+    pr->printMessage(std::cout);
+    return 1;
+  }
+  std::cout << qilang::format(pr->ast) << std::endl;
+  qi::BehaviorModel bm = qi::loadBehaviorModel(pr->ast);
+
+  b.call<void>("setModel", bm);
+
+  b.call<void>("loadObjects", true);
+  //ASSERT_EQ(42, b.call<int>("call", "a", "getv", arguments()));
+  b.call<void>("setTransitions", false, qi::MetaCallType_Auto);
+  //ASSERT_EQ(2, b.call<int>("call", "c", "getv", arguments()));
+  b.call<void>("call", "a", "setv", arguments(3));
+  int res = b.call<int>("call", "c", "lastAdd", arguments());
+  std::cout << "last res: " << res << std::endl;
+  qi::os::msleep(1000);
+  //ASSERT_EQ(6, b.call<int>("call", "c", "lastAdd", arguments()));
+
+  ses->registerService(bm.name, b);
   app.run();
 }
 

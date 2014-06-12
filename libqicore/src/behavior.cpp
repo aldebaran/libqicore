@@ -2,7 +2,6 @@
 #include <qitype/jsoncodec.hpp>
 #include <qicore/behavior.hpp>
 
-
 namespace qi {
 
   static inline std::pair<std::string, std::string> splitString2(const std::string& s, char sep)
@@ -91,4 +90,36 @@ namespace qi {
     }
   }
 
+  void displayModel(const BehaviorModel& model)
+  {
+    std::cout << "display model" << std::endl;
+    for (qi::BehaviorModel::NodeMap::const_iterator n = model.nodes.begin();
+         n != model.nodes.end();
+         ++n)
+    {
+      std::cout << "Node:" << std::endl << (*n).second.uid << std::endl
+                << (*n).second.interface << std::endl
+                << (*n).second.factory << std::endl
+                << "****" << std::endl;
+
+      std::cout << "Parameters:" << std::endl;
+      for (qi::BehaviorModel::ParameterMap::const_iterator p = (*n).second.parameters.begin();
+           p != (*n).second.parameters.end();
+           ++p)
+      {
+        std::cout << (*p).first << std::endl;
+      }
+      std::cout << "***************************" << std::endl;
+    }
+
+    for (qi::BehaviorModel::TransitionMap::const_iterator t = model.transitions.begin();
+         t != model.transitions.end();
+         ++t)
+    {
+      std::cout << "Transition:" << std::endl << (*t).second.uid << std::endl
+                << (*t).second.src.first << " | " << (*t).second.src.second << std::endl
+                << (*t).second.dst.first << " | " << (*t).second.dst.second << std::endl
+                << "*****************" << std::endl;
+    }
+  }
 }
