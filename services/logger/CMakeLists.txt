@@ -102,7 +102,7 @@ qi_create_lib(logprovider
   STATIC
   #SRC qicore/logmessage.hpp src/logprovider.cpp ${_loglistener_proxy}  ${_logprovider_bind}
   SRC qicore/logmessage.hpp src/logprovider.cpp qicore/loglistener_proxy.hpp
-  DEPENDS QI QITYPE QICORE LOGSERVICE
+  DEPENDS QI QITYPE  LOGSERVICE
  )
 qi_stage_lib(logprovider)
 
