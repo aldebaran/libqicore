@@ -229,11 +229,19 @@ void Behavior::removeTransitions()
   _transitions.clear();
 }
 
+/// FutureValueConverter implementation for AnyReference -> T
+/// that destroys the value
+static void futureValueConverterTakeAnyReference(const AnyReference& in,
+    AnyValue& out)
+{
+  out.reset(in, false, true);
+}
+
 static qi::AnyReference bounce_call(qi::AnyObject o, const std::string& method,
   const std::vector<qi::AnyReference>& args)
 {
   qi::Promise<qi::AnyValue> prom;
-  adaptFuture(o.metaCall(method, args), prom, qi::FutureValueConverterTakeAnyReference<qi::AnyValue>());
+  adaptFuture(o.metaCall(method, args), prom, futureValueConverterTakeAnyReference);
   qi::Future<qi::AnyValue> res = prom.future();
   return qi::AnyReference::from(res).clone();
 }
