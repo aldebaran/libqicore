@@ -16,9 +16,9 @@ qi_create_lib(qicore SHARED SRC
   ${PUBLIC_HEADERS}
   src/behavior.cpp src/behaviormodel.cpp src/format_behavior_model.cpp
   src/loglistener_proxy.cpp src/logmanager_proxy.cpp src/logprovider_proxy.cpp
-  DEPENDS BOOST QI QITYPE QIMESSAGING
+  DEPENDS BOOST QI
 )
-qi_use_lib(qicore qitype qilang)
+qi_use_lib(qicore qilang)
 
 qi_stage_lib(qicore)
 
@@ -27,6 +27,6 @@ qi_create_lib(logprovider
   SRC
   src/logproviderimpl.cpp
   src/logproviderimpl.hpp
-  DEPENDS BOOST QI QITYPE QIMESSAGING QICORE
+  DEPENDS BOOST QI QICORE
   )
 qi_stage_lib(logprovider)

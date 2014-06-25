@@ -8,7 +8,7 @@ qi_create_lib(logmanager
   src/loglistenerimpl.hpp
   src/logmanagerimpl.cpp
   src/logmanagerimpl.hpp
-  DEPENDS BOOST QI QITYPE QIMESSAGING QICORE LOGPROVIDER
+  DEPENDS BOOST QI QICORE LOGPROVIDER
   )
 
 add_subdirectory("tests")
