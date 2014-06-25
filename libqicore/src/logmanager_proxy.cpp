@@ -2,7 +2,7 @@
 
 #include <qi/types.hpp>
 
-#include <qitype/anyobject.hpp>
+#include <qi/anyobject.hpp>
 
 #include <qicore/logmessage.hpp>
 #include <qicore/logmanager.hpp>

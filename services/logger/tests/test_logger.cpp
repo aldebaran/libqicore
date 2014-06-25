@@ -10,8 +10,8 @@
 
 #include <qi/application.hpp>
 
-#include <qimessaging/session.hpp>
-#include <qitype/objectfactory.hpp>
+#include <qi/session.hpp>
+#include <qi/type/objectfactory.hpp>
 
 #include <testsession/testsessionpair.hpp>
 

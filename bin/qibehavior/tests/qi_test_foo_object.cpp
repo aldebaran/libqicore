@@ -8,9 +8,9 @@
 
 #define QI_TEST_FOO_OBJECT_API QI_LIB_API(qi_test_foo_object)
 
-#include <qitype/anyvalue.hpp>
-#include <qitype/objectfactory.hpp>
-#include <qimessaging/session.hpp>
+#include <qi/anyvalue.hpp>
+#include <qi/type/objectfactory.hpp>
+#include <qi/session.hpp>
 
 qiLogCategory("qitestfooobject");
 

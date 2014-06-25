@@ -10,7 +10,7 @@
 # define QICORE_LOG_HPP_
 
 # include <qi/log.hpp>
-# include <qitype/anyobject.hpp>
+# include <qi/anyobject.hpp>
 
 QI_TYPE_ENUM_REGISTER(qi::LogLevel)
 

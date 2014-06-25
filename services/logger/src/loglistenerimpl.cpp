@@ -8,8 +8,8 @@
 
 #include <qi/os.hpp>
 
-#include <qitype/objectfactory.hpp>
-#include <qitype/objecttypebuilder.hpp>
+#include <qi/type/objectfactory.hpp>
+#include <qi/type/objecttypebuilder.hpp>
 
 #include "src/loglistenerimpl.hpp"
 #include "src/logmanagerimpl.hpp"

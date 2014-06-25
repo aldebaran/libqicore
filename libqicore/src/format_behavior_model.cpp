@@ -14,7 +14,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "cpptype.hpp"
-#include <qitype/anyvalue.hpp>
+#include <qi/anyvalue.hpp>
 #include <qicore/behavior.hpp>
 #include <stack>
 

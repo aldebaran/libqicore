@@ -2,11 +2,11 @@
 
 #include <qi/types.hpp>
 
-#include <qitype/anyobject.hpp>
-#include <qitype/signal.hpp>
-#include <qitype/property.hpp>
-#include <qitype/proxysignal.hpp>
-#include <qitype/proxyproperty.hpp>
+#include <qi/anyobject.hpp>
+#include <qi/signal.hpp>
+#include <qi/property.hpp>
+#include <qi/type/proxysignal.hpp>
+#include <qi/type/proxyproperty.hpp>
 
 #include <qicore/loglistener.hpp>
 #include <qicore/logmessage.hpp>

@@ -6,7 +6,7 @@
 ** Copyright (C) 2013 Aldebaran Robotics
 */
 
-#include <qimessaging/session.hpp>
+#include <qi/session.hpp>
 #include <boost/thread.hpp>
 
 #include <qi/application.hpp>

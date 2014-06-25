@@ -2,9 +2,9 @@
 #include <QApplication>
 #include <QThread>
 #include <qi/application.hpp>
-#include <qitype/anyobject.hpp>
-#include <qitype/objectfactory.hpp>
-#include <qimessaging/session.hpp>
+#include <qi/anyobject.hpp>
+#include <qi/type/objectfactory.hpp>
+#include <qi/session.hpp>
 
 
 qiLogCategory("system.tray");

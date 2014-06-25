@@ -2,7 +2,7 @@
 * @author Aldebaran Robotics
 * Aldebaran Robotics (c) 2013 All Rights Reserved
 */
-#include <qitype/jsoncodec.hpp>
+#include <qi/jsoncodec.hpp>
 
 #include <qicore/task.hpp>
 

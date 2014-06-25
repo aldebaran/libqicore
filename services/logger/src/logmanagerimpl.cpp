@@ -6,8 +6,8 @@
 ** Copyright (C) 2013 Aldebaran Robotics
 */
 
-#include <qitype/objectfactory.hpp>
-#include <qitype/objecttypebuilder.hpp>
+#include <qi/type/objectfactory.hpp>
+#include <qi/type/objecttypebuilder.hpp>
 
 #include <qicore/logmanager.hpp>
 

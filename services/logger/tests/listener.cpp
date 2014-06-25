@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <qimessaging/applicationsession.hpp>
+#include <qi/applicationsession.hpp>
 
 #include <qicore/logmessage.hpp>
 #include <qicore/logmanager.hpp>

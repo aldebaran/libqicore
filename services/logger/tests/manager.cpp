@@ -15,7 +15,7 @@
 #include <qicore/logmanager.hpp>
 #include <qicore/loglistener.hpp>
 
-#include <qitype/objectfactory.hpp>
+#include <qi/type/objectfactory.hpp>
 
 void onLogMessage(int i)
 {

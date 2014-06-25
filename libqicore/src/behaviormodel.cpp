@@ -1,5 +1,5 @@
 #include <boost/algorithm/string.hpp>
-#include <qitype/jsoncodec.hpp>
+#include <qi/jsoncodec.hpp>
 #include <qicore/behavior.hpp>
 
 namespace qi {

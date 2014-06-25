@@ -17,9 +17,9 @@
 # include <qicore/logmanager.hpp>
 # include <qicore/logmessage.hpp>
 
-# include <qitype/signal.hpp>
-# include <qitype/property.hpp>
-# include <qitype/anyobject.hpp>
+# include <qi/signal.hpp>
+# include <qi/property.hpp>
+# include <qi/anyobject.hpp>
 
 namespace qi
 {

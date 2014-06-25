@@ -3,7 +3,7 @@
 #include <utility>
 
 #include <qi/types.hpp>
-#include <qitype/anyobject.hpp>
+#include <qi/anyobject.hpp>
 
 #include <qicore/logprovider.hpp>
 

@@ -8,11 +8,11 @@
 # define QICORE_BEHAVIOR_H_
 
 #include <qicore/api.hpp>
-#include <qitype/anyvalue.hpp>
-#include <qitype/anyobject.hpp>
-#include <qimessaging/session.hpp>
-#include <qitype/objecttypebuilder.hpp>
-#include <qitype/objectfactory.hpp>
+#include <qi/anyvalue.hpp>
+#include <qi/anyobject.hpp>
+#include <qi/session.hpp>
+#include <qi/type/objecttypebuilder.hpp>
+#include <qi/type/objectfactory.hpp>
 
 #ifdef interface
   #undef interface

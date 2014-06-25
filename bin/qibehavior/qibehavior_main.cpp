@@ -1,9 +1,9 @@
 #include <iostream>
 #include <qi/application.hpp>
-#include <qimessaging/session.hpp>
-#include <qitype/anyobject.hpp>
-#include <qitype/objectfactory.hpp>
-#include <qimessaging/applicationsession.hpp>
+#include <qi/session.hpp>
+#include <qi/anyobject.hpp>
+#include <qi/type/objectfactory.hpp>
+#include <qi/applicationsession.hpp>
 #include <qicore/behavior.hpp>
 #include <qilang/parser.hpp>
 #include <qilang/formatter.hpp>

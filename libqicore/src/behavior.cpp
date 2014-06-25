@@ -1,9 +1,9 @@
 #include <fstream>
 
-#include <qitype/objectfactory.hpp>
-#include <qitype/jsoncodec.hpp>
+#include <qi/type/objectfactory.hpp>
+#include <qi/jsoncodec.hpp>
 
-#include <qimessaging/session.hpp>
+#include <qi/session.hpp>
 
 #include <boost/foreach.hpp>
 

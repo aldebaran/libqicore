@@ -12,7 +12,7 @@
 # include <qicore/api.hpp>
 # include <qicore/logmessage.hpp>
 
-# include <qitype/anyobject.hpp>
+# include <qi/anyobject.hpp>
 
 namespace qi
 {

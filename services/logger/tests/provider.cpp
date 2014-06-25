@@ -1,12 +1,12 @@
 #include <iostream>
 
-#include <qimessaging/applicationsession.hpp>
+#include <qi/applicationsession.hpp>
 
 #include <qicore/logmessage.hpp>
 #include <qicore/logmanager.hpp>
 #include <qicore/logprovider.hpp>
 
-#include <qitype/objectfactory.hpp>
+#include <qi/type/objectfactory.hpp>
 
 int main(int argc, char** argv)
 {

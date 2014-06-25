@@ -7,8 +7,8 @@
 #ifndef QICORE_TASK_H_
 # define QICORE_TASK_H_
 
-#include <qitype/signal.hpp>
-#include <qitype/property.hpp>
+#include <qi/signal.hpp>
+#include <qi/property.hpp>
 
 namespace qi
 {

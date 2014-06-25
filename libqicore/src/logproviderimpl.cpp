@@ -9,8 +9,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/lockfree/queue.hpp>
 
-#include <qitype/objectfactory.hpp>
-#include <qitype/objecttypebuilder.hpp>
+#include <qi/type/objectfactory.hpp>
+#include <qi/type/objecttypebuilder.hpp>
 
 #include "src/logproviderimpl.hpp"
 
