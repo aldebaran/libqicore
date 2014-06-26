@@ -59,9 +59,9 @@ namespace qi
   static void silenceQiCategories(qi::log::SubscriberId subscriber)
   {
     // Safety: avoid infinite loop
-    ::qi::log::setCategory("qitype.*", qi::LogLevel_Silent, subscriber);
-    ::qi::log::setCategory("qimessaging.*", qi::LogLevel_Silent, subscriber);
-    ::qi::log::setCategory("qi.*", qi::LogLevel_Silent, subscriber);
+    ::qi::log::addFilter("qitype.*", qi::LogLevel_Silent, subscriber);
+    ::qi::log::addFilter("qimessaging.*", qi::LogLevel_Silent, subscriber);
+    ::qi::log::addFilter("qi.*", qi::LogLevel_Silent, subscriber);
   }
 
   LogProviderImpl::LogProviderImpl(LogManagerPtr logger)
@@ -149,7 +149,7 @@ namespace qi
   void LogProviderImpl::setLevel(qi::LogLevel level)
   {
     DEBUG("LP verb " << level);
-    ::qi::log::setVerbosity(level, _subscriber);
+    ::qi::log::setLogLevel(level, _subscriber);
   }
 
   void LogProviderImpl::addFilter(const std::string& filter,
@@ -160,7 +160,7 @@ namespace qi
       boost::mutex::scoped_lock sl(_setCategoriesMutex);
       _setCategories.insert(filter);
     }
-    ::qi::log::setCategory(filter, level, _subscriber);
+    ::qi::log::addFilter(filter, level, _subscriber);
   }
 
   void LogProviderImpl::setFilters(const std::vector<std::pair<std::string, qi::LogLevel> >& filters)
@@ -171,7 +171,7 @@ namespace qi
       for (std::set<std::string>::iterator it = _setCategories.begin(); it != _setCategories.end(); ++it)
       {
         if (*it != "*")
-          ::qi::log::setCategory(*it, qi::LogLevel_Debug, _subscriber);
+          ::qi::log::addFilter(*it, qi::LogLevel_Debug, _subscriber);
       }
 
       _setCategories.clear();
@@ -192,7 +192,7 @@ namespace qi
     silenceQiCategories(_subscriber);
 
     if (wildcardIsSet)
-      ::qi::log::setCategory("*", wildcardLevel, _subscriber);
+      ::qi::log::addFilter("*", wildcardLevel, _subscriber);
   }
 
   QI_REGISTER_MT_OBJECT(LogProvider, setLevel, addFilter, setFilters);
