@@ -9,8 +9,8 @@
 #define OUTPUT_P_H_
 
 #include <alserial/alserial.h>
-#include <qitype/signature.hpp>
-#include <qitype/metasignal.hpp>
+#include <qi/signature.hpp>
+#include <qi/type/metasignal.hpp>
 
 namespace qi
 {

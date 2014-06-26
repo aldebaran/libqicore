@@ -10,7 +10,7 @@
 
 #include <alserial/alserial.h>
 #include <qicore-compat/api.hpp>
-#include <qitype/anyvalue.hpp>
+#include <qi/anyvalue.hpp>
 
 namespace qi
 {

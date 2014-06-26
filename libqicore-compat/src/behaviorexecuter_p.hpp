@@ -6,9 +6,9 @@
 #ifndef BEHAVIORLOADER_P_HPP_
 #define BEHAVIORLOADER_P_HPP_
 
-#include <qimessaging/session.hpp>
+#include <qi/session.hpp>
 #include <qi/atomic.hpp>
-#include <qitype/anyobject.hpp>
+#include <qi/anyobject.hpp>
 #include <qicore/behavior.hpp>
 #include <qicore-compat/model/flowdiagrammodel.hpp>
 #include <qicore-compat/model/choregrapheprojectmodel.hpp>

@@ -19,8 +19,8 @@
 
 #include <qicore-compat/behaviorexecuter.hpp>
 #include <qicore-compat/timeline.hpp>
-#include <qitype/objectfactory.hpp>
-#include <qitype/dynamicobject.hpp>
+#include <qi/type/objectfactory.hpp>
+#include <qi/type/dynamicobject.hpp>
 #include <qipython/gil.hpp>
 #include "behaviorexecuter_p.hpp"
 

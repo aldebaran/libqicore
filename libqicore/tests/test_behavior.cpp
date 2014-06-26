@@ -6,10 +6,10 @@
 
 #include <qi/application.hpp>
 
-#include <qitype/objectfactory.hpp>
-#include <qitype/proxyproperty.hpp>
+#include <qi/type/objectfactory.hpp>
+#include <qi/type/proxyproperty.hpp>
 
-#include <qimessaging/session.hpp>
+#include <qi/session.hpp>
 
 #include <qicore/task.hpp>
 #include <testsession/testsessionpair.hpp>

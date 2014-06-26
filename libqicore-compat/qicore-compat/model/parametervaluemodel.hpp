@@ -10,8 +10,8 @@
 
 #include <qicore-compat/api.hpp>
 #include <alserial/alserial.h>
-#include <qitype/signature.hpp>
-#include <qitype/anyvalue.hpp>
+#include <qi/signature.hpp>
+#include <qi/anyvalue.hpp>
 
 namespace qi {
   class ParameterValueModelPrivate;

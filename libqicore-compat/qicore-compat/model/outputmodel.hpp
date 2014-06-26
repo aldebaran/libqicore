@@ -11,7 +11,7 @@
 #include <string>
 #include <alserial/alserial.h>
 
-#include <qitype/metasignal.hpp>
+#include <qi/type/metasignal.hpp>
 
 #include <qicore-compat/api.hpp>
 

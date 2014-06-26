@@ -9,8 +9,8 @@
 #define PARAMETER_H_
 
 #include <alserial/alserial.h>
-#include <qitype/metaproperty.hpp>
-#include <qitype/anyvalue.hpp>
+#include <qi/type/metaproperty.hpp>
+#include <qi/anyvalue.hpp>
 #include <qicore-compat/api.hpp>
 
 namespace qi

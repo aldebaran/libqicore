@@ -8,7 +8,7 @@
 
 #include <qicore-compat/api.hpp>
 #include <qicore-compat/model/boxinstancemodel.hpp>
-#include <qimessaging/session.hpp>
+#include <qi/session.hpp>
 
 namespace qi
 {

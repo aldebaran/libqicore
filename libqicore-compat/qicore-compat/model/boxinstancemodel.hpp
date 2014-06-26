@@ -11,7 +11,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <alserial/alserial.h>
 #include <qicore-compat/api.hpp>
-#include <qitype/anyvalue.hpp>
+#include <qi/anyvalue.hpp>
 #include <qicore-compat/model/contentmodel.hpp>
 
 #ifdef interface
