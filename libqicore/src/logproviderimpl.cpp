@@ -30,6 +30,11 @@ namespace qi
 {
   boost::lockfree::queue<qi::LogMessage*> _pendingMessages(MAX_MSGS_BUFFERS);
 
+  LogProviderPtr makeLogProvider(LogManagerPtr logger)
+  {
+    return boost::shared_ptr<qi::LogProviderImpl>(new LogProviderImpl(logger));
+  }
+
   static LogProviderPtr instance;
   qi::Future<int> registerToLogger(LogManagerPtr logger)
   {
@@ -43,7 +48,7 @@ namespace qi
     LogProviderPtr ptr;
     try
     {
-      ptr = qi::createObject("LogProvider", logger);
+      ptr = makeLogProvider(logger);
     }
     catch (const std::exception& e)
     {

@@ -30,7 +30,7 @@ qi::LogListenerPtr startClient(qi::Session& s, const std::string& serviceName)
 int startProvider(qi::Session& s, const std::string& serviceName)
 {
   qi::LogManagerPtr logger = s.service(serviceName);
-  qi::LogProviderPtr ptr = qi::createObject("LogProvider", logger);
+  qi::LogProviderPtr ptr = qi::makeLogProvider(logger);
 
   return logger->addProvider(ptr);
 }

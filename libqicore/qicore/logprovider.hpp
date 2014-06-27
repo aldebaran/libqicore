@@ -23,6 +23,7 @@
 namespace qi
 {
   class LogManager;
+  typedef qi::Object<LogManager> LogManagerPtr;
   // Register local provider to service
   QICORE_API qi::Future<int> registerToLogger(qi::Object<LogManager> logger);
 
@@ -43,6 +44,8 @@ namespace qi
   };
 
   typedef qi::Object<LogProvider> LogProviderPtr;
+
+  QICORE_API LogProviderPtr makeLogProvider(LogManagerPtr logger);
 } // !qi
 
 #endif // !LOGPROVIDER_HPP_

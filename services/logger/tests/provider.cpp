@@ -17,7 +17,7 @@ int main(int argc, char** argv)
   qi::LogManagerPtr logger = app.session()->service("LogManager");
 
   // register Logger Provider
-  qi::LogProviderPtr provider = qi::createObject("LogProvider", logger);
+  qi::LogProviderPtr provider = qi::makeLogProvider(logger);
   int id = logger->addProvider(provider);
   qiLogFatal("myfoo.bar") << "fatal log";
   qiLogError("myfoo.bar") << "error log";
