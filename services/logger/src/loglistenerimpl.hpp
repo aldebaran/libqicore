@@ -43,6 +43,10 @@ namespace qi
     void log(const LogMessage& m);
     std::map<std::string, qi::LogLevel> filters();
   };
+
+  class ModuleBuilder;
+  void registerLogListener(qi::ModuleBuilder* mb);
+
 } // !qi
 
 

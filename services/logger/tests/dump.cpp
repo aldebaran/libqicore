@@ -10,6 +10,7 @@
 #include <boost/thread.hpp>
 
 #include <qi/application.hpp>
+#include <qi/anymodule.hpp>
 
 #include <qicore/logmessage.hpp>
 #include <qicore/logprovider.hpp>
@@ -56,7 +57,8 @@ int main(int argc, char** argv)
   listener->onLogMessage.connect(&onLogMessage2);
   listener->setLevel(::qi::LogLevel_Info);
   //listener->asObject()->connect("onLogMessage", &onLogMessage);
-  qi::registerToLogger(logger);
+  qi::import("qicore").call<void>("registerToLogger", logger);
+
   boost::thread t(&ping);
   app.run();
 }

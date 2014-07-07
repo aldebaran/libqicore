@@ -6,10 +6,11 @@
 ** Copyright (C) 2013 Aldebaran Robotics
 */
 
-#include <qi/type/objectfactory.hpp>
 #include <qi/type/objecttypebuilder.hpp>
 
 #include <qicore/logmanager.hpp>
+
+#include <qi/anymodule.hpp>
 
 #include "src/logmanagerimpl.hpp"
 #include "src/loglistenerimpl.hpp"
@@ -66,11 +67,11 @@ namespace qi
     DEBUG("LM:log listeners' numbers " << _listeners.size());
     DEBUG("LM:log providers' numbers " << _providers.size());
     DEBUG("LM:log MSG' numbers " << msgs.size());
-    for (int msgsIt = 0; msgsIt < msgs.size(); ++msgsIt)
+    for (unsigned int msgsIt = 0; msgsIt < msgs.size(); ++msgsIt)
     {
       DEBUG("LM:log MSG' it " << msgsIt << " value: " << msgs[msgsIt].message);
 
-      for (int listenerIt = 0; listenerIt < _listeners.size();)
+      for (unsigned int listenerIt = 0; listenerIt < _listeners.size();)
       {
         DEBUG("LM:log listener it " << listenerIt);
         bool remove = true;
@@ -126,7 +127,7 @@ namespace qi
 
     {
       boost::mutex::scoped_lock dataLock(_dataMutex);
-      for (int listenerIt = 0; listenerIt < _listeners.size();)
+      for (unsigned int listenerIt = 0; listenerIt < _listeners.size();)
       {
         bool remove = true;
         if (boost::shared_ptr<LogListenerImpl> l = _listeners[listenerIt].lock())
@@ -246,7 +247,7 @@ namespace qi
       }
       _filters.clear();
 
-      for (int listenerIt = 0; listenerIt < _listeners.size();)
+      for (unsigned int listenerIt = 0; listenerIt < _listeners.size();)
       {
         bool remove = true;
         if (boost::shared_ptr<LogListenerImpl> l = _listeners[listenerIt].lock())
@@ -335,5 +336,11 @@ bailout:
 
   QI_REGISTER_MT_OBJECT(LogManager, log, getListener, addProvider, removeProvider);
   QI_REGISTER_IMPLEMENTATION(LogManager, LogManagerImpl);
-  QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR_FOR(LogManager, LogManagerImpl);
+
+  void registerLogManager(ModuleBuilder* mb) {
+    mb->advertiseFactory<LogManagerImpl>("LogManager");
+    registerLogListener(mb);
+  }
+  QI_REGISTER_MODULE("logmanager", registerLogManager);
+
 } // !qi

@@ -9,9 +9,8 @@
 #include <gtest/gtest.h>
 
 #include <qi/application.hpp>
-
+#include <qi/anymodule.hpp>
 #include <qi/session.hpp>
-#include <qi/type/objectfactory.hpp>
 
 #include <testsession/testsessionpair.hpp>
 
@@ -30,7 +29,7 @@ qi::LogListenerPtr startClient(qi::Session& s, const std::string& serviceName)
 int startProvider(qi::Session& s, const std::string& serviceName)
 {
   qi::LogManagerPtr logger = s.service(serviceName);
-  qi::LogProviderPtr ptr = qi::makeLogProvider(logger);
+  qi::LogProviderPtr ptr = qi::import("qicore").call<qi::LogProviderPtr>("makeLogProvider", logger);
 
   return logger->addProvider(ptr);
 }
@@ -46,8 +45,7 @@ std::string startService(qi::Session& s)
   unsigned int serviceId = 0;
   try
   {
-    qi::os::dlopen("logmanager");
-    serviceId = s.registerService("LogManager", qi::createObject("LogManager"));
+    serviceId = s.registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
   }
   catch (const std::exception& e)
   {

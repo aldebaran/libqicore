@@ -61,6 +61,10 @@ namespace qi
 
     qi::PeriodicTask sendTask;
   };
+
+  class ModuleBuilder;
+  void registerLogProvider(qi::ModuleBuilder* mb);
+
 } // !qi
 
 #endif // !LOGPROVIDERIMPL_HPP_

@@ -1,10 +1,11 @@
-## Copyright (c) 2012 Aldebaran Robotics. All rights reserved.
+## Copyright (c) 2012, 2014 Aldebaran Robotics. All rights reserved.
 
+find_package(qimodule)
 include_directories(".")
 
 set(PUBLIC_HEADERS
     qicore/api.hpp
-    qicore/behavior.hpp
+#    qicore/behavior.hpp
     qicore/loglistener.hpp
     qicore/logmanager.hpp
     qicore/logmessage.hpp
@@ -12,21 +13,17 @@ set(PUBLIC_HEADERS
     )
 qi_install_header(${PUBLIC_HEADERS})
 
-qi_create_lib(qicore SHARED SRC
+qi_create_module(qicore SHARED SRC
   ${PUBLIC_HEADERS}
-  src/behavior.cpp src/behaviormodel.cpp src/format_behavior_model.cpp
-  src/loglistener_proxy.cpp src/logmanager_proxy.cpp src/logprovider_proxy.cpp
+ # src/behavior.cpp src/behaviormodel.cpp src/format_behavior_model.cpp
+  src/loglistener_proxy.cpp
+  src/logmanager_proxy.cpp
+  src/logprovider_proxy.cpp
+  src/registration.cpp
+  src/logproviderimpl.cpp
+  src/logproviderimpl.hpp
   DEPENDS BOOST QI
 )
 qi_use_lib(qicore qilang)
-
 qi_stage_lib(qicore)
 
-qi_create_lib(logprovider
-  SHARED
-  SRC
-  src/logproviderimpl.cpp
-  src/logproviderimpl.hpp
-  DEPENDS BOOST QI QICORE
-  )
-qi_stage_lib(logprovider)

@@ -1,6 +1,6 @@
 #include <fstream>
 
-#include <qi/type/objectfactory.hpp>
+#include <qi/anymodule.hpp>
 #include <qi/jsoncodec.hpp>
 
 #include <qi/session.hpp>
@@ -311,7 +311,7 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
       // not a service, try local factory from loaded shared objects
       // FIXME: auto-load some .so
       qiLogDebug() << object << " is not a service, trying to create it through factory";
-      s = qi::createObject(object, session());
+      s = qi::import(object)->createObject(object, session());
       if (!s)
         throw std::runtime_error(object +" is neither a service nor available through factory");
     }

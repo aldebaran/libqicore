@@ -15,7 +15,7 @@
 #include <qicore/logmanager.hpp>
 #include <qicore/loglistener.hpp>
 
-#include <qi/type/objectfactory.hpp>
+#include <qi/anymodule.hpp>
 
 void onLogMessage(int i)
 {
@@ -37,8 +37,8 @@ std::string startService(qi::SessionPtr s)
   unsigned int serviceId = 0;
   try
   {
-    qi::os::dlopen("logmanager");
-    serviceId = s->registerService("LogManager", qi::createObject("LogManager"));
+//    qi::os::dlopen("logmanager");
+    serviceId = s->registerService("LogManager", qi::import("qicore").call<qi::AnyObject>("LogManager"));
   }
   catch (const std::exception& e)
   {

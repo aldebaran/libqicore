@@ -6,7 +6,7 @@
 #include <qicore/logmanager.hpp>
 #include <qicore/logprovider.hpp>
 
-#include <qi/type/objectfactory.hpp>
+#include <qi/anymodule.hpp>
 
 int main(int argc, char** argv)
 {
@@ -17,7 +17,7 @@ int main(int argc, char** argv)
   qi::LogManagerPtr logger = app.session()->service("LogManager");
 
   // register Logger Provider
-  qi::LogProviderPtr provider = qi::makeLogProvider(logger);
+  qi::LogProviderPtr provider = qi::import("qicore").call<qi::LogProviderPtr>("makeLogProvider", logger);
   int id = logger->addProvider(provider);
   qiLogFatal("myfoo.bar") << "fatal log";
   qiLogError("myfoo.bar") << "error log";

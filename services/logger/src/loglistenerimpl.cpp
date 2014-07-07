@@ -7,10 +7,7 @@
 */
 
 #include <qi/os.hpp>
-
-#include <qi/type/objectfactory.hpp>
-#include <qi/type/objecttypebuilder.hpp>
-
+#include <qi/anymodule.hpp>
 #include "src/loglistenerimpl.hpp"
 #include "src/logmanagerimpl.hpp"
 
@@ -145,5 +142,9 @@ namespace qi
   QI_REGISTER_MT_OBJECT(LogListener, setLevel, addFilter, clearFilters,
                         onLogMessage, logLevel);
   QI_REGISTER_IMPLEMENTATION(LogListener, LogListenerImpl);
-  QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR_FOR(LogListener, LogListenerImpl, LogManagerImpl&);
+
+  void registerLogListener(qi::ModuleBuilder* mb) {
+    mb->advertiseFactory<LogListenerImpl, LogManagerImpl&>("LogListener");
+  }
+
 } // !qi

@@ -2,7 +2,7 @@
 #include <qi/application.hpp>
 #include <qi/session.hpp>
 #include <qi/anyobject.hpp>
-#include <qi/type/objectfactory.hpp>
+#include <qi/anymodule.hpp>
 #include <qi/applicationsession.hpp>
 #include <qicore/behavior.hpp>
 #include <qilang/parser.hpp>
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
   for (unsigned i = 0; i < vload.size(); ++i) {
     qiLogInfo() << "loading lib:" << vload.at(i);
-    qi::loadObject(vload.at(i));
+    qi::import(vload.at(i));
   }
 
   qilang::ParseResultPtr pr = qilang::parse(qilang::newFileReader(filename));

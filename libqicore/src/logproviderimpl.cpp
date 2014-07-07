@@ -9,7 +9,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/lockfree/queue.hpp>
 
-#include <qi/type/objectfactory.hpp>
+#include <qi/anymodule.hpp>
 #include <qi/type/objecttypebuilder.hpp>
 
 #include "src/logproviderimpl.hpp"
@@ -202,5 +202,13 @@ namespace qi
 
   QI_REGISTER_MT_OBJECT(LogProvider, setLevel, addFilter, setFilters);
   QI_REGISTER_IMPLEMENTATION(LogProvider, LogProviderImpl);
-  QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR_FOR(LogProvider, LogProviderImpl, LogManagerPtr);
+
+  void registerLogProvider(qi::ModuleBuilder* mb) {
+    mb->advertiseFactory<LogProviderImpl, LogManagerPtr>("LogProvider");
+    mb->advertiseMethod("makeLogProvider", &makeLogProvider);
+    mb->advertiseMethod("registerToLogger", &registerToLogger);
+  }
+
 } // !qi
+
+
