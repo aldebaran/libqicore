@@ -21,6 +21,7 @@ int main(int argc, char** argv)
   qi::ApplicationSession app(argc, argv);
   app.start();
 
+  app.loadModule("qicore");
   qi::LogManagerPtr logger = app.session()->service("LogManager");
   qi::LogListenerPtr listener = logger->getListener();
   listener->clearFilters();
