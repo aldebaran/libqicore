@@ -5,14 +5,14 @@
 #include <boost/lexical_cast.hpp>
 
 #include <qi/application.hpp>
-
-#include <qi/type/objectfactory.hpp>
+#include <qi/anyobject.hpp>
 #include <qi/type/proxyproperty.hpp>
 
 #include <qi/session.hpp>
 
 #include <qicore/task.hpp>
 #include <testsession/testsessionpair.hpp>
+#include <qi/anymodule.hpp>
 
 QI_TYPE_ENUM_REGISTER(qi::MetaCallType);
 
@@ -184,24 +184,38 @@ public:
 QI_REGISTER_OBJECT(TestObject2, add, getv, setv, v, onAdd, lastAdd);
 
 
-// TestObjectService::create
-QI_REGISTER_OBJECT_FACTORY_BUILDER(TestObject);
-QI_REGISTER_OBJECT_FACTORY_BUILDER(SqrtTask);
-QI_REGISTER_OBJECT_FACTORY_BUILDER(Sqrt);
-QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(TestObject2);
-QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(PropHolder);
+void register_testbehav(qi::ModuleBuilder* mb) {
+  mb->advertiseFactory<TestObject>("TestObjectService");
+  mb->advertiseFactory<SqrtTask>("SqrtTaskService");
+  mb->advertiseFactory<Sqrt>("SqrtService");
+
+  mb->advertiseFactory<TestObject2>("TestObject2");
+  mb->advertiseFactory<PropHolder>("PropHolder");
+
+  // TestObjectService::create
+  //QI_REGISTER_OBJECT_FACTORY_BUILDER(TestObject);
+  //QI_REGISTER_OBJECT_FACTORY_BUILDER(SqrtTask);
+  //QI_REGISTER_OBJECT_FACTORY_BUILDER(Sqrt);
+  //QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(TestObject2);
+  //QI_REGISTER_OBJECT_FACTORY_CONSTRUCTOR(PropHolder);
+}
+
+QI_REGISTER_MODULE_EMBEDDED("testbehav", &register_testbehav);
+
 
 #define STRING(a) std::string(#a)
 TEST(Behavior, testFactory)
 {
   TestSessionPair p;
-  ASSERT_EQ(1u, p.server()->loadService("behavior").size());
-  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->loadService("qicore.Behavior");
+
+  //qi::os::sleep(5000);
+  qi::AnyObject b = p.client()->service("Behavior");
+  //b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
   std::string behavior = STRING(
-    a Whatever TestObjectService.create;
-    b Whatever TestObjectService.create;
-    c Whatever TestObject2;
+    a Whatever testbehav.TestObjectService;
+    b Whatever testbehav.TestObjectService;
+    c Whatever testbehav.TestObject2;
     ab a.v -> b.add;
     bc b.onAdd -> c.add;
     );
@@ -226,15 +240,14 @@ TEST(Behavior, testFactory)
 TEST(Behavior, testService)
 {
   TestSessionPair p;
-  qi::os::dlopen("behavior");
-  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
-  p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
+  p.server()->loadService("qicore.Behavior");
+  qi::AnyObject b = p.client()->service("Behavior");
+  //b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->loadService("testbehav.TestObject2");
   std::string behavior = STRING(
-    a Whatever TestObjectService.create v=42;
-    b Whatever TestObjectService.create v=1;
-    c Whatever TestObject2              v=2;
+    a Whatever testbehav.TestObjectService v=42;
+    b Whatever testbehav.TestObjectService v=1;
+    c Whatever s.TestObject2              v=2;
     ab a.v -> b.add;
     bc b.onAdd -> c.add;
     );
@@ -276,16 +289,15 @@ void onTransition(
 TEST(Behavior, transitionTrack)
 {
   TestSessionPair p;
-  qi::os::dlopen("behavior");
-  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
-  p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
+  p.server()->loadService("qicore.Behavior");
+  qi::AnyObject b = p.client()->service("Behavior");
+  //b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->loadService("testbehav.TestObject2");
   std::string behavior = STRING(
-    a Whatever TestObjectService.create;
-    b Whatever TestObjectService.create;
-    c Whatever TestObject2;
-    d Whatever TestObjectService.create;
+    a Whatever testbehav.TestObjectService;
+    b Whatever testbehav.TestObjectService;
+    c Whatever s.TestObject2;
+    d Whatever testbehav.TestObjectService;
     ab a.v -> b.add;
     bc b.onAdd -> c.add;
     cd c.onAdd -> d.add;
@@ -319,16 +331,15 @@ TEST(Behavior, transitionTrack)
 TEST(Behavior, targetPropertyDbgOn)
 {
   TestSessionPair p;
-  qi::os::dlopen("behavior");
-  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
-  p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
+  p.server()->loadService("qicore.Behavior");
+  qi::AnyObject b = p.client()->service("Behavior");
+  //b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->loadService("testbehav.TestObject2");
   std::string behavior = STRING(
-    a Whatever TestObjectService.create;
-    b Whatever TestObjectService.create;
-    c Whatever TestObject2;
-    d Whatever TestObjectService.create;
+    a Whatever testbehav.TestObjectService;
+    b Whatever testbehav.TestObjectService;
+    c Whatever s.TestObject2;
+    d Whatever testbehav.TestObjectService;
     ab a.v -> b.v;
     bc b.v -> c.v;
     cd c.v -> d.v;
@@ -348,16 +359,15 @@ TEST(Behavior, targetPropertyDbgOn)
 TEST(Behavior, targetPropertyDbgOff)
 {
   TestSessionPair p;
-  qi::os::dlopen("behavior");
-  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
-  p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
+  p.server()->loadService("qicore.Behavior");
+  qi::AnyObject b = p.client()->service("Behavior");
+  //b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->loadService("testbehav.TestObject2");
   std::string behavior = STRING(
-    a Whatever TestObjectService.create;
-    b Whatever TestObjectService.create;
-    c Whatever TestObject2;
-    d Whatever TestObjectService.create;
+    a Whatever testbehav.TestObjectService;
+    b Whatever testbehav.TestObjectService;
+    c Whatever s.TestObject2;
+    d Whatever testbehav.TestObjectService;
     ab a.v -> b.v;
     bc b.v -> c.v;
     cd c.v -> d.v;
@@ -377,11 +387,10 @@ TEST(Behavior, targetPropertyDbgOff)
 TEST(Behavior, PropSet)
 {
   TestSessionPair p;
-  qi::os::dlopen("behavior");
-  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
-  p.server()->registerService("PropHolder", qi::createObject("PropHolder"));
+  p.server()->loadService("qicore.Behavior");
+  qi::AnyObject b = p.client()->service("Behavior");
+  //b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->loadService("testbehav.PropHolder");
   qi::AnyObject propHolder = p.client()->service("PropHolder");
   qi::ProxyProperty<qi::AnyValue> prop(propHolder, "prop");
   qi::ProxyProperty<qi::AnyValue> prop2(propHolder, "prop2");
@@ -413,19 +422,18 @@ TEST(Behavior, PropSet)
 TEST(Behavior, Filter)
 {
   TestSessionPair p;
-  qi::os::dlopen("behavior");
-  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
-  p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
-  p.server()->registerService("PropHolder", qi::createObject("PropHolder"));
+  p.server()->loadService("qicore.Behavior");
+  qi::AnyObject b = p.client()->service("Behavior");
+  //b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->loadService("testbehav.TestObject2");
+  p.server()->loadService("testbehav.PropHolder");
   qi::AnyObject propHolder = p.client()->service("PropHolder");
   qi::AnyObject testObject = p.client()->service("TestObject2");
   qi::ProxyProperty<qi::AnyValue> prop(propHolder, "prop");
   qi::ProxyProperty<int> propInt(propHolder, "propInt");
   std::string behavior = STRING(
-    to Whatever TestObject2 v=0;
-    ph Whatever PropHolder;
+    to Whatever s.TestObject2 v=0;
+    ph Whatever s.PropHolder;
     t1 ph.propInt -> to.add 42;
     //t2 ph.prop -> to.add 51;
     );
@@ -471,16 +479,14 @@ void pushError(std::vector<std::string>& store,
 TEST(Behavior, Task)
 {
   TestSessionPair p;
-  qi::os::dlopen("behavior");
-  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
-  p.server()->registerService("TestObject2", qi::createObject("TestObject2"));
+  p.server()->loadService("qicore.Behavior");
+  qi::AnyObject b = p.client()->service("Behavior");
+  p.server()->loadService("testbehav.TestObject2");
   std::string behavior = STRING(
-    sq1 W SqrtTaskService.create   ;
-    sq2 W SqrtTaskService.create   ;
-    sq3 W SqrtTaskService.create   ;
-    st  W TestObjectService.create v=0;
+    sq1 W testbehav.SqrtTaskService   ;
+    sq2 W testbehav.SqrtTaskService   ;
+    sq3 W testbehav.SqrtTaskService   ;
+    st  W testbehav.TestObjectService v=0;
     t1 sq1.val -> sq2.start        ;
     t2 sq2.val -> sq3.start        ;
     ts st.onAdd -> sq1.start       ;
@@ -521,18 +527,16 @@ TEST(Behavior, Task)
 TEST(Behavior, TaskCall)
 {
    std::string behavior = STRING(
-     SQ  W SqrtService.create          ;
+     SQ  W testbehav.SqrtService              ;
      sq1 W &SQ.sqrt                    ;
      sq2 W &SQ.sqrt                    ;
-     st  W TestObjectService.create v=0;
+     st  W testbehav.TestObjectService v=0;
      t1 st.onAdd -> sq1.start          ;
      t2 sq1.result -> sq2.start        ;
      );
   TestSessionPair p;
-  qi::os::dlopen("behavior");
-  p.server()->registerService("BehaviorService", qi::createObject("BehaviorService"));
-  qi::AnyObject b = p.client()->service("BehaviorService").value().call<qi::AnyObject>("create");
-  b.call<void>("connect", p.serviceDirectoryEndpoints()[0].str());
+  p.server()->loadService("qicore.Behavior");
+  qi::AnyObject b = p.client()->service("Behavior");
   size_t pos = 0;
   while((pos = behavior.find_first_of(';', pos)) != behavior.npos)
     behavior[pos] = '\n';

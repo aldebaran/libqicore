@@ -143,8 +143,9 @@ namespace qi {
   };
 
   QI_REGISTER_OBJECT(Behavior, loadObjects, unloadObjects, setTransitions, removeTransitions, loadFile, loadString, call, onTransition, model, objects, transitions, setModel, onTaskRunning, onTaskError, object, start, stop, onStart, onStop);
-  QI_REGISTER_PACKAGE_OBJECT_FACTORY_BUILDER("qicore", Behavior, qi::SessionPtr);
 
 }
+
+
 
 #endif
