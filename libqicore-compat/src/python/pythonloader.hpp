@@ -8,7 +8,7 @@
 
 #include <string>
 #include <boost/python.hpp>
-#include <qimessaging/session.hpp>
+#include <qi/session.hpp>
 #include "pythonboxgenerator.hpp"
 
 namespace qi

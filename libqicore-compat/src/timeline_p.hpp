@@ -18,7 +18,7 @@
 #include <alproxies/almemoryproxy.h>
 #include <alproxies/almotionproxy.h>
 
-#include <qitype/anyobject.hpp>
+#include <qi/anyobject.hpp>
 #include <qicore-compat/timeline.hpp>
 #include <qicore-compat/model/animationmodel.hpp>
 #include <qicore-compat/model/actuatorcurvemodel.hpp>

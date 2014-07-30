@@ -9,9 +9,9 @@
 # define PARAMETER_P_H_
 
 #include <qicore-compat/model/choicemodel.hpp>
-#include <qitype/anyvalue.hpp>
-#include <qitype/signature.hpp>
-#include <qitype/metaproperty.hpp>
+#include <qi/anyvalue.hpp>
+#include <qi/signature.hpp>
+#include <qi/type/metaproperty.hpp>
 #include <alserial/alserial.h>
 
 namespace qi

@@ -9,7 +9,7 @@
 #define CHOICE_H_
 
 #include <alserial/alserial.h>
-#include <qitype/anyvalue.hpp>
+#include <qi/anyvalue.hpp>
 
 #include <qicore-compat/api.hpp>
 #include <qicore-compat/model/parametermodel.hpp>

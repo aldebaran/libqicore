@@ -8,7 +8,7 @@
 #ifndef CHOICE_P_H_
 #define CHOICE_P_H_
 
-#include <qitype/anyvalue.hpp>
+#include <qi/anyvalue.hpp>
 #include <qicore-compat/model/parametermodel.hpp>
 
 namespace qi

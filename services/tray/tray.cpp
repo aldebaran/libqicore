@@ -2,9 +2,9 @@
 #include <QApplication>
 #include <QThread>
 #include <qi/application.hpp>
-#include <qitype/anyobject.hpp>
-#include <qitype/objectfactory.hpp>
-#include <qimessaging/session.hpp>
+#include <qi/anyobject.hpp>
+#include <qi/anymodule.hpp>
+#include <qi/session.hpp>
 
 
 qiLogCategory("system.tray");
@@ -72,8 +72,7 @@ private:
 };
 
 QI_REGISTER_OBJECT(Tray, setIcon, setToolTip, showMessage, visible, setVisible);
-
-QI_REGISTER_OBJECT_FACTORY_BUILDER(Tray);
+QI_REGISTER_PACKAGE_OBJECT_FACTORY_BUILDER("Tray", Tray);
 
 Tray::Tray()
 {
@@ -118,7 +117,10 @@ int main(int argc, char** argv)
   qi::Session s;
   s.listen("tcp://0.0.0.0:0");
   s.connect(argv[1]);
-  s.registerService(name, qi::createObject("TrayService"));
+
+  s.registerService(name, qi::import("Tray")->createObject("TrayService"));
+
+
   //s.registerService(name, qi::GenericValuePtr(new Tray()).toObject());
   a.exec();
 }

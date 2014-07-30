@@ -8,8 +8,8 @@
 #include <qicore-compat/behaviorexecuter.hpp>
 #include <alcommon/albroker.h>
 #include <allauncher/launcher.h>
-#include <qitype/anyvalue.hpp>
-#include <qitype/objectfactory.hpp>
+#include <qi/anyvalue.hpp>
+#include <qi/type/objectfactory.hpp>
 
 boost::shared_ptr<qi::Session> session;
 std::string behaviorWithoutTimeline;

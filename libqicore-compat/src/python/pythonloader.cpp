@@ -13,7 +13,7 @@
 
 #include <qi/log.hpp>
 #include <qi/path.hpp>
-#include <qitype/objectfactory.hpp>
+#include <qi/type/objectfactory.hpp>
 #include <qipython/gil.hpp>
 #include <qipython/pysession.hpp>
 #include <qipython/pyinit.hpp>

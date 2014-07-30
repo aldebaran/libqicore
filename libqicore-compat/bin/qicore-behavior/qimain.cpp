@@ -3,9 +3,9 @@
 **  See COPYING for the license
 */
 #include <qicore-compat/behaviorexecuter.hpp>
-#include <qimessaging/session.hpp>
+#include <qi/session.hpp>
 #include <qi/application.hpp>
-#include <qitype/objectfactory.hpp>
+#include <qi/type/objectfactory.hpp>
 
 #include <boost/program_options.hpp>
 

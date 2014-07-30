@@ -6,7 +6,7 @@
 #include <qicore-compat/model/animationmodel.hpp>
 #include <qicore-compat/timeline.hpp>
 
-#include <qimessaging/session.hpp>
+#include <qi/session.hpp>
 #include <qi/application.hpp>
 
 #include <boost/program_options.hpp>

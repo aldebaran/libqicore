@@ -11,7 +11,7 @@
 #include <alcommon/alproxy.h>
 
 #include <qi/log.hpp>
-#include <qitype/objecttypebuilder.hpp>
+#include <qi/type/objecttypebuilder.hpp>
 
 #include "timeline_p.hpp"
 #include <qicore-compat/timeline.hpp>

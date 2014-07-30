@@ -1,0 +1,21 @@
+#package testg
+
+object Graph "paf"
+  object test_foobar_module.Foo "a"
+    v: 42
+    at v: b.add
+
+    at onHello: b.hellobar
+  end
+
+  object test_foobar_module.Bar "b"
+    v: 1
+    at onAdd: c.add
+  end
+  object test_foobar_module.Foo "c"
+    v: 2
+  end
+
+  at paf.onStart: a.hellofoo
+
+end

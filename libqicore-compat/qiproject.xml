@@ -1,4 +1,4 @@
 <project name='libqicore-compat'>
   <depends names='gtest libqi' buildtime='true' />
-  <depends names='libalmathinternal libqicore libnaoqi libqimessaging libqitype' buildtime='true' runtime='true' />
+  <depends names='libalmathinternal libqicore libnaoqi libqi' buildtime='true' runtime='true' />
 </project>

@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <qi/log.hpp>
+#include <qilang/visitor.hpp>
 #include <qilang/node.hpp>
 #include <qilang/formatter.hpp>
 #include <qi/os.hpp>
@@ -14,7 +15,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "cpptype.hpp"
-#include <qitype/anyvalue.hpp>
+#include <qi/anyvalue.hpp>
 #include <qicore/behavior.hpp>
 #include <stack>
 
@@ -25,17 +26,16 @@ namespace qilang {
 
 
 // Construct a BehaviorModel
-class QiLangGenBehaviorModel:
-    public StmtNodeVisitor
+class QiLangGenBehaviorModel: public DefaultNodeVisitor
 {
 public:
 
-  virtual void acceptStmt(const StmtNodePtr &node)           { node->accept(this); }
+  virtual void doAccept(Node* node) { node->accept(this); }
 
-  std::vector<qi::BehaviorModel> modelsList;
+  std::vector<qi::BehaviorModel>       modelsList;
   std::stack<qi::BehaviorModel::Node*> nodesStack;
-  qi::BehaviorModel* currentModel;
-  qi::BehaviorModel::Node* currentNode;
+  qi::BehaviorModel*                   currentModel;
+  qi::BehaviorModel::Node*             currentNode;
 
   QiLangGenBehaviorModel() :
     currentModel(0),
@@ -54,22 +54,6 @@ public:
 
     return modelsList;
   }
-
-
-  virtual void accept(const NodePtr& node) {
-    switch (node->kind()) {
-      case NodeKind_Stmt:
-        acceptStmt(boost::dynamic_pointer_cast<StmtNode>(node));
-        break;
-      case NodeKind_Literal:
-      case NodeKind_Decl:
-      case NodeKind_Expr:
-      case NodeKind_TypeExpr:
-        throw std::runtime_error("Not implemented");
-    }
-  }
-
-protected:
 
   void visitStmt(PackageNode* node) {
     std::cout << "PackageNode not implemented" << std::endl;
@@ -100,7 +84,7 @@ protected:
       currentModel->name = node->name;
       // iterate over all statements
       for (unsigned int i = 0; i < node->values.size(); ++i) {
-        acceptStmt(node->values.at(i));
+        accept(node->values.at(i));
       }
 
       modelsList.push_back(*currentModel);
@@ -115,7 +99,7 @@ protected:
       nodesStack.push(currentNode);
       // iterate over all statements
       for (unsigned int i = 0; i < node->values.size(); ++i) {
-        acceptStmt(node->values.at(i));
+        accept(node->values.at(i));
       }
       currentNode = nodesStack.top();
       nodesStack.pop();

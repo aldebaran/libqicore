@@ -11,7 +11,7 @@
 #include <string>
 
 #include <qicore-compat/api.hpp>
-#include <qitype/anyobject.hpp>
+#include <qi/anyobject.hpp>
 
 namespace AL
 {

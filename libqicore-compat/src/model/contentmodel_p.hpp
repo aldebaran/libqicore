@@ -9,7 +9,7 @@
 #define CONTENT_P_H_
 
 #include <alserial/alserial.h>
-#include <qitype/anyreference.hpp>
+#include <qi/type/detail/anyreference.hpp>
 
 namespace qi
 {

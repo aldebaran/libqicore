@@ -1,4 +1,3 @@
-
 function(qi_create_session_test name)
   if (DEFINED BUILD_TESTS AND NOT BUILD_TESTS)
     return()
@@ -17,5 +16,8 @@ function(qi_create_session_test name)
 endfunction()
 
 
-qi_create_bin(dumper dump.cpp DEPENDS QIMESSAGING LOGPROVIDER LOGSERVICE)
-qi_create_session_test(test_logger SRC test_logger.cpp DEPENDS QI QIMESSAGING GTEST TESTSESSION LOGPROVIDER LOGSERVICE TIMEOUT 10)
+qi_create_bin(dumper dump.cpp DEPENDS QICORE)
+qi_create_session_test(test_logger SRC test_logger.cpp DEPENDS QI GTEST TESTSESSION QICORE TIMEOUT 10)
+qi_create_bin(manager manager.cpp   DEPENDS QI QICORE TESTSESSION)
+qi_create_bin(provider provider.cpp DEPENDS QI QICORE TESTSESSION)
+qi_create_bin(listener listener.cpp DEPENDS QI QICORE TESTSESSION)

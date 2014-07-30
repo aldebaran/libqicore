@@ -4,4 +4,4 @@ project(QiCore-Timeline)
 
 qi_create_bin(qicore-timeline
   qimain.cpp
-  DEPENDS qi qicore_compat qimessaging)
+  DEPENDS qi qicore_compat)

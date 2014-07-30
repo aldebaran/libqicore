@@ -9,7 +9,7 @@
 #define INPUT_P_H_
 
 #include <alserial/alserial.h>
-#include <qitype/metamethod.hpp>
+#include <qi/type/metamethod.hpp>
 #include <qicore-compat/model/inputmodel.hpp>
 
 namespace qi
