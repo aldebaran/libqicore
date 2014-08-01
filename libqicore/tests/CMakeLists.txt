@@ -16,4 +16,4 @@ function(qi_create_session_test name)
   endif()
 endfunction()
 
-qi_create_session_test(test_behavior SRC test_behavior.cpp DEPENDS QI GTEST TESTSESSION TIMEOUT 10)
+#qi_create_session_test(test_behavior SRC test_behavior.cpp DEPENDS QI GTEST TESTSESSION TIMEOUT 10)

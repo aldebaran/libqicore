@@ -5,7 +5,7 @@ include_directories(".")
 
 set(PUBLIC_HEADERS
     qicore/api.hpp
-    qicore/behavior.hpp
+    #qicore/behavior.hpp
     qicore/loglistener.hpp
     qicore/logmanager.hpp
     qicore/logmessage.hpp
@@ -15,7 +15,7 @@ qi_install_header(${PUBLIC_HEADERS})
 
 qi_create_module(qicore SRC
   ${PUBLIC_HEADERS}
-  src/behavior.cpp src/behaviormodel.cpp src/format_behavior_model.cpp
+  #src/behavior.cpp src/behaviormodel.cpp src/format_behavior_model.cpp
   src/loglistener_proxy.cpp
   src/logmanager_proxy.cpp
   src/logprovider_proxy.cpp
@@ -24,7 +24,7 @@ qi_create_module(qicore SRC
   src/logproviderimpl.hpp
   DEPENDS BOOST
 )
-qi_use_lib(qicore qilang)
+qi_use_lib(qicore QI)
 qi_stage_lib(qicore)
 
 add_subdirectory("tests")
