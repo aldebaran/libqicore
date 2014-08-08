@@ -12,12 +12,13 @@ int main(int argc, char** argv)
 {
   qi::ApplicationSession app(argc, argv);
   app.start();
-
+  // import module
+  qi::AnyModule mod = qi::import("qicore");
   // get service Logger
   qi::LogManagerPtr logger = app.session()->service("LogManager");
 
   // register Logger Provider
-  qi::LogProviderPtr provider = qi::import("qicore").call<qi::LogProviderPtr>("makeLogProvider", logger);
+  qi::LogProviderPtr provider = mod.call<qi::LogProviderPtr>("makeLogProvider", logger);
   int id = logger->addProvider(provider);
   qiLogFatal("myfoo.bar") << "fatal log";
   qiLogError("myfoo.bar") << "error log";
