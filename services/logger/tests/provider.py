@@ -10,7 +10,7 @@ if __name__ == "__main__":
     app = qi.ApplicationSession(sys.argv)
     app.start()
 
-     mod = qi.module("qicore")
+    mod = qi.module("qicore")
     logmanager = app.session.service("LogManager")
 
     # Create a provider
