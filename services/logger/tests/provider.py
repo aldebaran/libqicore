@@ -7,14 +7,14 @@ import qi.logging
 from ctypes import *
 
 if __name__ == "__main__":
-    cdll.LoadLibrary(qi.path.findLib("logprovider"))
-
     app = qi.ApplicationSession(sys.argv)
     app.start()
+
+    mod = qi.module("qicore")
     logmanager = app.session.service("LogManager")
 
     # Create a provider
-    provider = qi.createObject("LogProvider", logmanager)
+    provider = mod.createObject("LogProvider", logmanager)
     # Add the provider to LogManager
     id = logmanager.addProvider(provider)
 

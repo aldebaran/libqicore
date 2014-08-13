@@ -319,8 +319,8 @@ AnyObject Behavior::makeObject(const std::string& model, const std::string& fact
 
   if (!fi.name.empty())
   {
-    std::vector<qi::MetaObject::CompatibleMethod> funs;
-    int id = s.metaObject().methodId(fi.name + "::(X)");
+    int id = s.metaObject().methodId(fi.name + "::(o)");
+
     if (id > 0)
       s = s.call<qi::AnyObject>(fi.name, session());
     else
