@@ -62,7 +62,18 @@ namespace qi
   {
     DEBUG("LL ctor logger: " << &_logger << " this: " << this);
     logLevel.set(qi::LogLevel_Debug);
-    onLogMessage.setCallType(qi::MetaCallType_Queued);
+  }
+
+  // LogListenerImpl Class
+  LogListenerImpl::LogListenerImpl(LogManagerImpl& l,
+                                   boost::function<void (qi::LogListener*)> func)
+    :  LogListener(qi::Property<qi::LogLevel>::Getter(),
+                   boost::bind(&set_verbosity, this, _1, _2),
+                   boost::bind(func, this))
+    , _logger(l)
+  {
+    DEBUG("LL ctor logger: " << &_logger << " this: " << this);
+    logLevel.set(qi::LogLevel_Debug);
   }
 
   LogListenerImpl::~LogListenerImpl()
@@ -135,12 +146,19 @@ namespace qi
 
     DEBUG("LL:log filter " << pass);
     if (pass)
+    {
       onLogMessage(msg);
+
+      std::vector<qi::LogMessage> msgs;
+      msgs.push_back(msg);
+      onLogMessages(msgs);
+      onLogMessagesWithBacklog(msgs);
+    }
     DEBUG("LL:log done");
   }
 
   QI_REGISTER_MT_OBJECT(LogListener, setLevel, addFilter, clearFilters,
-                        onLogMessage, logLevel);
+                        onLogMessage, onLogMessages, onLogMessagesWithBacklog, logLevel);
   QI_REGISTER_IMPLEMENTATION(LogListener, LogListenerImpl);
 
   void registerLogListener(qi::ModuleBuilder* mb) {

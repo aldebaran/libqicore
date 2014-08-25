@@ -21,6 +21,8 @@ namespace qi
       , qi::LogListener()
     {
       qi::makeProxySignal(onLogMessage, obj, "onLogMessage");
+      qi::makeProxySignal(onLogMessages, obj, "onLogMessages");
+      qi::makeProxySignal(onLogMessagesWithBacklog, obj, "onLogMessagesWithBacklog");
       qi::makeProxyProperty(logLevel, obj, "logLevel");
     }
 
