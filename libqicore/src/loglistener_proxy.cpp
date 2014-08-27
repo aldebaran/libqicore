@@ -11,6 +11,9 @@
 #include <qicore/loglistener.hpp>
 #include <qicore/logmessage.hpp>
 
+bool qi::detail::ForceProxyInclusion<qi::LogListener>::dummyCall()
+{ return true; }
+
 namespace qi
 {
   class LogListenerProxy : public qi::Proxy, public LogListener

@@ -55,5 +55,13 @@ namespace qi
   typedef qi::Object<LogListener> LogListenerPtr;
 } // !qi
 
+namespace qi {
+namespace detail {
+template <>
+struct ForceProxyInclusion<qi::LogListener>
+{
+  bool dummyCall();
+};
+}}
 
 #endif // !LOGLISTENER_HPP_

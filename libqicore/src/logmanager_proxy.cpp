@@ -8,6 +8,9 @@
 #include <qicore/logmanager.hpp>
 #include <qicore/loglistener.hpp>
 
+bool qi::detail::ForceProxyInclusion<qi::LogManager>::dummyCall()
+{ return true; }
+
 namespace qi
 {
   class LogManagerProxy : public qi::Proxy, public LogManager
