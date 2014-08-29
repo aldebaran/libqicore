@@ -37,7 +37,7 @@ namespace qi
 namespace qi {
 namespace detail {
 template <>
-struct ForceProxyInclusion<qi::LogManager>
+struct QICORE_API ForceProxyInclusion<qi::LogManager>
 {
   bool dummyCall();
 };
