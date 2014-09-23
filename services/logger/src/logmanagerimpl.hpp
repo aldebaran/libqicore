@@ -17,6 +17,7 @@
 
 # include <boost/shared_ptr.hpp>
 # include <boost/thread/mutex.hpp>
+# include <boost/circular_buffer.hpp>
 
 # include <qicore/logmanager.hpp>
 # include <qicore/logmessage.hpp>
@@ -48,6 +49,8 @@ namespace qi
     void recomputeVerbosities(qi::LogLevel from,
                               qi::LogLevel to);
 
+    void pushBacklog(LogListener* listener);
+
     qi::LogLevel _maxLevel;
     std::vector<std::pair<std::string, qi::LogLevel> > _filters;
     std::vector<boost::weak_ptr<LogListenerImpl> >     _listeners;
@@ -58,6 +61,7 @@ namespace qi
     std::map<int, LogProviderPtr> _providers;
 
     boost::mutex _dataMutex;
+    boost::circular_buffer<qi::LogMessage> _historyMessages;
   };
 } // !qi
 

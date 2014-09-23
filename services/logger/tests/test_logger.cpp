@@ -72,6 +72,24 @@ void onLogMessage(const qi::LogMessage& msg)
   messages[p - 1] = msg;
 }
 
+void onLogMessages(std::vector<qi::LogMessage> msgs)
+{
+  for (unsigned int i = 0; i < msgs.size(); ++i)
+  {
+    qi::LogMessage msg = msgs.at(i);
+    std::stringstream ss;
+    ss << "MESSAGE BL" << msg.level
+       << " " << msg.source
+       << " " << msg.message
+       << " " << msg.category
+       << " " << msg.location
+       << std::endl;
+    std::cerr << ss.str() << std::endl;
+    int p = ++messagesCount;
+    messages[p - 1] = msg;
+  }
+}
+
 bool waitLogMessage(int count, bool exact = true)
 {
   for (int i = 0; count > *messagesCount && i < 50; ++i)
@@ -112,6 +130,39 @@ TEST(Logger, Test)
   listener.reset();
 }
 
+
+TEST(Logger, TestWithBacklog)
+{
+  using namespace qi::log;
+  TestSessionPair p;
+  std::string loggerName = startService(*p.server());
+
+  int id = startProvider(*p.server(), loggerName);
+  messagesCount = 0;
+  qi::os::msleep(600);
+  qiLogError("foo") << "barBL";
+  qiLogWarning("foo") << "barBL";
+  qiLogInfo("foo") << "barBL";
+  qi::LogListenerPtr listener = startClient(*p.client(), loggerName);
+  ASSERT_TRUE(listener);
+
+  listener->clearFilters();
+  listener->addFilter("foo", qi::LogLevel_Debug);
+  listener->setLevel(qi::LogLevel_Info);
+  listener->onLogMessagesWithBacklog.connect(&onLogMessages);
+  qi::os::msleep(600);
+  ASSERT_TRUE(waitLogMessage(3, true));
+
+  qiLogError("foo") << "bar";
+  qi::os::msleep(600);
+  ASSERT_TRUE(waitLogMessage(4, true));
+  qiLogWarning("foo") << "bar";
+  ASSERT_TRUE(waitLogMessage(5, true));
+
+  qi::LogManagerPtr logger = (*p.client()).service(loggerName);
+  logger->removeProvider(id);
+  listener.reset();
+}
 
 TEST(Logger, RemoveProviderTest)
 {

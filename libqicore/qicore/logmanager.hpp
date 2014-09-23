@@ -34,4 +34,13 @@ namespace qi
   typedef qi::Object<LogManager> LogManagerPtr;
 } // !qi
 
+namespace qi {
+namespace detail {
+template <>
+struct QICORE_API ForceProxyInclusion<qi::LogManager>
+{
+  bool dummyCall();
+};
+}}
+
 #endif // !LOGMANAGER_HPP_

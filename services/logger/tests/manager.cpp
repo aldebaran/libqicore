@@ -38,7 +38,7 @@ std::string startService(qi::SessionPtr s)
   try
   {
 //    qi::os::dlopen("logmanager");
-    serviceId = s->registerService("LogManager", qi::import("qicore").call<qi::AnyObject>("LogManager"));
+    serviceId = s->registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
   }
   catch (const std::exception& e)
   {

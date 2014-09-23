@@ -25,6 +25,9 @@ namespace qi
   {
   public:
     LogListenerImpl(LogManagerImpl& l);
+    LogListenerImpl(LogManagerImpl& l,
+                    boost::function<void (LogListener*)> func);
+
     virtual ~LogListenerImpl();
 
     virtual void setLevel(qi::LogLevel level);

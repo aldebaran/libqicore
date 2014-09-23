@@ -11,6 +11,9 @@
 #include <qicore/loglistener.hpp>
 #include <qicore/logmessage.hpp>
 
+bool qi::detail::ForceProxyInclusion<qi::LogListener>::dummyCall()
+{ return true; }
+
 namespace qi
 {
   class LogListenerProxy : public qi::Proxy, public LogListener
@@ -21,6 +24,8 @@ namespace qi
       , qi::LogListener()
     {
       qi::makeProxySignal(onLogMessage, obj, "onLogMessage");
+      qi::makeProxySignal(onLogMessages, obj, "onLogMessages");
+      qi::makeProxySignal(onLogMessagesWithBacklog, obj, "onLogMessagesWithBacklog");
       qi::makeProxyProperty(logLevel, obj, "logLevel");
     }
 

@@ -37,13 +37,17 @@ namespace qi
     virtual void clearFilters() = 0;
 
   public:
-    qi::Signal<qi::LogMessage> onLogMessage;
     qi::Property<qi::LogLevel> logLevel;
+    qi::Signal<qi::LogMessage>               onLogMessage;
+    qi::Signal<std::vector<qi::LogMessage> > onLogMessages;
+    qi::Signal<std::vector<qi::LogMessage> > onLogMessagesWithBacklog;
 
   protected:
     LogListener(qi::Property<qi::LogLevel>::Getter get,
-                qi::Property<qi::LogLevel>::Setter set)
+                qi::Property<qi::LogLevel>::Setter set,
+                boost::function<void (bool)> func = boost::function<void (bool)>())
       : logLevel(get, set)
+      , onLogMessagesWithBacklog(func)
     {
     }
   };
@@ -51,5 +55,13 @@ namespace qi
   typedef qi::Object<LogListener> LogListenerPtr;
 } // !qi
 
+namespace qi {
+namespace detail {
+template <>
+struct QICORE_API ForceProxyInclusion<qi::LogListener>
+{
+  bool dummyCall();
+};
+}}
 
 #endif // !LOGLISTENER_HPP_

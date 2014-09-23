@@ -17,6 +17,8 @@
 
 QI_TYPE_INTERFACE(LogManager);
 
+#define MAX_MSGS_BUFFERS 500
+
 qiLogCategory("log.manager");
 
 static bool debug = getenv("LOG_DEBUG");
@@ -51,14 +53,25 @@ namespace qi
 {
   // LogManagerImpl Class
   LogManagerImpl::LogManagerImpl()
-    : _maxLevel(qi::LogLevel_Silent)
+    : _maxLevel(qi::log::logLevel())
   {
     DEBUG("LM instanciating");
+    _historyMessages.rset_capacity(MAX_MSGS_BUFFERS);
   }
 
   LogManagerImpl::~LogManagerImpl()
   {
     DEBUG("LM ~LogManager");
+  }
+
+  void LogManagerImpl::pushBacklog(qi::LogListener* listener)
+  {
+    boost::mutex::scoped_lock dataLock(_dataMutex);
+    std::vector<qi::LogMessage> historyLog;
+    for (unsigned int i = 0; i < _historyMessages.size(); ++i)
+      historyLog.push_back(_historyMessages[i]);
+
+    listener->onLogMessagesWithBacklog(historyLog);
   }
 
   void LogManagerImpl::log(const std::vector<LogMessage>& msgs)
@@ -70,6 +83,7 @@ namespace qi
     for (unsigned int msgsIt = 0; msgsIt < msgs.size(); ++msgsIt)
     {
       DEBUG("LM:log MSG' it " << msgsIt << " value: " << msgs[msgsIt].message);
+      _historyMessages.push_back(msgs[msgsIt]);
 
       for (unsigned int listenerIt = 0; listenerIt < _listeners.size();)
       {
@@ -104,7 +118,8 @@ namespace qi
   {
     DEBUG("LM getListener");
     boost::shared_ptr<LogListenerImpl> ptr =
-        boost::make_shared<LogListenerImpl>(boost::ref(*this));
+        boost::make_shared<LogListenerImpl>(boost::ref(*this),
+                                            boost::bind(&LogManagerImpl::pushBacklog, this, _1));
     boost::weak_ptr<LogListenerImpl> l(ptr);
 
     boost::mutex::scoped_lock dataLock(_dataMutex);
@@ -123,7 +138,7 @@ namespace qi
     if (_maxLevel >= from && _maxLevel >= to)
       return;
 
-    qi::LogLevel newMax = qi::LogLevel_Silent;
+    qi::LogLevel newMax = qi::log::logLevel();
 
     {
       boost::mutex::scoped_lock dataLock(_dataMutex);
