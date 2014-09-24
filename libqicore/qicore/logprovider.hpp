@@ -41,11 +41,13 @@ namespace qi
     virtual void addFilter(const std::string& filter,
                            qi::LogLevel level) = 0;
     virtual void setFilters(const std::vector<std::pair<std::string, qi::LogLevel> >& filters) = 0;
+    virtual void setLogger(LogManagerPtr logger) = 0;
   };
 
   typedef qi::Object<LogProvider> LogProviderPtr;
 
   QICORE_API LogProviderPtr makeLogProvider(LogManagerPtr logger);
+  QICORE_API LogProviderPtr makeLogProvider();
 } // !qi
 
 #endif // !LOGPROVIDER_HPP_

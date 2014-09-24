@@ -34,6 +34,7 @@ namespace qi
   class LogProviderImpl : public LogProvider
   {
   public:
+    LogProviderImpl();
     LogProviderImpl(LogManagerPtr logger);
     virtual ~LogProviderImpl();
 
@@ -41,6 +42,7 @@ namespace qi
     virtual void addFilter(const std::string& filter,
                            qi::LogLevel level);
     virtual void setFilters(const std::vector<std::pair<std::string, qi::LogLevel> >& filters);
+    virtual void setLogger(LogManagerPtr logger);
 
   private:
     void sendLogs();

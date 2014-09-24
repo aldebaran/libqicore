@@ -31,6 +31,10 @@ namespace qi
     {
       _obj.call<void>("setFilters", p0);
     }
+    void setLogger(LogManagerPtr p0)
+    {
+      _obj.call<void>("setLogger", p0);
+    }
   };
 
   QI_REGISTER_PROXY_INTERFACE(LogProviderProxy, LogProvider);
