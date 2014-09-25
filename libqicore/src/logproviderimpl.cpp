@@ -10,13 +10,13 @@
 #include <boost/lockfree/queue.hpp>
 
 #include <qi/anymodule.hpp>
+#include <qi/anyobject.hpp>
 #include <qi/type/objecttypebuilder.hpp>
+#include <qi/os.hpp>
 
 #include "src/logproviderimpl.hpp"
 
 QI_TYPE_INTERFACE(LogProvider);
-
-#define MAX_MSGS_BUFFERS 128
 
 qiLogCategory("log.provider");
 
@@ -28,7 +28,7 @@ static bool logDebug = getenv("LOG_DEBUG");
 
 namespace qi
 {
-  boost::lockfree::queue<qi::LogMessage*> _pendingMessages(MAX_MSGS_BUFFERS);
+  boost::lockfree::queue<qi::LogMessage*> _pendingMessages(qi::os::getEnvDefault("QI_LOG_MAX_MSGS_BUFFERS", 500));
 
   LogProviderPtr makeLogProvider()
   {

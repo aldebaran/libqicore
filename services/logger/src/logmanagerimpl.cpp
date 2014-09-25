@@ -11,13 +11,12 @@
 #include <qicore/logmanager.hpp>
 
 #include <qi/anymodule.hpp>
+#include <qi/os.hpp>
 
 #include "src/logmanagerimpl.hpp"
 #include "src/loglistenerimpl.hpp"
 
 QI_TYPE_INTERFACE(LogManager);
-
-#define MAX_MSGS_BUFFERS 500
 
 qiLogCategory("log.manager");
 
@@ -56,7 +55,7 @@ namespace qi
     : _maxLevel(qi::log::logLevel())
   {
     DEBUG("LM instanciating");
-    _historyMessages.rset_capacity(MAX_MSGS_BUFFERS);
+    _historyMessages.rset_capacity(qi::os::getEnvDefault("QI_LOG_MAX_MSGS_BUFFERS", 500));
   }
 
   LogManagerImpl::~LogManagerImpl()
