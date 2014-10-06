@@ -13,6 +13,7 @@
 #include <qi/anyobject.hpp>
 #include <qi/type/objecttypebuilder.hpp>
 #include <qi/os.hpp>
+#include <qi/getenv.hpp>
 
 #include "src/logproviderimpl.hpp"
 

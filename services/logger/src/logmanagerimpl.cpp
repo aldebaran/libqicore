@@ -12,6 +12,7 @@
 
 #include <qi/anymodule.hpp>
 #include <qi/os.hpp>
+#include <qi/getenv.hpp>
 
 #include "src/logmanagerimpl.hpp"
 #include "src/loglistenerimpl.hpp"
