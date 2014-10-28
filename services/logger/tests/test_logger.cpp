@@ -131,6 +131,43 @@ TEST(Logger, Test)
 }
 
 
+TEST(Logger, TestWithoutService)
+{
+  using namespace qi::log;
+  TestSessionPair p;
+  qi::LogProviderPtr ptr = qi::import("qicore").call<qi::LogProviderPtr>("makeLogProvider");
+
+  messagesCount = 0;
+  qi::os::msleep(600);
+  qiLogError("foo") << "barBL";
+  qiLogWarning("foo") << "barBL";
+  qiLogInfo("foo") << "barBL";
+
+  std::string loggerName = startService(*p.server());
+  qi::LogManagerPtr logger = (*p.client()).service(loggerName);
+  ptr->setLogger(logger);
+  int id = logger->addProvider(ptr);
+
+  qi::LogListenerPtr listener = startClient(*p.client(), loggerName);
+  ASSERT_TRUE(listener);
+
+  listener->clearFilters();
+  listener->addFilter("foo", qi::LogLevel_Debug);
+  listener->setLevel(qi::LogLevel_Info);
+  listener->onLogMessage.connect(&onLogMessage);
+  qi::os::msleep(600);
+  ASSERT_TRUE(waitLogMessage(3, true));
+
+  qiLogError("foo") << "bar";
+  qi::os::msleep(600);
+  ASSERT_TRUE(waitLogMessage(4, true));
+  qiLogWarning("foo") << "bar";
+  ASSERT_TRUE(waitLogMessage(5, true));
+
+  logger->removeProvider(id);
+  listener.reset();
+}
+
 TEST(Logger, TestWithBacklog)
 {
   using namespace qi::log;

@@ -10,13 +10,14 @@
 #include <boost/lockfree/queue.hpp>
 
 #include <qi/anymodule.hpp>
+#include <qi/anyobject.hpp>
 #include <qi/type/objecttypebuilder.hpp>
+#include <qi/os.hpp>
+#include <qi/getenv.hpp>
 
 #include "src/logproviderimpl.hpp"
 
 QI_TYPE_INTERFACE(LogProvider);
-
-#define MAX_MSGS_BUFFERS 128
 
 qiLogCategory("log.provider");
 
@@ -28,13 +29,17 @@ static bool logDebug = getenv("LOG_DEBUG");
 
 namespace qi
 {
-  boost::lockfree::queue<qi::LogMessage*> _pendingMessages(MAX_MSGS_BUFFERS);
+  boost::lockfree::queue<qi::LogMessage*> _pendingMessages(qi::os::getEnvDefault("QI_LOG_MAX_MSGS_BUFFERS", 500));
+
+  LogProviderPtr makeLogProvider()
+  {
+    return boost::shared_ptr<qi::LogProviderImpl>(new LogProviderImpl());
+  }
 
   LogProviderPtr makeLogProvider(LogManagerPtr logger)
   {
     return boost::shared_ptr<qi::LogProviderImpl>(new LogProviderImpl(logger));
   }
-
   static LogProviderPtr instance;
   qi::Future<int> registerToLogger(LogManagerPtr logger)
   {
@@ -69,6 +74,24 @@ namespace qi
     ::qi::log::addFilter("qi.*", qi::LogLevel_Silent, subscriber);
   }
 
+  LogProviderImpl::LogProviderImpl()
+    : _logger()
+  {
+    DEBUG("LP subscribed this " << this);
+    _subscriber = qi::log::addLogHandler("remoteLogger",
+                                         boost::bind(&LogProviderImpl::log,
+                                                     this,
+                                                     _1, _2, _3, _4, _5, _6, _7));
+
+    DEBUG("LP subscribed " << _subscriber);
+    silenceQiCategories(_subscriber);
+    ++_ready;
+    sendTask.setName("LogProvider");
+    sendTask.setUsPeriod(100 * 1000); // 100ms
+    sendTask.setCallback(&LogProviderImpl::sendLogs, this);
+    sendTask.start();
+  }
+
   LogProviderImpl::LogProviderImpl(LogManagerPtr logger)
     : _logger(logger)
   {
@@ -87,13 +110,17 @@ namespace qi
     sendTask.start();
   }
 
-
   LogProviderImpl::~LogProviderImpl()
   {
     DEBUG("LP ~LogProviderImpl");
     sendTask.stop();
     sendLogs();
     qi::log::removeLogHandler("remoteLogger");
+  }
+
+  void LogProviderImpl::setLogger(LogManagerPtr logger)
+  {
+    _logger = logger;
   }
 
   void LogProviderImpl::sendLogs()
@@ -200,12 +227,13 @@ namespace qi
       ::qi::log::addFilter("*", wildcardLevel, _subscriber);
   }
 
-  QI_REGISTER_MT_OBJECT(LogProvider, setLevel, addFilter, setFilters);
+  QI_REGISTER_MT_OBJECT(LogProvider, setLevel, addFilter, setFilters, setLogger);
   QI_REGISTER_IMPLEMENTATION(LogProvider, LogProviderImpl);
 
   void registerLogProvider(qi::ModuleBuilder* mb) {
     mb->advertiseFactory<LogProviderImpl, LogManagerPtr>("LogProvider");
-    mb->advertiseMethod("makeLogProvider", &makeLogProvider);
+    mb->advertiseMethod("makeLogProvider", static_cast<LogProviderPtr(*) (LogManagerPtr)>(&makeLogProvider));
+    mb->advertiseMethod("makeLogProvider", static_cast<LogProviderPtr(*) ()>(&makeLogProvider));
     mb->advertiseMethod("registerToLogger", &registerToLogger);
   }
 
