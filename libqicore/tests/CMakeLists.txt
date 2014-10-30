@@ -17,3 +17,7 @@ function(qi_create_session_test name)
 endfunction()
 
 #qi_create_session_test(test_behavior SRC test_behavior.cpp DEPENDS QI GTEST TESTSESSION TIMEOUT 10)
+
+qi_create_gtest(test_file SRC test_file.cpp DEPENDS QICORE GTEST TESTSESSION)
+
+qi_create_bin(send_robot_icon SRC send_robot_icon.cpp DEPENDS QICORE)

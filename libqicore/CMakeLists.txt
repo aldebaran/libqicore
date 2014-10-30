@@ -10,6 +10,7 @@ set(PUBLIC_HEADERS
     qicore/logmanager.hpp
     qicore/logmessage.hpp
     qicore/logprovider.hpp
+    qicore/file.hpp
     )
 qi_install_header(${PUBLIC_HEADERS})
 
@@ -22,6 +23,12 @@ qi_create_module(qicore SRC
   src/registration.cpp
   src/logproviderimpl.cpp
   src/logproviderimpl.hpp
+  src/file_proxy.cpp
+  src/fileimpl.cpp
+  src/fileoperation.cpp
+  src/progressnotifier.cpp
+  src/progressnotifier_p.hpp
+  src/progressnotifier_proxy.cpp
   DEPENDS BOOST
 )
 qi_use_lib(qicore QI)
