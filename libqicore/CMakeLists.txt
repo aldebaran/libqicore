@@ -35,3 +35,4 @@ qi_use_lib(qicore QI)
 qi_stage_lib(qicore)
 
 add_subdirectory("tests")
+add_subdirectory("example")
