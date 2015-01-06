@@ -9,6 +9,7 @@
 #ifndef LOGMANAGER_HPP_
 # define LOGMANAGER_HPP_
 
+# include <qi/macro.hpp>
 # include <qicore/api.hpp>
 # include <qicore/logmessage.hpp>
 
@@ -26,7 +27,12 @@ namespace qi
     virtual ~LogManager() {};
 
     virtual void log(const std::vector<LogMessage>& msgs) = 0;
-    virtual LogListenerPtr getListener() = 0;
+
+    virtual LogListenerPtr createListener() = 0;
+    /**
+     * \deprecated since 2.3 use createListener() instead
+     */
+    virtual QI_API_DEPRECATED LogListenerPtr getListener() = 0;
     virtual int addProvider(LogProviderPtr provider) = 0;
     virtual void removeProvider(int idProvider) = 0;
   };

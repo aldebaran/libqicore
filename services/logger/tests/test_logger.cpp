@@ -23,7 +23,7 @@
 qi::LogListenerPtr startClient(qi::Session& s, const std::string& serviceName)
 {
   qi::LogManagerPtr logger = s.service(serviceName);
-  return logger->getListener();
+  return logger->createListener();
 }
 
 int startProvider(qi::Session& s, const std::string& serviceName)

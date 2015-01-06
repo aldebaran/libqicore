@@ -52,7 +52,7 @@ int main(int argc, char** argv)
   s.connect(target);
   qi::LogManagerPtr logger = s.service("LogManager");
   assert(logger);
-  qi::LogListenerPtr listener = logger->getListener();
+  qi::LogListenerPtr listener = logger->createListener();
   assert(listener);
   listener->onLogMessage.connect(&onLogMessage2);
   listener->setLevel(::qi::LogLevel_Info);
