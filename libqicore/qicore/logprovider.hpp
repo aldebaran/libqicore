@@ -19,6 +19,7 @@
 #include <qicore/logmessage.hpp>
 
 #include <qi/anyobject.hpp>
+#include <qi/session.hpp>
 
 namespace qi
 {
@@ -50,6 +51,8 @@ typedef qi::Object<LogProvider> LogProviderPtr;
 
 QICORE_API LogProviderPtr makeLogProvider(LogManagerPtr logger);
 QICORE_API LogProviderPtr makeLogProvider();
+
+QICORE_API qi::FutureSync<LogProviderPtr> initializeLogging(SessionPtr session);
 } // !qi
 
 #endif // !LOGPROVIDER_HPP_

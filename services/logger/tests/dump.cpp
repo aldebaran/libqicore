@@ -53,7 +53,7 @@ int main(int argc, char** argv)
   listener->onLogMessage.connect(&onLogMessage2);
   listener->setLevel(::qi::LogLevel_Info);
   // listener->asObject()->connect("onLogMessage", &onLogMessage);
-  qi::import("qicore").call<void>("registerToLogger", logger);
+  qi::import("qicore").call<void>("initializeLogging", s);
 
   boost::thread t(&ping);
   app.run();

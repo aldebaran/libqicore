@@ -8,6 +8,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/lockfree/queue.hpp>
+#include <boost/lambda/algorithm.hpp>
 
 #include <qi/anymodule.hpp>
 #include <qi/anyobject.hpp>
@@ -31,6 +32,7 @@ static bool logDebug = getenv("LOG_DEBUG");
 
 namespace qi
 {
+
 boost::lockfree::queue<qi::LogMessage*> _pendingMessages(qi::os::getEnvDefault("QI_LOG_MAX_MSGS_BUFFERS", 500));
 
 LogProviderPtr makeLogProvider()
@@ -42,30 +44,25 @@ LogProviderPtr makeLogProvider(LogManagerPtr logger)
 {
   return boost::shared_ptr<qi::LogProviderImpl>(new LogProviderImpl(logger));
 }
+
+qi::FutureSync<LogProviderPtr> initializeLogging(SessionPtr session)
+{
+  LogManagerPtr lm = session->service("LogManager");
+  return registerToLogger(lm).thenR<LogProviderPtr>(boost::lambda::var(lm));
+}
+
 static LogProviderPtr instance;
 qi::Future<int> registerToLogger(LogManagerPtr logger)
 {
   DEBUG("registering new provider");
   if (instance)
-  {
-    qiLogError("Provider already registered for this process");
-    return qi::Future<int>(-1);
-  }
+    throw std::runtime_error("Provider already registered for this process");
 
-  LogProviderPtr ptr;
-  try
-  {
-    ptr = makeLogProvider(logger);
-  }
-  catch (const std::exception& e)
-  {
-    qiLogError() << e.what();
-  }
+  instance = makeLogProvider(logger);
 
-  instance = ptr;
-  DEBUG("LP registerToLogger " << &ptr);
+  DEBUG("LP registerToLogger " << instance);
 
-  return logger.async<int>("addProvider", ptr);
+  return logger.async<int>("addProvider", instance);
 }
 
 static void silenceQiCategories(qi::log::SubscriberId subscriber)
@@ -241,6 +238,7 @@ void registerLogProvider(qi::ModuleBuilder* mb)
   mb->advertiseFactory<LogProviderImpl, LogManagerPtr>("LogProvider");
   mb->advertiseMethod("makeLogProvider", static_cast<LogProviderPtr (*)(LogManagerPtr)>(&makeLogProvider));
   mb->advertiseMethod("makeLogProvider", static_cast<LogProviderPtr (*)()>(&makeLogProvider));
+  mb->advertiseMethod("initializeLogging", &initializeLogging);
   mb->advertiseMethod("registerToLogger", &registerToLogger);
 }
 
