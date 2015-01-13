@@ -97,7 +97,7 @@ bool waitLogMessage(int count, bool exact = true)
 
   bool ok = exact ? (count == *messagesCount) : (count <= *messagesCount);
   if (!ok)
-    qiLogError("test") << "Failed wait for " << count << " : " << *messagesCount;
+    std::cerr << "ERROR: Failed wait for " << count << " : " << *messagesCount << std::endl;
 
   return ok;
 }
@@ -117,10 +117,9 @@ TEST(Logger, Test)
   listener->addFilter("foo", qi::LogLevel_Debug);
   listener->setLevel(qi::LogLevel_Info);
   listener->onLogMessage.connect(&onLogMessage);
-  qi::os::msleep(700);
+  qi::os::msleep(100);
   messagesCount = 0;
   qiLogError("foo") << "bar";
-  qi::os::msleep(700);
   ASSERT_TRUE(waitLogMessage(1, true));
   qiLogWarning("foo") << "bar";
   ASSERT_TRUE(waitLogMessage(2, true));
@@ -138,15 +137,11 @@ TEST(Logger, TestWithoutService)
   qi::LogProviderPtr ptr = qi::import("qicore").call<qi::LogProviderPtr>("makeLogProvider");
 
   messagesCount = 0;
-  qi::os::msleep(700);
   qiLogError("foo") << "barBL";
   qiLogWarning("foo") << "barBL";
   qiLogInfo("foo") << "barBL";
 
   std::string loggerName = startService(*p.server());
-  qi::LogManagerPtr logger = (*p.client()).service(loggerName);
-  ptr->setLogger(logger);
-  int id = logger->addProvider(ptr);
 
   qi::LogListenerPtr listener = startClient(*p.client(), loggerName);
   ASSERT_TRUE(listener);
@@ -155,11 +150,14 @@ TEST(Logger, TestWithoutService)
   listener->addFilter("foo", qi::LogLevel_Debug);
   listener->setLevel(qi::LogLevel_Info);
   listener->onLogMessage.connect(&onLogMessage);
-  qi::os::msleep(700);
+
+  qi::LogManagerPtr logger = (*p.client()).service(loggerName);
+  ptr->setLogger(logger);
+  int id = logger->addProvider(ptr);
+
   ASSERT_TRUE(waitLogMessage(3, true));
 
   qiLogError("foo") << "bar";
-  qi::os::msleep(700);
   ASSERT_TRUE(waitLogMessage(4, true));
   qiLogWarning("foo") << "bar";
   ASSERT_TRUE(waitLogMessage(5, true));
@@ -176,7 +174,6 @@ TEST(Logger, TestWithBacklog)
 
   int id = startProvider(*p.server(), loggerName);
   messagesCount = 0;
-  qi::os::msleep(700);
   qiLogError("foo") << "barBL";
   qiLogWarning("foo") << "barBL";
   qiLogInfo("foo") << "barBL";
@@ -187,11 +184,9 @@ TEST(Logger, TestWithBacklog)
   listener->addFilter("foo", qi::LogLevel_Debug);
   listener->setLevel(qi::LogLevel_Info);
   listener->onLogMessagesWithBacklog.connect(&onLogMessages);
-  qi::os::msleep(700);
   ASSERT_TRUE(waitLogMessage(3, true));
 
   qiLogError("foo") << "bar";
-  qi::os::msleep(700);
   ASSERT_TRUE(waitLogMessage(4, true));
   qiLogWarning("foo") << "bar";
   ASSERT_TRUE(waitLogMessage(5, true));
@@ -216,23 +211,21 @@ TEST(Logger, RemoveProviderTest)
   listener->addFilter("foo", qi::LogLevel_Debug);
   listener->setLevel(qi::LogLevel_Info);
   listener->onLogMessage.connect(&onLogMessage);
-  qi::os::msleep(700);
+  qi::os::msleep(100);
   messagesCount = 0;
   qiLogError("foo") << "bar";
-  qi::os::msleep(700);
   ASSERT_TRUE(waitLogMessage(1, true));
   qiLogWarning("foo") << "bar";
   ASSERT_TRUE(waitLogMessage(2, true));
 
   qi::LogManagerPtr logger = (*p.client()).service(loggerName);
   logger->removeProvider(id);
-  qi::os::msleep(700);
 
   qiLogError("foo") << "bar";
-  qi::os::msleep(700); // if message isn't arrive yet it's probably it will never arrive
+  qi::os::msleep(300); // if message isn't arrive yet it's probably it will never arrive
   ASSERT_EQ(*messagesCount, 2);
   qiLogWarning("foo") << "bar";
-  qi::os::msleep(700);
+  qi::os::msleep(300);
   ASSERT_EQ(*messagesCount, 2);
 
   listener.reset();
@@ -257,13 +250,13 @@ TEST(Logger, KillProviderTest)
   listener->addFilter("foo", qi::LogLevel_Debug);
   listener->setLevel(qi::LogLevel_Info);
   listener->onLogMessage.connect(&onLogMessage);
-  qi::os::msleep(700);
+  qi::os::msleep(100);
   messagesCount = 0;
   qiLogError("foo") << "bar";
-  qi::os::msleep(700); // if message isn't arrive yet it's probably it will never arrive
+  qi::os::msleep(300); // if message isn't arrive yet it's probably it will never arrive
   ASSERT_EQ(*messagesCount, 0);
   qiLogWarning("foo") << "bar";
-  qi::os::msleep(700);
+  qi::os::msleep(300);
   ASSERT_EQ(*messagesCount, 0);
 
   qi::LogManagerPtr logger = (*p.client()).service(loggerName);
