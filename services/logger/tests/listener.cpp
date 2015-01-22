@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
   app.loadModule("qicore");
   qi::LogManagerPtr logger = app.session()->service("LogManager");
-  qi::LogListenerPtr listener = logger->getListener();
+  qi::LogListenerPtr listener = logger->createListener();
   listener->clearFilters();
   listener->setLevel(qi::LogLevel_Info);
   listener->onLogMessage.connect(&onMessage);

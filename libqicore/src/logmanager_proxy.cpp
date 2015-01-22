@@ -26,6 +26,11 @@ namespace qi
       _obj.call<void>("log", p0);
     }
 
+    LogListenerPtr createListener()
+    {
+      return _obj.call<LogListenerPtr>("createListener");
+    }
+
     LogListenerPtr getListener()
     {
       return _obj.call<LogListenerPtr>("getListener");

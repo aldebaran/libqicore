@@ -113,10 +113,9 @@ namespace qi
     DEBUG("LM:log done");
   }
 
-
-  LogListenerPtr LogManagerImpl::getListener()
+  LogListenerPtr LogManagerImpl::createListener()
   {
-    DEBUG("LM getListener");
+    DEBUG("LM createListener");
     boost::shared_ptr<LogListenerImpl> ptr =
         boost::make_shared<LogListenerImpl>(boost::ref(*this),
                                             boost::bind(&LogManagerImpl::pushBacklog, this, _1));
@@ -125,8 +124,14 @@ namespace qi
     boost::mutex::scoped_lock dataLock(_dataMutex);
     _listeners.push_back(l);
 
-    DEBUG("LM getListener ptr: " << ptr);
+    DEBUG("LM createListener ptr: " << ptr);
     return ptr;
+  }
+
+  LogListenerPtr LogManagerImpl::getListener()
+  {
+    qiLogWarning("LogManager") << "LogManager::getListener is deprecated. Please use LogManager::createListener instead.";
+    return createListener();
   }
 
   void LogManagerImpl::recomputeVerbosities(qi::LogLevel from,
@@ -349,7 +354,7 @@ bailout:
     }
   }
 
-  QI_REGISTER_MT_OBJECT(LogManager, log, getListener, addProvider, removeProvider);
+  QI_REGISTER_MT_OBJECT(LogManager, log, createListener, getListener, addProvider, removeProvider);
   QI_REGISTER_IMPLEMENTATION(LogManager, LogManagerImpl);
 
   void registerLogManager(ModuleBuilder* mb) {

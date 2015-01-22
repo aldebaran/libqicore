@@ -38,6 +38,7 @@ namespace qi
     virtual ~LogManagerImpl();
 
     virtual void log(const std::vector<LogMessage>& msgs);
+    virtual LogListenerPtr createListener();
     virtual LogListenerPtr getListener();
     virtual int addProvider(LogProviderPtr provider);
     virtual void removeProvider(int idProvider);

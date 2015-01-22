@@ -4,4 +4,5 @@
     <depends names='gtest libqi' buildtime='true' />
     <!--<depends names='libqilang' buildtime='true' runtime='true' />-->
   </qibuild>
+  <project src="dox" />
 </project>
