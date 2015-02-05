@@ -138,5 +138,5 @@ namespace qi
     boost::shared_ptr<bool> _live;
   };
 }
-QI_REGISTER_TEMPLATE_OBJECT(qi::TaskCall, start, interrupt, running, error, result);
+QI_TEMPLATE_OBJECT(qi::TaskCall, start, interrupt, running, error, result);
 #endif
