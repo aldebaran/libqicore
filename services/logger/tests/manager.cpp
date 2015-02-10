@@ -24,12 +24,8 @@ void onLogMessage(int i)
 
 void onLogMessage2(const qi::LogMessage& msg)
 {
-  std::cerr << "MESSAGE " << msg.level
-            << " " << msg.source
-            << " " << msg.message
-            << ' ' << msg.category
-            << ' ' << msg.location
-            << std::endl;
+  std::cerr << "MESSAGE " << msg.level << " " << msg.source << " " << msg.message << ' ' << msg.category << ' '
+            << msg.location << std::endl;
 }
 
 std::string startService(qi::SessionPtr s)
@@ -37,7 +33,6 @@ std::string startService(qi::SessionPtr s)
   unsigned int serviceId = 0;
   try
   {
-//    qi::os::dlopen("logmanager");
     serviceId = s->registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
   }
   catch (const std::exception& e)

@@ -19,7 +19,6 @@
 #include <qicore/logmanager.hpp>
 #include <qicore/loglistener.hpp>
 
-
 qi::LogListenerPtr startClient(qi::Session& s, const std::string& serviceName)
 {
   qi::LogManagerPtr logger = s.service(serviceName);
@@ -61,12 +60,8 @@ qi::LogMessage* messages = new qi::LogMessage[100];
 void onLogMessage(const qi::LogMessage& msg)
 {
   std::stringstream ss;
-  ss << "MESSAGE " << msg.level
-     << " " << msg.source
-     << " " << msg.message
-     << " " << msg.category
-     << " " << msg.location
-     << std::endl;
+  ss << "MESSAGE " << msg.level << " " << msg.source << " " << msg.message << " " << msg.category << " "
+     << msg.location << std::endl;
   std::cerr << ss.str() << std::endl;
   int p = ++messagesCount;
   messages[p - 1] = msg;
@@ -78,12 +73,8 @@ void onLogMessages(std::vector<qi::LogMessage> msgs)
   {
     qi::LogMessage msg = msgs.at(i);
     std::stringstream ss;
-    ss << "MESSAGE BL" << msg.level
-       << " " << msg.source
-       << " " << msg.message
-       << " " << msg.category
-       << " " << msg.location
-       << std::endl;
+    ss << "MESSAGE BL" << msg.level << " " << msg.source << " " << msg.message << " " << msg.category << " "
+       << msg.location << std::endl;
     std::cerr << ss.str() << std::endl;
     int p = ++messagesCount;
     messages[p - 1] = msg;
@@ -128,7 +119,6 @@ TEST(Logger, Test)
   logger->removeProvider(id);
   listener.reset();
 }
-
 
 TEST(Logger, TestWithoutService)
 {
@@ -230,7 +220,6 @@ TEST(Logger, RemoveProviderTest)
 
   listener.reset();
 }
-
 
 TEST(Logger, KillProviderTest)
 {

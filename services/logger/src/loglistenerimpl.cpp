@@ -14,10 +14,12 @@
 QI_TYPE_INTERFACE(LogListener);
 
 static bool debug = getenv("LOG_DEBUG");
-#define DEBUG(a)                                \
-  do {                                          \
-    if (debug) std::cerr << a << std::endl;     \
-  } while(0)
+#define DEBUG(a)                   \
+  do                               \
+  {                                \
+    if (debug)                     \
+      std::cerr << a << std::endl; \
+  } while (0)
 
 /* We have multiple inputs: logproviders that push messages and that we
  * must configure to avoid them wasting bandwidth. They all have the same conf
@@ -42,127 +44,128 @@ static bool debug = getenv("LOG_DEBUG");
 
 namespace qi
 {
-  bool set_verbosity(qi::LogListenerImpl* ll,
-                     qi::LogLevel& level,
-                     const qi::LogLevel& newvalue)
-  {
-    DEBUG("LL verbosity prop " << level);
-    qi::LogLevel old = level;
-    level = newvalue;
-    ll->_logger.recomputeVerbosities(old, newvalue);
+bool set_verbosity(qi::LogListenerImpl* ll, qi::LogLevel& level, const qi::LogLevel& newvalue)
+{
+  DEBUG("LL verbosity prop " << level);
+  qi::LogLevel old = level;
+  level = newvalue;
+  ll->_logger.recomputeVerbosities(old, newvalue);
 
-    return true;
+  return true;
+}
+
+// LogListenerImpl Class
+LogListenerImpl::LogListenerImpl(LogManagerImpl& l)
+  : LogListener(qi::Property<qi::LogLevel>::Getter(), boost::bind(&set_verbosity, this, _1, _2))
+  , _logger(l)
+{
+  DEBUG("LL ctor logger: " << &_logger << " this: " << this);
+  logLevel.set(qi::LogLevel_Debug);
+}
+
+// LogListenerImpl Class
+LogListenerImpl::LogListenerImpl(LogManagerImpl& l, boost::function<void(qi::LogListener*)> func)
+  : LogListener(qi::Property<qi::LogLevel>::Getter(),
+                boost::bind(&set_verbosity, this, _1, _2),
+                boost::bind(func, this))
+  , _logger(l)
+{
+  DEBUG("LL ctor logger: " << &_logger << " this: " << this);
+  logLevel.set(qi::LogLevel_Debug);
+}
+
+LogListenerImpl::~LogListenerImpl()
+{
+  DEBUG("LL ~LogListener logger: " << &_logger << " this: " << this);
+}
+
+void LogListenerImpl::setLevel(qi::LogLevel level)
+{
+  DEBUG("LL verbosity " << level << " logger: " << &_logger << " this: " << this);
+  logLevel.set(level);
+}
+
+void LogListenerImpl::clearFilters()
+{
+  DEBUG("LL clearFilters logger: " << &_logger << " this: " << this);
+  {
+    boost::mutex::scoped_lock filtersLock(_filtersMutex);
+    _filters.clear();
   }
+  _logger.recomputeCategories();
+}
 
-  // LogListenerImpl Class
-  LogListenerImpl::LogListenerImpl(LogManagerImpl& l)
-    :  LogListener(qi::Property<qi::LogLevel>::Getter(),
-                   boost::bind(&set_verbosity, this, _1, _2))
-    , _logger(l)
+void LogListenerImpl::addFilter(const std::string& filter, qi::LogLevel level)
+{
+  DEBUG("LL addFilter logger: " << &_logger << " this: " << this);
   {
-    DEBUG("LL ctor logger: " << &_logger << " this: " << this);
-    logLevel.set(qi::LogLevel_Debug);
+    boost::mutex::scoped_lock filtersLock(_filtersMutex);
+    _filters[filter] = level;
   }
+  _logger.recomputeCategories();
+}
 
-  // LogListenerImpl Class
-  LogListenerImpl::LogListenerImpl(LogManagerImpl& l,
-                                   boost::function<void (qi::LogListener*)> func)
-    :  LogListener(qi::Property<qi::LogLevel>::Getter(),
-                   boost::bind(&set_verbosity, this, _1, _2),
-                   boost::bind(func, this))
-    , _logger(l)
+std::map<std::string, qi::LogLevel> LogListenerImpl::filters()
+{
+  DEBUG("LL filters");
+  FilterMap filtersCpy;
   {
-    DEBUG("LL ctor logger: " << &_logger << " this: " << this);
-    logLevel.set(qi::LogLevel_Debug);
+    boost::mutex::scoped_lock filtersLock(_filtersMutex);
+    filtersCpy = _filters;
   }
+  return filtersCpy;
+}
 
-  LogListenerImpl::~LogListenerImpl()
-  {
-    DEBUG("LL ~LogListener logger: " << &_logger <<  " this: " << this);
-  }
+void LogListenerImpl::log(const LogMessage& msg)
+{
+  DEBUG("LL:log: " << msg.message);
+  if (msg.level > logLevel.get())
+    return;
 
-  void LogListenerImpl::setLevel(qi::LogLevel level)
+  // Check filters.
+  // map ordering will give us more generic globbing filter first
+  // so we must not stop on first negative filter, but go on
+  // to see if a positive filter overrides it@
+  bool pass = true;
   {
-    DEBUG("LL verbosity " << level << " logger: " << &_logger << " this: " << this);
-    logLevel.set(level);
-  }
+    boost::mutex::scoped_lock filtersLock(_filtersMutex);
 
-  void LogListenerImpl::clearFilters()
-  {
-    DEBUG("LL clearFilters logger: " << &_logger << " this: " << this);
+    for (FilterMap::iterator it = _filters.begin(); it != _filters.end(); ++it)
     {
-      boost::mutex::scoped_lock filtersLock(_filtersMutex);
-      _filters.clear();
-    }
-    _logger.recomputeCategories();
-  }
-
-  void LogListenerImpl::addFilter(const std::string& filter,
-                                  qi::LogLevel level)
-  {
-    DEBUG("LL addFilter logger: " << &_logger << " this: " << this);
-    {
-      boost::mutex::scoped_lock filtersLock(_filtersMutex);
-      _filters[filter] = level;
-    }
-    _logger.recomputeCategories();
-  }
-
-  std::map<std::string, qi::LogLevel> LogListenerImpl::filters()
-  {
-    DEBUG("LL filters");
-    FilterMap filtersCpy;
-    {
-      boost::mutex::scoped_lock filtersLock(_filtersMutex);
-      filtersCpy = _filters;
-    }
-    return filtersCpy;
-  }
-
-  void LogListenerImpl::log(const LogMessage& msg)
-  {
-    DEBUG("LL:log: " << msg.message);
-    if (msg.level > logLevel.get())
-      return;
-
-    // Check filters.
-    // map ordering will give us more generic globbing filter first
-    // so we must not stop on first negative filter, but go on
-    // to see if a positive filter overrides it@
-    bool pass = true;
-    {
-      boost::mutex::scoped_lock filtersLock(_filtersMutex);
-
-      for (FilterMap::iterator it = _filters.begin(); it != _filters.end(); ++it)
+      const std::string& f = it->first;
+      if (f == msg.category || (f.find('*') != f.npos && qi::os::fnmatch(f, msg.category)))
       {
-        const std::string& f = it->first;
-        if (f == msg.category ||
-            (f.find('*') != f.npos && qi::os::fnmatch(f, msg.category)))
-        {
-          pass = msg.level <= it->second;
-        }
+        pass = msg.level <= it->second;
       }
     }
-
-    DEBUG("LL:log filter " << pass);
-    if (pass)
-    {
-      onLogMessage(msg);
-
-      std::vector<qi::LogMessage> msgs;
-      msgs.push_back(msg);
-      onLogMessages(msgs);
-      onLogMessagesWithBacklog(msgs);
-    }
-    DEBUG("LL:log done");
   }
 
-  QI_REGISTER_MT_OBJECT(LogListener, setLevel, addFilter, clearFilters,
-                        onLogMessage, onLogMessages, onLogMessagesWithBacklog, logLevel);
-  QI_REGISTER_IMPLEMENTATION(LogListener, LogListenerImpl);
+  DEBUG("LL:log filter " << pass);
+  if (pass)
+  {
+    onLogMessage(msg);
 
-  void registerLogListener(qi::ModuleBuilder* mb) {
-    mb->advertiseFactory<LogListenerImpl, LogManagerImpl&>("LogListener");
+    std::vector<qi::LogMessage> msgs;
+    msgs.push_back(msg);
+    onLogMessages(msgs);
+    onLogMessagesWithBacklog(msgs);
   }
+  DEBUG("LL:log done");
+}
+
+QI_REGISTER_MT_OBJECT(LogListener,
+                      setLevel,
+                      addFilter,
+                      clearFilters,
+                      onLogMessage,
+                      onLogMessages,
+                      onLogMessagesWithBacklog,
+                      logLevel);
+QI_REGISTER_IMPLEMENTATION(LogListener, LogListenerImpl);
+
+void registerLogListener(qi::ModuleBuilder* mb)
+{
+  mb->advertiseFactory<LogListenerImpl, LogManagerImpl&>("LogListener");
+}
 
 } // !qi

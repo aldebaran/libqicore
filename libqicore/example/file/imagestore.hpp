@@ -8,23 +8,27 @@
 
 namespace alice
 {
-  class ALICE_SERVICE_API ImageStore
+class ALICE_SERVICE_API ImageStore
+{
+public:
+  virtual ~ImageStore()
   {
-  public:
-    virtual ~ImageStore(){}
+  }
 
-    // Store a copy of the image file and associate it with the provided name.
-    virtual void storeImage(qi::FilePtr imageFile, std::string name) = 0;
+  // Store a copy of the image file and associate it with the provided name.
+  virtual void storeImage(qi::FilePtr imageFile, std::string name) = 0;
 
-    // Provide access to an image file associated with the provided name.
-    virtual qi::FilePtr getImage(std::string name) = 0;
+  // Provide access to an image file associated with the provided name.
+  virtual qi::FilePtr getImage(std::string name) = 0;
 
-  protected:
-    ImageStore(){}
-  };
+protected:
+  ImageStore()
+  {
+  }
+};
 
-  typedef qi::Object<ImageStore> ImageStorePtr;
+typedef qi::Object<ImageStore> ImageStorePtr;
 
-  ALICE_SERVICE_API ImageStorePtr getImageStore();
+ALICE_SERVICE_API ImageStorePtr getImageStore();
 }
 #endif

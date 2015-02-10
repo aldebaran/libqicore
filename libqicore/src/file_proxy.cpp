@@ -3,60 +3,57 @@
 
 namespace qi
 {
-  class FileProxy
-    : public File
-    , public qi::Proxy
+class FileProxy : public File, public qi::Proxy
+{
+public:
+  FileProxy(qi::AnyObject obj)
+    : qi::Proxy(obj)
   {
-  public:
-    FileProxy(qi::AnyObject obj)
-      : qi::Proxy(obj)
-    {
-    }
+  }
 
-    ~FileProxy()
-    {
-    }
+  ~FileProxy()
+  {
+  }
 
-    Buffer _read(std::streamsize countBytesToRead)
-    {
-      return _obj.call<Buffer>("_read", countBytesToRead);
-    }
+  Buffer _read(std::streamsize countBytesToRead)
+  {
+    return _obj.call<Buffer>("_read", countBytesToRead);
+  }
 
-    Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead)
-    {
-      return _obj.call<Buffer>("_read", beginOffset, countBytesToRead);
-    }
+  Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead)
+  {
+    return _obj.call<Buffer>("_read", beginOffset, countBytesToRead);
+  }
 
-    bool _seek(std::streamoff offsetFromBegin)
-    {
-      return _obj.call<bool>("_seek", offsetFromBegin);
-    }
+  bool _seek(std::streamoff offsetFromBegin)
+  {
+    return _obj.call<bool>("_seek", offsetFromBegin);
+  }
 
-    void _close()
-    {
-      return _obj.call<void>("_close");
-    }
+  void _close()
+  {
+    return _obj.call<void>("_close");
+  }
 
-    std::streamsize size() const
-    {
-      return _obj.call<std::streamsize>("size");
-    }
+  std::streamsize size() const
+  {
+    return _obj.call<std::streamsize>("size");
+  }
 
-    bool isOpen() const
-    {
-      return _obj.call<bool>("isOpen");
-    }
+  bool isOpen() const
+  {
+    return _obj.call<bool>("isOpen");
+  }
 
-    bool isRemote() const
-    {
-      return true;
-    }
+  bool isRemote() const
+  {
+    return true;
+  }
 
-    ProgressNotifierPtr operationProgress() const
-    {
-      return _obj.call<ProgressNotifierPtr>("operationProgress");
-    }
-  };
-  QI_REGISTER_PROXY_INTERFACE(FileProxy, File);
+  ProgressNotifierPtr operationProgress() const
+  {
+    return _obj.call<ProgressNotifierPtr>("operationProgress");
+  }
+};
+QI_REGISTER_PROXY_INTERFACE(FileProxy, File);
 }
-

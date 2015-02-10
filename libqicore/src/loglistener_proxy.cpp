@@ -12,38 +12,40 @@
 #include <qicore/logmessage.hpp>
 
 bool qi::detail::ForceProxyInclusion<qi::LogListener>::dummyCall()
-{ return true; }
+{
+  return true;
+}
 
 namespace qi
 {
-  class LogListenerProxy : public qi::Proxy, public LogListener
+class LogListenerProxy : public qi::Proxy, public LogListener
+{
+public:
+  LogListenerProxy(qi::AnyObject obj)
+    : qi::Proxy(obj)
+    , qi::LogListener()
   {
-  public:
-    LogListenerProxy(qi::AnyObject obj)
-      : qi::Proxy(obj)
-      , qi::LogListener()
-    {
-      qi::makeProxySignal(onLogMessage, obj, "onLogMessage");
-      qi::makeProxySignal(onLogMessages, obj, "onLogMessages");
-      qi::makeProxySignal(onLogMessagesWithBacklog, obj, "onLogMessagesWithBacklog");
-      qi::makeProxyProperty(logLevel, obj, "logLevel");
-    }
+    qi::makeProxySignal(onLogMessage, obj, "onLogMessage");
+    qi::makeProxySignal(onLogMessages, obj, "onLogMessages");
+    qi::makeProxySignal(onLogMessagesWithBacklog, obj, "onLogMessagesWithBacklog");
+    qi::makeProxyProperty(logLevel, obj, "logLevel");
+  }
 
-    void setLevel(qi::LogLevel p0)
-    {
-      _obj.call<void>("setLevel", p0);
-    }
+  void setLevel(qi::LogLevel p0)
+  {
+    _obj.call<void>("setLevel", p0);
+  }
 
-    void addFilter(const std::string& p0, qi::LogLevel p1)
-    {
-      _obj.call<void>("addFilter", p0, p1);
-    }
+  void addFilter(const std::string& p0, qi::LogLevel p1)
+  {
+    _obj.call<void>("addFilter", p0, p1);
+  }
 
-    void clearFilters()
-    {
-      _obj.call<void>("clearFilters");
-    }
-  };
+  void clearFilters()
+  {
+    _obj.call<void>("clearFilters");
+  }
+};
 
-  QI_REGISTER_PROXY_INTERFACE(LogListenerProxy, LogListener);
+QI_REGISTER_PROXY_INTERFACE(LogListenerProxy, LogListener);
 } // !qi

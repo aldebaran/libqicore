@@ -10,9 +10,7 @@
 void onMessage(const qi::LogMessage& msg)
 {
   std::stringstream ss;
-  ss << msg.category
-     << " " << msg.source
-     << " " << msg.message;
+  ss << msg.category << " " << msg.source << " " << msg.message;
   std::cout << ss.str() << std::endl;
 }
 

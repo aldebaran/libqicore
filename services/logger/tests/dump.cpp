@@ -33,12 +33,8 @@ void onLogMessage(int i)
 
 void onLogMessage2(const qi::LogMessage& msg)
 {
-  std::cerr << "MESSAGE " << msg.level
-            << " " << msg.source
-            << " " << msg.message
-            << ' ' << msg.category
-            << ' ' << msg.location
-            << std::endl;
+  std::cerr << "MESSAGE " << msg.level << " " << msg.source << " " << msg.message << ' ' << msg.category << ' '
+            << msg.location << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -56,7 +52,7 @@ int main(int argc, char** argv)
   assert(listener);
   listener->onLogMessage.connect(&onLogMessage2);
   listener->setLevel(::qi::LogLevel_Info);
-  //listener->asObject()->connect("onLogMessage", &onLogMessage);
+  // listener->asObject()->connect("onLogMessage", &onLogMessage);
   qi::import("qicore").call<void>("registerToLogger", logger);
 
   boost::thread t(&ping);

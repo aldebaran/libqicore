@@ -10,10 +10,10 @@
 
 #include <qi/macro.hpp>
 
-# ifndef SWIG
-#  define QICORE_API QI_LIB_API(qicore)
-# else
-#  define QICORE_API
-# endif
+#ifndef SWIG
+#define QICORE_API QI_LIB_API(qicore)
+#else
+#define QICORE_API
+#endif
 
-#endif  /* !QICORE_API_H_ */
+#endif /* !QICORE_API_H_ */
