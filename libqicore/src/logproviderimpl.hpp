@@ -38,6 +38,7 @@ public:
   LogProviderImpl(LogManagerPtr logger);
   virtual ~LogProviderImpl();
 
+  virtual void setCategoryPrefix(const std::string& categoryPrefix);
   virtual void setLevel(qi::LogLevel level);
   virtual void addFilter(const std::string& filter, qi::LogLevel level);
   virtual void setFilters(const std::vector<std::pair<std::string, qi::LogLevel> >& filters);
@@ -59,6 +60,7 @@ private:
   LogManagerPtr _logger;
   qi::log::SubscriberId _subscriber;
   qi::Atomic<int> _ready;
+  std::string _categoryPrefix;
 
   qi::PeriodicTask sendTask;
 };

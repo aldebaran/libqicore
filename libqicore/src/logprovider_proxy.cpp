@@ -17,6 +17,11 @@ public:
   {
   }
 
+  void setCategoryPrefix(const std::string& p0)
+  {
+    _obj.call<void>("setCategoryPrefix", p0);
+  }
+
   void setLevel(qi::LogLevel p0)
   {
     _obj.call<void>("setLevel", p0);

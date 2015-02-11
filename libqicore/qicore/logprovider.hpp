@@ -39,6 +39,7 @@ public:
   {
   }
 
+    virtual void setCategoryPrefix(const std::string& categoryPrefix) = 0;
   virtual void setLevel(qi::LogLevel level) = 0;
   virtual void addFilter(const std::string& filter, qi::LogLevel level) = 0;
   virtual void setFilters(const std::vector<std::pair<std::string, qi::LogLevel> >& filters) = 0;

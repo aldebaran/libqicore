@@ -165,6 +165,10 @@ void LogProviderImpl::log(qi::LogLevel level,
   msg->source = source;
   msg->level = level;
   msg->timestamp = tv;
+  if (_categoryPrefix.empty())
+    msg->category = category;
+  else
+    msg->category = _categoryPrefix + "." + category;
   msg->category = category;
   msg->location = qi::os::getMachineId() + ":" + boost::lexical_cast<std::string>(qi::os::getpid());
   msg->message = message;
@@ -173,6 +177,12 @@ void LogProviderImpl::log(qi::LogLevel level,
   _pendingMessages.push(msg);
 
   DEBUG("LP:log done");
+}
+
+void LogProviderImpl::setCategoryPrefix(const std::string& categoryPrefix)
+{
+  DEBUG("LP setCategoryPrefix " << categoryPrefix);
+  _categoryPrefix = categoryPrefix;
 }
 
 void LogProviderImpl::setLevel(qi::LogLevel level)
@@ -223,7 +233,7 @@ void LogProviderImpl::setFilters(const std::vector<std::pair<std::string, qi::Lo
     ::qi::log::addFilter("*", wildcardLevel, _subscriber);
 }
 
-QI_REGISTER_MT_OBJECT(LogProvider, setLevel, addFilter, setFilters, setLogger);
+QI_REGISTER_MT_OBJECT(LogProvider, setLevel, addFilter, setFilters, setLogger, setCategoryPrefix);
 QI_REGISTER_IMPLEMENTATION(LogProvider, LogProviderImpl);
 
 void registerLogProvider(qi::ModuleBuilder* mb)
