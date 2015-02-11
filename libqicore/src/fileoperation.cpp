@@ -45,8 +45,8 @@ namespace
   {
   public:
     FileTransferTask(FilePtr sourceFile, const Path& localPath, ProgressNotifierPtr remoteNotifier)
-      : _fileSize(sourceFile->size())
-      , _sourceFile(sourceFile)
+      : _sourceFile(sourceFile)
+      , _fileSize(sourceFile->size())
       , _bytesWritten(0)
       , _remoteNotifier(remoteNotifier)
       , _localPath(localPath)
