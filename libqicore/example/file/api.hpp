@@ -12,5 +12,4 @@
 
 #define ALICE_SERVICE_API QI_LIB_API(alice_service)
 
-
-#endif  /* !QICORE_API_H_ */
+#endif /* !QICORE_API_H_ */

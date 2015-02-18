@@ -7,46 +7,51 @@
 */
 
 #ifndef LOGMANAGER_HPP_
-# define LOGMANAGER_HPP_
+#define LOGMANAGER_HPP_
 
-# include <qi/macro.hpp>
-# include <qicore/api.hpp>
-# include <qicore/logmessage.hpp>
+#include <qi/macro.hpp>
+#include <qicore/api.hpp>
+#include <qicore/logmessage.hpp>
 
-# include <qi/anyobject.hpp>
+#include <qi/anyobject.hpp>
 
 namespace qi
 {
-  class LogListener;
-  typedef qi::Object<LogListener> LogListenerPtr;
-  class LogProvider;
-  typedef qi::Object<LogProvider> LogProviderPtr;
-  class QICORE_API LogManager
+class LogListener;
+typedef qi::Object<LogListener> LogListenerPtr;
+class LogProvider;
+typedef qi::Object<LogProvider> LogProviderPtr;
+class QICORE_API LogManager
+{
+public:
+  virtual ~LogManager()
   {
-  public:
-    virtual ~LogManager() {};
+  }
 
-    virtual void log(const std::vector<LogMessage>& msgs) = 0;
+  virtual void log(const std::vector<LogMessage>& msgs) = 0;
 
-    virtual LogListenerPtr createListener() = 0;
-    /**
-     * \deprecated since 2.3 use createListener() instead
-     */
-    virtual QI_API_DEPRECATED LogListenerPtr getListener() = 0;
-    virtual int addProvider(LogProviderPtr provider) = 0;
-    virtual void removeProvider(int idProvider) = 0;
-  };
+  virtual LogListenerPtr createListener() = 0;
+  /**
+   * \deprecated since 2.3 use createListener() instead
+   */
+  virtual QI_API_DEPRECATED LogListenerPtr getListener() = 0;
+  virtual int addProvider(LogProviderPtr provider) = 0;
+  virtual void removeProvider(int idProvider) = 0;
+};
 
-  typedef qi::Object<LogManager> LogManagerPtr;
+typedef qi::Object<LogManager> LogManagerPtr;
 } // !qi
 
-namespace qi {
-namespace detail {
-template <>
-struct QICORE_API ForceProxyInclusion<qi::LogManager>
+namespace qi
 {
-  bool dummyCall();
-};
-}}
+namespace detail
+{
+  template <>
+  struct QICORE_API ForceProxyInclusion<qi::LogManager>
+  {
+    bool dummyCall();
+  };
+}
+}
 
 #endif // !LOGMANAGER_HPP_
