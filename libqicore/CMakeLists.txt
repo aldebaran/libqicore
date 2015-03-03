@@ -12,7 +12,7 @@ set(PUBLIC_HEADERS
     qicore/logprovider.hpp
     qicore/file.hpp
     )
-qi_install_header(${PUBLIC_HEADERS})
+qi_install_header(${PUBLIC_HEADERS} KEEP_RELATIVE_PATHS)
 
 qi_create_module(qicore SRC
   ${PUBLIC_HEADERS}
