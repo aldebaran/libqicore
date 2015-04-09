@@ -30,10 +30,9 @@ void onLogMessage2(const qi::LogMessage& msg)
 
 std::string startService(qi::SessionPtr s)
 {
-  unsigned int serviceId = 0;
   try
   {
-    serviceId = s->registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
+    unsigned int serviceId = s->registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
   }
   catch (const std::exception& e)
   {

@@ -42,10 +42,9 @@ void removeProvider(qi::Session& s, const std::string& serviceName, int id)
 
 std::string startService(qi::Session& s)
 {
-  unsigned int serviceId = 0;
   try
   {
-    serviceId = s.registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
+    unsigned serviceId = s.registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
   }
   catch (const std::exception& e)
   {
