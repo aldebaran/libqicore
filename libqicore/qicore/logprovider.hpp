@@ -25,8 +25,6 @@ namespace qi
 {
 class LogManager;
 typedef qi::Object<LogManager> LogManagerPtr;
-// Register local provider to service
-QICORE_API qi::Future<int> registerToLogger(qi::Object<LogManager> logger);
 
 /** Registers to a local or remote Logger service
 * Sends local logger message to it
@@ -40,7 +38,7 @@ public:
   {
   }
 
-    virtual void setCategoryPrefix(const std::string& categoryPrefix) = 0;
+  virtual void setCategoryPrefix(const std::string& categoryPrefix) = 0;
   virtual void setLevel(qi::LogLevel level) = 0;
   virtual void addFilter(const std::string& filter, qi::LogLevel level) = 0;
   virtual void setFilters(const std::vector<std::pair<std::string, qi::LogLevel> >& filters) = 0;
@@ -52,7 +50,7 @@ typedef qi::Object<LogProvider> LogProviderPtr;
 QICORE_API LogProviderPtr makeLogProvider(LogManagerPtr logger);
 QICORE_API LogProviderPtr makeLogProvider();
 
-QICORE_API qi::FutureSync<LogProviderPtr> initializeLogging(SessionPtr session);
+QICORE_API qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session);
 } // !qi
 
 #endif // !LOGPROVIDER_HPP_

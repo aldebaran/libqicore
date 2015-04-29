@@ -10,6 +10,7 @@
 #include <boost/lockfree/queue.hpp>
 #include <boost/lambda/algorithm.hpp>
 
+#include <qi/application.hpp>
 #include <qi/anymodule.hpp>
 #include <qi/anyobject.hpp>
 #include <qi/type/objecttypebuilder.hpp>
@@ -45,25 +46,30 @@ LogProviderPtr makeLogProvider(LogManagerPtr logger)
   return boost::shared_ptr<qi::LogProviderImpl>(new LogProviderImpl(logger));
 }
 
-qi::FutureSync<LogProviderPtr> initializeLogging(SessionPtr session)
+static void removeProviderAtStop(SessionPtr session, int id)
 {
+  DEBUG("LP removeProviderAtStop " << id);
   LogManagerPtr lm = session->service("LogManager");
-  return registerToLogger(lm).thenR<LogProviderPtr>(boost::lambda::var(lm));
+  lm->removeProvider(id);
 }
 
 static LogProviderPtr instance;
-qi::Future<int> registerToLogger(LogManagerPtr logger)
+qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session)
 {
   DEBUG("registering new provider");
   if (instance)
     throw std::runtime_error("Provider already registered for this process");
 
-  instance = makeLogProvider(logger);
+  LogManagerPtr lm = session->service("LogManager");
+  instance = makeLogProvider(lm);
 
+  qi::Future<int> id = lm.async<int>("addProvider", instance);
   DEBUG("LP registerToLogger " << instance);
 
-  return logger.async<int>("addProvider", instance);
+  qi::Application::atStop(boost::bind(removeProviderAtStop, session, id));
+  return id.thenR<qi::LogProviderPtr>(boost::lambda::var(instance));
 }
+
 
 static void silenceQiCategories(qi::log::SubscriberId subscriber)
 {
@@ -239,7 +245,6 @@ void registerLogProvider(qi::ModuleBuilder* mb)
   mb->advertiseMethod("makeLogProvider", static_cast<LogProviderPtr (*)(LogManagerPtr)>(&makeLogProvider));
   mb->advertiseMethod("makeLogProvider", static_cast<LogProviderPtr (*)()>(&makeLogProvider));
   mb->advertiseMethod("initializeLogging", &initializeLogging);
-  mb->advertiseMethod("registerToLogger", &registerToLogger);
 }
 
 } // !qi

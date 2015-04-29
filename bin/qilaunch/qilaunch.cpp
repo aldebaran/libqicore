@@ -9,7 +9,6 @@
 #endif
 
 static std::vector<std::string> modules;
-static bool any = false;
 static bool disableBreakpad = false;
 static bool disableLogging = false;
 static std::string launcherName;

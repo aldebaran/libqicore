@@ -7,16 +7,12 @@ import qi.logging
 from ctypes import *
 
 if __name__ == "__main__":
-    app = qi.ApplicationSession(sys.argv)
+    app = qi.Application()
     app.start()
 
     mod = qi.module("qicore")
-    logmanager = app.session.service("LogManager")
-
     # Create a provider
-    provider = mod.createObject("LogProvider", logmanager)
-    # Add the provider to LogManager
-    id = logmanager.addProvider(provider)
+    provider = mod.initializeLogging(app.session)
 
     # log!!!!!
     mylogger = qi.Logger("myfoo.bar")
@@ -26,7 +22,4 @@ if __name__ == "__main__":
     mylogger.info("info log")
     mylogger.verbose("verbose log")
 
-    # since LogManager hold a "proxy" to the client object
-    # we need to explicitly destroy the remote provider to call
-    # the destructor
-    logmanager.removeProvider(id);
+    time.sleep(2)

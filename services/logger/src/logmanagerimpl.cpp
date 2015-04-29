@@ -226,8 +226,8 @@ void LogManagerImpl::removeProvider(int idProvider)
 {
   DEBUG("LM removeProvider id " << idProvider);
   boost::mutex::scoped_lock dataLock(_dataMutex);
-  _providers.erase(idProvider);
   _providers[idProvider].reset();
+  _providers.erase(idProvider);
 }
 
 void LogManagerImpl::recomputeCategories()
