@@ -54,7 +54,7 @@ static void removeProviderAtStop(SessionPtr session, int id)
 }
 
 static LogProviderPtr instance;
-qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session)
+qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session, const std::string& categoryPrefix)
 {
   DEBUG("registering new provider");
   if (instance)
@@ -62,6 +62,8 @@ qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session)
 
   LogManagerPtr lm = session->service("LogManager");
   instance = makeLogProvider(lm);
+  if (!categoryPrefix.empty())
+    instance->setCategoryPrefix(categoryPrefix);
 
   qi::Future<int> id = lm.async<int>("addProvider", instance);
   DEBUG("LP registerToLogger " << instance);

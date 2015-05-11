@@ -50,7 +50,8 @@ typedef qi::Object<LogProvider> LogProviderPtr;
 QICORE_API LogProviderPtr makeLogProvider(LogManagerPtr logger);
 QICORE_API LogProviderPtr makeLogProvider();
 
-QICORE_API qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session);
+QICORE_API qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session,
+                                                                const std::string& categoryPrefix = "");
 } // !qi
 
 #endif // !LOGPROVIDER_HPP_
