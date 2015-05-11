@@ -53,8 +53,15 @@ int main(int argc, char** argv)
     qiLogInfo() << "Connection to service directory at " << app.url().str();
     app.start();
 
-    if (!disableLogging)
-      qi::initializeLogging(app.session());
+    try
+    {
+      if (!disableLogging)
+        qi::initializeLogging(app.session());
+    }
+    catch (std::exception &e)
+    {
+      qiLogWarning() << "Logs initialization failed with the following error: " << e.what();
+    }
 
     for (unsigned i = 0; i < modules.size(); ++i)
     {
