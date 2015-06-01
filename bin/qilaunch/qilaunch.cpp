@@ -13,12 +13,14 @@ static bool disableBreakpad = false;
 static bool disableLogging = false;
 static std::string launcherName;
 
+qiLogCategory("qilaunch");
+
 _QI_COMMAND_LINE_OPTIONS(
   "Launcher options",
   ("module,m", value<std::vector<std::string> >(&modules), "Load given module (can be set multiple times)")
   ("no-breakpad,b", bool_switch(&disableBreakpad), "Disable breakpad")
   ("no-logging,l", bool_switch(&disableLogging), "Disable remote logging")
-  ("name,n", value<std::string>(&launcherName), "Launcher name")
+  ("name,n", value<std::string>(&launcherName), "Name of the launcher used to prefix logs and breakpad dump files")
 )
 
 int main(int argc, char** argv)
@@ -27,17 +29,16 @@ int main(int argc, char** argv)
 
   if (launcherName.empty())
   {
-    qiLogFatal("qilaunch") << "No launcher name, set one with --name";
+    qiLogFatal() << "No launcher name, set one with --name or -n";
     return 1;
   }
 
   if (modules.empty())
   {
-    qiLogFatal("qilaunch") << "No module to load, add one with --module";
+    qiLogFatal() << "No module to load, add one with --module or -m";
     return 1;
   }
 
-  qiLogCategory("qilaunch." + launcherName);
 
 #ifdef WITH_BREAKPAD
   boost::scoped_ptr<BreakpadExceptionHandler> eh;
@@ -53,8 +54,15 @@ int main(int argc, char** argv)
     qiLogInfo() << "Connection to service directory at " << app.url().str();
     app.start();
 
-    if (!disableLogging)
-      qi::initializeLogging(app.session());
+    try
+    {
+      if (!disableLogging)
+        qi::initializeLogging(app.session(), launcherName);
+    }
+    catch (std::exception &e)
+    {
+      qiLogWarning() << "Logs initialization failed with the following error: " << e.what();
+    }
 
     for (unsigned i = 0; i < modules.size(); ++i)
     {
