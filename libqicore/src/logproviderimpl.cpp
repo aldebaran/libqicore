@@ -247,6 +247,7 @@ void registerLogProvider(qi::ModuleBuilder* mb)
   mb->advertiseMethod("makeLogProvider", static_cast<LogProviderPtr (*)(LogManagerPtr)>(&makeLogProvider));
   mb->advertiseMethod("makeLogProvider", static_cast<LogProviderPtr (*)()>(&makeLogProvider));
   mb->advertiseMethod("initializeLogging", &initializeLogging);
+  mb->advertiseMethod("initializeLogging", (boost::function<qi::FutureSync<qi::LogProviderPtr> (SessionPtr)>(boost::bind(&initializeLogging, _1, ""))));
 }
 
 } // !qi
