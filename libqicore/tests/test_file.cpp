@@ -94,6 +94,7 @@ void checkIsTestFileContent(qi::File& file)
   checkIsTestFileContent(allFileData);
 }
 
+// Compare contents of the files and report any difference explicitly
 void checkSameFilesContent(qi::File& leftFile, qi::File& rightFile)
 {
   ASSERT_TRUE(leftFile.isOpen());
@@ -338,6 +339,41 @@ TEST_F(Test_ReadRemoteFile, bigFiletransfert)
     checkSameFilesContent(*originalFile, *localFileCopy);
   }
 
+  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN.str());
+}
+
+
+namespace
+{
+  void cancelFileOperation(qi::FileOperationPtr fileOp,
+                           qi::ProgressNotifier::Status status,
+                           qi::ProgressNotifier::Status cancelStatus)
+   {
+    if (status == cancelStatus)
+    {
+      EXPECT_TRUE(fileOp->waitForFinished().isCancelable());
+      fileOp->waitForFinished().cancel();
+    }
+  }
+}
+
+TEST_F(Test_ReadRemoteFile, cancelFileTransfer)
+{
+  static const qi::Path LOCAL_PATH_TO_RECEIVE_FILE_IN = TEMPORARY_DIR.PATH / "bigfile.data";
+  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN.str());
+
+  {
+    qi::FilePtr testFile = clientAcquireTestFile(BIG_TEST_FILE_PATH);
+
+    qi::FileOperationPtr fileOp = prepareCopyToLocal(testFile, LOCAL_PATH_TO_RECEIVE_FILE_IN);
+    fileOp->status.connect(boost::bind(cancelFileOperation, fileOp, _1, qi::ProgressNotifier::Status_Running));
+    qi::Future<void> copyOpFt = fileOp->start();
+    EXPECT_TRUE(copyOpFt.isCancelable());
+    copyOpFt.wait();
+    EXPECT_TRUE(copyOpFt.isCanceled());
+  }
+
+  EXPECT_FALSE(boost::filesystem::exists(LOCAL_PATH_TO_RECEIVE_FILE_IN.str()));
   boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN.str());
 }
 

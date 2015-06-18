@@ -29,7 +29,8 @@ public:
   {
     OperationLauncher op = _opLauncher;
     _opLauncher.clear();
-    return op();
+    _opFuture = op();
+    return _opFuture;
   }
 
 private:
@@ -50,6 +51,7 @@ namespace
       , _bytesWritten(0)
       , _remoteNotifier(remoteNotifier)
       , _localPath(localPath)
+      , _promise(PromiseNoop<void>)
     {
     }
 
@@ -162,9 +164,9 @@ namespace
 
     void cancel()
     {
-      _promise.setCanceled();
       _localFile.close();
       boost::filesystem::remove(_localPath.str());
+      _promise.setCanceled();
       _localNotifier->_notifyCancelled();
       _remoteNotifier->_notifyCancelled();
     }
