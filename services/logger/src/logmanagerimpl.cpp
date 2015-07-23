@@ -153,7 +153,7 @@ void LogManagerImpl::recomputeVerbosities(qi::LogLevel from, qi::LogLevel to)
       bool remove = true;
       if (boost::shared_ptr<LogListenerImpl> l = _listeners[listenerIt].lock())
       {
-        newMax = std::max(newMax, l->logLevel.get());
+        newMax = std::max(newMax, l->logLevel.get().value());
         remove = false;
       }
 
