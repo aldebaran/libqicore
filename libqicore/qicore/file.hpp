@@ -62,6 +62,8 @@ public:
   **/
   virtual bool isRunning() const = 0;
 
+  virtual Future<void> waitForFinished() = 0;
+
   ///////////////////////
   // The following operations are reserved for the implementation of the associated operations.
 

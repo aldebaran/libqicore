@@ -72,6 +72,13 @@ public:
   {
     return this->status.get() == ProgressNotifier::Status_Running;
   }
+
+  Future<void> waitForFinished()
+  {
+    return _opFuture;
+  }
+
+  Future<void> _opFuture;
 };
 }
 

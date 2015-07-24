@@ -15,6 +15,7 @@ QI_REGISTER_OBJECT(ProgressNotifier,
                    _notifyCancelled,
                    _notifyFailed,
                    _notifyProgressed,
+                   waitForFinished,
                    isRunning,
                    _reset);
 QI_REGISTER_IMPLEMENTATION(ProgressNotifier, ProgressNotifierImpl);

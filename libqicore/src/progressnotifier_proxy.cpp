@@ -45,6 +45,11 @@ public:
   {
     return _obj.call<bool>("isRunning");
   }
+
+  Future<void> waitForFinished()
+  {
+    return _obj.async<void>("waitForFinished");
+  }
 };
 QI_REGISTER_PROXY_INTERFACE(ProgressNotifierProxy, ProgressNotifier);
 }

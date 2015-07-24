@@ -53,23 +53,25 @@ static void removeProviderAtStop(SessionPtr session, int id)
   lm->removeProvider(id);
 }
 
-static LogProviderPtr instance;
+static bool initialized = false;
 qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session, const std::string& categoryPrefix)
 {
   DEBUG("registering new provider");
-  if (instance)
+  if (initialized)
     throw std::runtime_error("Provider already registered for this process");
 
   LogManagerPtr lm = session->service("LogManager");
-  instance = makeLogProvider(lm);
+  LogProviderPtr instance = makeLogProvider(lm);
   if (!categoryPrefix.empty())
     instance->setCategoryPrefix(categoryPrefix);
 
   qi::Future<int> id = lm.async<int>("addProvider", instance);
   DEBUG("LP registerToLogger " << instance);
 
+  initialized = true;
+
   qi::Application::atStop(boost::bind(removeProviderAtStop, session, id));
-  return id.thenR<qi::LogProviderPtr>(boost::lambda::var(instance));
+  return id.thenR<qi::LogProviderPtr>(boost::lambda::constant(instance));
 }
 
 
@@ -247,6 +249,7 @@ void registerLogProvider(qi::ModuleBuilder* mb)
   mb->advertiseMethod("makeLogProvider", static_cast<LogProviderPtr (*)(LogManagerPtr)>(&makeLogProvider));
   mb->advertiseMethod("makeLogProvider", static_cast<LogProviderPtr (*)()>(&makeLogProvider));
   mb->advertiseMethod("initializeLogging", &initializeLogging);
+  mb->advertiseMethod("initializeLogging", (boost::function<qi::FutureSync<qi::LogProviderPtr> (SessionPtr)>(boost::bind(&initializeLogging, _1, ""))));
 }
 
 } // !qi
