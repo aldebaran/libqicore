@@ -5,7 +5,7 @@
 
 #include <qicore/file.hpp>
 
-#include <fstream>
+#include <boost/filesystem/fstream.hpp>
 #include <algorithm>
 #include <vector>
 
@@ -25,7 +25,7 @@ public:
 
     _progressNotifier = createProgressNotifier();
 
-    _fileStream.open(localFilePath.str().c_str(), std::ios::in | std::ios::binary);
+    _fileStream.open(localFilePath.bfsPath(), std::ios::in | std::ios::binary);
     if (_fileStream.is_open())
     {
       _fileStream.seekg(0, _fileStream.end);
@@ -109,7 +109,7 @@ public:
   }
 
 private:
-  std::ifstream _fileStream;
+  boost::filesystem::ifstream _fileStream;
   std::vector<char> _readBuffer;
   std::streamsize _size;
   ProgressNotifierPtr _progressNotifier;

@@ -5,7 +5,7 @@
 
 #include <qicore/file.hpp>
 
-#include <fstream>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <qi/anymodule.hpp>
 #include <qi/eventloop.hpp>
@@ -68,7 +68,7 @@ namespace
     }
 
   private:
-    std::ofstream _localFile;
+    boost::filesystem::ofstream _localFile;
     FilePtr _sourceFile;
     std::streamsize _fileSize;
     std::streamsize _bytesWritten;
@@ -91,7 +91,7 @@ namespace
 
     bool makeLocalFile()
     {
-      _localFile.open(_localPath.str().c_str(), std::ios::out | std::ios::binary);
+      _localFile.open(_localPath.bfsPath(), std::ios::out | std::ios::binary);
       if (!_localFile.is_open())
       {
         _localNotifier->_notifyCancelled();

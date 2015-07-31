@@ -6,7 +6,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <fstream>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem.hpp>
 
 #include <qicore/file.hpp>
@@ -39,7 +39,7 @@ struct TemporaryDir
   }
 } const TEMPORARY_DIR;
 
-const qi::Path SMALL_TEST_FILE_PATH(TEMPORARY_DIR.PATH / "testfile.data");
+const qi::Path SMALL_TEST_FILE_PATH(TEMPORARY_DIR.PATH / "\xED\x95\x9C/testfile.data");
 qi::Path BIG_TEST_FILE_PATH;
 
 const std::string TESTFILE_CONTENT = "abcdefghijklmnopqrstuvwxyz";
@@ -51,8 +51,10 @@ const std::streamoff TESTFILE_MIDDLE_SIZE = TESTFILE_CONTENT.size() / 3;
 
 void makeSmallTestFile()
 {
-  boost::filesystem::remove(SMALL_TEST_FILE_PATH.str());
-  std::ofstream fileOutput(SMALL_TEST_FILE_PATH.str().c_str(), std::ios::out | std::ios::binary);
+  boost::filesystem::remove(SMALL_TEST_FILE_PATH.bfsPath());
+  boost::filesystem::create_directories(SMALL_TEST_FILE_PATH.parent().bfsPath());
+  boost::filesystem::ofstream fileOutput(SMALL_TEST_FILE_PATH.bfsPath(), std::ios::out | std::ios::binary);
+  assert(fileOutput.is_open());
   fileOutput << TESTFILE_CONTENT;
   fileOutput.flush();
 }
