@@ -9,19 +9,40 @@
 #endif
 
 static std::vector<std::string> modules;
+static std::vector<std::string> objects;
+static std::vector<std::string> functions;
 static bool disableBreakpad = false;
 static bool disableLogging = false;
 static std::string launcherName;
+
+static int exitStatus = 0;
 
 qiLogCategory("qilaunch");
 
 _QI_COMMAND_LINE_OPTIONS(
   "Launcher options",
-  ("module,m", value<std::vector<std::string> >(&modules), "Load given module (can be set multiple times)")
+  ("module,m", value<std::vector<std::string> >(&modules), "Load given module (can be set multiple times) (deprecated, use --object)")
+  ("object,o", value<std::vector<std::string> >(&objects), "Load given object (syntax: yourmodule.YourObject) (can be set multiple times)")
+  ("function,f", value<std::vector<std::string> >(&functions), "Call given function (syntax: yourmodule.yourFunction) (can be set multiple times)")
   ("no-breakpad,b", bool_switch(&disableBreakpad), "Disable breakpad")
   ("no-logging,l", bool_switch(&disableLogging), "Disable remote logging")
   ("name,n", value<std::string>(&launcherName), "Name of the launcher used to prefix logs and breakpad dump files")
 )
+
+void stopOnError(qi::Future<void> fut, const std::string& name)
+{
+  if (fut.hasValue())
+    return;
+  else if (fut.hasError())
+    qiLogFatal() << name << " has finished with an error: " << fut.error();
+  else if (fut.isCanceled())
+    qiLogFatal() << name << " has been canceled";
+  else
+    assert(false && "future in incoherent state");
+
+  exitStatus = 1;
+  qi::Application::stop();
+}
 
 int main(int argc, char** argv)
 {
@@ -33,12 +54,16 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  if (modules.empty())
+  if (!modules.empty())
+    qiLogWarning() << "--module is deprecated, use --object";
+
+  objects.insert(objects.end(), modules.begin(), modules.end());
+
+  if (objects.empty() && functions.empty())
   {
-    qiLogFatal() << "No module to load, add one with --module or -m";
+    qiLogFatal() << "No object to load and no function to call, add one with --object or --function";
     return 1;
   }
-
 
 #ifdef WITH_BREAKPAD
   boost::scoped_ptr<BreakpadExceptionHandler> eh;
@@ -64,10 +89,17 @@ int main(int argc, char** argv)
       qiLogWarning() << "Logs initialization failed with the following error: " << e.what();
     }
 
-    for (unsigned i = 0; i < modules.size(); ++i)
+    for (unsigned i = 0; i < objects.size(); ++i)
     {
-      qiLogInfo() << "Loading module " << modules[i];
-      app.session()->loadService(modules[i]);
+      qiLogInfo() << "Loading object " << objects[i];
+      app.session()->loadService(objects[i]);
+    }
+
+    for (unsigned i = 0; i < functions.size(); ++i)
+    {
+      qiLogInfo() << "Calling function " << functions[i];
+      qi::Future<void> fut = app.session()->callModule<void>(functions[i]);
+      fut.thenR<void>(boost::bind(stopOnError, _1, functions[i]));
     }
 
     app.run();
@@ -83,5 +115,5 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  return 0;
+  return exitStatus;
 }
