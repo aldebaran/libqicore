@@ -50,7 +50,7 @@ std::string startService(qi::Session& s)
   {
     std::cout << e.what() << std::endl;
   }
-  qi::details::printMetaObject(std::cerr, s.service("LogManager").value().metaObject());
+  qi::detail::printMetaObject(std::cerr, s.service("LogManager").value().metaObject());
   return "LogManager";
 }
 
