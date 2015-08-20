@@ -32,7 +32,7 @@ std::string startService(qi::SessionPtr s)
 {
   try
   {
-    unsigned int serviceId = s->registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
+    s->registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
   }
   catch (const std::exception& e)
   {

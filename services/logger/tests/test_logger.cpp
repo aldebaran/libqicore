@@ -44,7 +44,7 @@ std::string startService(qi::Session& s)
 {
   try
   {
-    unsigned serviceId = s.registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
+    s.registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
   }
   catch (const std::exception& e)
   {
