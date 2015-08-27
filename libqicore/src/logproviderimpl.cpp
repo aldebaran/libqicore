@@ -120,7 +120,7 @@ LogProviderImpl::~LogProviderImpl()
   DEBUG("LP ~LogProviderImpl");
   sendTask.stop();
   sendLogs();
-  qi::log::removeLogHandler("remoteLogger");
+  qi::log::removeHandler("remoteLogger");
 }
 
 void LogProviderImpl::setLogger(LogManagerPtr logger)
