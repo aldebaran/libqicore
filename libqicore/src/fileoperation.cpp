@@ -21,14 +21,14 @@ class FileOperationImpl : public FileOperationBaseImpl
 {
 public:
   FileOperationImpl(OperationLauncher operationLauncher)
-    : _opLauncher(operationLauncher)
+    : _opLauncher(std::move(operationLauncher))
   {
   }
 
-  Future<void> start()
+  Future<void> start() override
   {
-    OperationLauncher op = _opLauncher;
-    _opLauncher.clear();
+    OperationLauncher op = std::move(_opLauncher);
+    assert(!_opLauncher);
     _opFuture = op();
     return _opFuture;
   }
@@ -37,19 +37,26 @@ private:
   OperationLauncher _opLauncher;
 };
 
+
+template<class TaskType, class... OpArgs>
+FileOperationPtr makeFileOperation(OpArgs&&... opArgs)
+{
+  auto task = boost::make_shared<TaskType>(std::forward<OpArgs>(opArgs)...);
+  auto fileOp = boost::make_shared<FileOperationImpl>( [task]{ return task->start(); } );
+  task->setFileOperation(fileOp);
+  return fileOp;
+}
+
 namespace
 {
-  class FileTransferTask;
-  typedef boost::shared_ptr<FileTransferTask> FileTransferTaskPtr;
-
   class FileTransferTask : public boost::enable_shared_from_this<FileTransferTask>
   {
   public:
     FileTransferTask(FilePtr sourceFile, const Path& localPath, ProgressNotifierPtr remoteNotifier)
-      : _sourceFile(sourceFile)
+      : _sourceFile(std::move(sourceFile))
       , _fileSize(sourceFile->size())
       , _bytesWritten(0)
-      , _remoteNotifier(remoteNotifier)
+      , _remoteNotifier(std::move(remoteNotifier))
       , _localPath(localPath)
       , _promise(PromiseNoop<void>)
     {
@@ -63,7 +70,8 @@ namespace
 
     Future<void> start()
     {
-      async<void>(&FileTransferTask::launch, shared_from_this());
+      auto myself = shared_from_this();
+      async<void>([myself]{ return myself->launch(); });
       return _promise.future();
     }
 
@@ -94,8 +102,8 @@ namespace
       _localFile.open(_localPath.bfsPath(), std::ios::out | std::ios::binary);
       if (!_localFile.is_open())
       {
-        _localNotifier->_notifyCancelled();
-        _remoteNotifier->_notifyCancelled();
+        _localNotifier->_notifyFailed();
+        _remoteNotifier->_notifyFailed();
         _promise.setError("Failed to create local file copy.");
         return false;
       }
@@ -117,32 +125,32 @@ namespace
     void fetchData()
     {
       static const size_t ARBITRARY_BYTES_TO_READ_PER_CYCLE = 512 * 1024;
+      auto myself = shared_from_this();
       _sourceFile.async<Buffer>("_read", _bytesWritten, ARBITRARY_BYTES_TO_READ_PER_CYCLE)
-          .connect(&FileTransferTask::decideNextStep, shared_from_this(), _1);
-    }
+        .connect([this, myself](Future<Buffer> futureBuffer)
+          {
+            if (futureBuffer.hasError())
+            {
+              fail(futureBuffer.error());
+              return;
+            }
+            else if (_promise.isCancelRequested())
+            {
+              cancel();
+              return;
+            }
 
-    void decideNextStep(Future<Buffer> futureBuffer)
-    {
-      if (futureBuffer.hasError())
-      {
-        fail(futureBuffer.error());
-        return;
-      }
-      else if (_promise.isCancelRequested())
-      {
-        cancel();
-        return;
-      }
-
-      if (_bytesWritten < _fileSize)
-      {
-        write(futureBuffer.value());
-        fetchData();
-      }
-      else
-      {
-        stop();
-      }
+            if (_bytesWritten < _fileSize)
+            {
+              write(futureBuffer.value());
+              fetchData();
+            }
+            else
+            {
+              stop();
+            }
+          }
+        );
     }
 
     void stop()
@@ -156,31 +164,31 @@ namespace
     void fail(const std::string& errorMessage)
     {
       _promise.setError(errorMessage);
-      _localFile.close();
-      boost::filesystem::remove(_localPath.str());
+      clearLocalFile();
       _localNotifier->_notifyFailed();
       _remoteNotifier->_notifyFailed();
     }
 
     void cancel()
     {
-      _localFile.close();
-      boost::filesystem::remove(_localPath.str());
+      clearLocalFile();
       _promise.setCanceled();
-      _localNotifier->_notifyCancelled();
-      _remoteNotifier->_notifyCancelled();
+      _localNotifier->_notifyCanceled();
+      _remoteNotifier->_notifyCanceled();
+    }
+
+    void clearLocalFile()
+    {
+      _localFile.close();
+      boost::filesystem::remove(_localPath);
     }
   };
+
 }
 
 FileOperationPtr prepareCopyToLocal(FilePtr sourceFile, const Path& localPath)
 {
-  FileTransferTaskPtr transferTask =
-      boost::make_shared<FileTransferTask>(sourceFile, localPath, sourceFile->operationProgress());
-  OperationLauncher opLauncher = boost::bind(&FileTransferTask::start, transferTask);
-  FileOperationPtr fileOp = boost::make_shared<FileOperationImpl>(opLauncher);
-  transferTask->setFileOperation(fileOp);
-  return fileOp;
+  return makeFileOperation<FileTransferTask>(sourceFile, localPath, sourceFile->operationProgress());
 }
 
 FutureSync<void> copyToLocal(FilePtr file, const Path& localPath)

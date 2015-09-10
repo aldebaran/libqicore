@@ -20,13 +20,13 @@ public:
     this->status.set(ProgressNotifier::Status_Idle);
   }
 
-  void _reset()
+  void _reset() override
   {
     this->status.set(ProgressNotifier::Status_Idle);
     this->progress.set(0.0);
   }
 
-  void _notifyRunning()
+  void _notifyRunning() override
   {
     if (this->status.get() != ProgressNotifier::Status_Idle)
       qiLogError("qicore.file.progressnotifierbase")
@@ -35,7 +35,7 @@ public:
     this->status.set(ProgressNotifier::Status_Running);
   }
 
-  void _notifyFinished()
+  void _notifyFinished() override
   {
     if (!isRunning())
       qiLogError("qicore.file.progressnotifierbase")
@@ -44,15 +44,15 @@ public:
     this->status.set(ProgressNotifier::Status_Finished);
   }
 
-  void _notifyCancelled()
+  void _notifyCanceled() override
   {
     if (!isRunning())
       qiLogError("qicore.file.progressnotifierbase")
-          << "ProgressNotifier must be Running to be allowed to switch to Cancelled status.";
-    this->status.set(ProgressNotifier::Status_Cancelled);
+          << "ProgressNotifier must be Running to be allowed to switch to Canceled status.";
+    this->status.set(ProgressNotifier::Status_Canceled);
   }
 
-  void _notifyFailed()
+  void _notifyFailed() override
   {
     if (!isRunning())
       qiLogError("qicore.file.progressnotifierbase")
@@ -60,7 +60,7 @@ public:
     this->status.set(ProgressNotifier::Status_Failed);
   }
 
-  void _notifyProgressed(double newProgress)
+  void _notifyProgressed(double newProgress) override
   {
     if (!isRunning())
       qiLogError("qicore.file.progressnotifierbase")
@@ -68,12 +68,12 @@ public:
     this->progress.set(newProgress);
   }
 
-  bool isRunning() const
+  bool isRunning() const override
   {
     return this->status.get() == ProgressNotifier::Status_Running;
   }
 
-  Future<void> waitForFinished()
+  Future<void> waitForFinished() override
   {
     return _opFuture;
   }

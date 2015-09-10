@@ -26,14 +26,10 @@ namespace qi
 class QICORE_API ProgressNotifier
 {
 protected:
-  ProgressNotifier()
-  {
-  }
+  ProgressNotifier() = default;
 
 public:
-  virtual ~ProgressNotifier()
-  {
-  }
+  virtual ~ProgressNotifier() = default;
 
   /** Describe the status of an associated operation. */
   enum Status
@@ -42,7 +38,7 @@ public:
     Status_Running,   ///< The operation is currently running.
     Status_Finished,  ///< The operation finished successfully.
     Status_Failed,    ///< The operation has failed.
-    Status_Cancelled, ///< The operation has been canceled by the user.
+    Status_Canceled,  ///< The operation has been canceled by the user.
   };
 
   /** Current status of the operation associated to this notifier.
@@ -77,7 +73,7 @@ public:
   virtual void _notifyFinished() = 0;
 
   /** Notify the observers that the operation has been canceled by the user. */
-  virtual void _notifyCancelled() = 0;
+  virtual void _notifyCanceled() = 0;
 
   /** Notify the observers that the operation has failed. */
   virtual void _notifyFailed() = 0;
@@ -106,14 +102,11 @@ QICORE_API ProgressNotifierPtr createProgressNotifier();
 class QICORE_API File
 {
 protected:
-  File()
-  {
-  }
+  File() = default;
 
 public:
-  virtual ~File()
-  {
-  }
+  virtual ~File() = default;
+
 
   /** @return Total count of bytes contained in the file or 0 if the file is closed. */
   virtual std::streamsize size() const = 0;

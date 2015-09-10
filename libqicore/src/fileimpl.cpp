@@ -20,12 +20,14 @@ public:
   {
     if (!localFilePath.exists())
     {
-      throw std::runtime_error("File not found.");
+      std::stringstream message;
+      message << "File not found on qi::File open: " << localFilePath.str();
+      throw std::runtime_error(message.str());
     }
 
     _progressNotifier = createProgressNotifier();
 
-    _fileStream.open(localFilePath.bfsPath(), std::ios::in | std::ios::binary);
+    _fileStream.open(localFilePath, std::ios::in | std::ios::binary);
     if (_fileStream.is_open())
     {
       _fileStream.seekg(0, _fileStream.end);
@@ -35,19 +37,17 @@ public:
     }
   }
 
-  ~FileImpl()
-  {
-  }
+  ~FileImpl() = default;
 
-  Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead)
+  Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead) override
   {
     if (_seek(beginOffset))
       return _read(countBytesToRead);
     else
-      return Buffer();
+      return {};
   }
 
-  Buffer _read(std::streamsize countBytesToRead)
+  Buffer _read(std::streamsize countBytesToRead) override
   {
     requireOpenFile();
     if (countBytesToRead > MAX_READ_SIZE)
@@ -62,16 +62,16 @@ public:
     const std::streamsize byteCountToRead = std::min(static_cast<std::streamsize>(MAX_READ_SIZE), distanceToTargetEnd);
     assert(byteCountToRead <= MAX_READ_SIZE);
 
-    _readBuffer.resize(byteCountToRead, '\0');
+    _readBuffer.resize(static_cast<size_t>(byteCountToRead), '\0');
     _fileStream.read(_readBuffer.data(), byteCountToRead);
     const std::streamsize bytesRead = _fileStream.gcount();
     assert(bytesRead <= byteCountToRead);
-    output.write(_readBuffer.data(), bytesRead);
+    output.write(_readBuffer.data(), static_cast<size_t>(bytesRead));
 
     return output;
   }
 
-  bool _seek(std::streamoff offsetFromBegin)
+  bool _seek(std::streamoff offsetFromBegin) override
   {
     requireOpenFile();
 
@@ -82,28 +82,28 @@ public:
     return true;
   }
 
-  void _close()
+  void _close() override
   {
     _fileStream.close();
     _size = 0;
   }
 
-  std::streamsize size() const
+  std::streamsize size() const override
   {
     return _size;
   }
 
-  bool isOpen() const
+  bool isOpen() const override
   {
     return _fileStream.is_open();
   }
 
-  bool isRemote() const
+  bool isRemote() const override
   {
     return false;
   }
 
-  ProgressNotifierPtr operationProgress() const
+  ProgressNotifierPtr operationProgress() const override
   {
     return _progressNotifier;
   }

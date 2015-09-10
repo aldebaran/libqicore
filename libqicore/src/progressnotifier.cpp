@@ -12,7 +12,7 @@ typedef ProgressNotifierBaseImpl<ProgressNotifier> ProgressNotifierImpl;
 QI_REGISTER_OBJECT(ProgressNotifier,
                    _notifyRunning,
                    _notifyFinished,
-                   _notifyCancelled,
+                   _notifyCanceled,
                    _notifyFailed,
                    _notifyProgressed,
                    waitForFinished,
