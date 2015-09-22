@@ -44,13 +44,13 @@ std::string startService(qi::Session& s)
 {
   try
   {
-    unsigned serviceId = s.registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
+    s.registerService("LogManager", qi::import("logmanager").call<qi::AnyObject>("LogManager"));
   }
   catch (const std::exception& e)
   {
     std::cout << e.what() << std::endl;
   }
-  qi::details::printMetaObject(std::cerr, s.service("LogManager").value().metaObject());
+  qi::detail::printMetaObject(std::cerr, s.service("LogManager").value().metaObject());
   return "LogManager";
 }
 
