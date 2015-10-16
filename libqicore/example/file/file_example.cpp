@@ -58,13 +58,13 @@ void processImageWithProgress(alice::ImageStorePtr imageStore,
   qi::FilePtr file = imageStore->getImage(imageFile);
 
   // We prepare the operation without launching it yet:
-  qi::FileOperationPtr fileOp = qi::prepareCopyToLocal(file, imageFilePath);
+  qi::FileCopyToLocal fileOp{file, imageFilePath};
 
   // We want to see the progress so we plug a logging function.
-  fileOp->progress.connect(&printTranferProgress);
+  fileOp.notifier()->progress.connect(&printTranferProgress);
 
   // Launch the copy and wait for it to end before continuing.
-  fileOp->start().wait(); // Don't wait for futures in real code, you should .connect() instead.
+  fileOp.start().wait(); // Don't wait for futures in real code, you should .connect() instead.
 
   // We don't need the remote access anymore.
   file.reset();

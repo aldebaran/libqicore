@@ -329,9 +329,9 @@ TEST_F(Test_ReadRemoteFile, bigFiletransfert)
   {
     qi::FilePtr testFile = clientAcquireTestFile(BIG_TEST_FILE_PATH);
 
-    qi::FileOperationPtr fileOp = prepareCopyToLocal(testFile, LOCAL_PATH_TO_RECEIVE_FILE_IN);
-    fileOp->progress.connect(&printTranferProgress);
-    fileOp->start().wait();
+    qi::FileCopyToLocal fileCopy{testFile, LOCAL_PATH_TO_RECEIVE_FILE_IN};
+    fileCopy.notifier()->progress.connect(&printTranferProgress);
+    fileCopy.start().wait();
 
     EXPECT_TRUE(printProgressHaveBeenCalled.load());
   }
@@ -344,21 +344,6 @@ TEST_F(Test_ReadRemoteFile, bigFiletransfert)
   boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN);
 }
 
-
-namespace
-{
-  void cancelFileOperation(qi::FileOperationPtr fileOp,
-                           qi::ProgressNotifier::Status status,
-                           qi::ProgressNotifier::Status cancelStatus)
-   {
-    if (status == cancelStatus)
-    {
-      EXPECT_TRUE(fileOp->waitForFinished().isCancelable());
-      fileOp->waitForFinished().cancel();
-    }
-  }
-}
-
 TEST_F(Test_ReadRemoteFile, cancelFileTransfer)
 {
   static const qi::Path LOCAL_PATH_TO_RECEIVE_FILE_IN = TEMPORARY_DIR.PATH / "bigfile.data";
@@ -367,9 +352,16 @@ TEST_F(Test_ReadRemoteFile, cancelFileTransfer)
   {
     qi::FilePtr testFile = clientAcquireTestFile(BIG_TEST_FILE_PATH);
 
-    qi::FileOperationPtr fileOp = prepareCopyToLocal(testFile, LOCAL_PATH_TO_RECEIVE_FILE_IN);
-    fileOp->status.connect(boost::bind(cancelFileOperation, fileOp, _1, qi::ProgressNotifier::Status_Running));
-    qi::Future<void> copyOpFt = fileOp->start();
+    qi::FileCopyToLocal fileOp{ testFile, LOCAL_PATH_TO_RECEIVE_FILE_IN };
+    auto fileOpNotifier = fileOp.notifier();
+    fileOpNotifier->status.connect([&](qi::ProgressNotifier::Status status){
+      if (status == qi::ProgressNotifier::Status_Running)
+      {
+        EXPECT_TRUE(fileOpNotifier->waitForFinished().isCancelable());
+        fileOpNotifier->waitForFinished().cancel();
+      }
+    });
+    qi::Future<void> copyOpFt = fileOp.start();
     EXPECT_TRUE(copyOpFt.isCancelable());
     copyOpFt.wait();
     EXPECT_TRUE(copyOpFt.isCanceled());

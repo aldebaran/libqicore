@@ -3,11 +3,81 @@
 **  See COPYING for the license
 */
 
-#include "progressnotifier_p.hpp"
+#include <qicore/file.hpp>
+#include <qi/anymodule.hpp>
 
 namespace qi
 {
-typedef ProgressNotifierBaseImpl<ProgressNotifier> ProgressNotifierImpl;
+  class ProgressNotifierImpl
+    : public ProgressNotifier
+  {
+  public:
+    explicit ProgressNotifierImpl(Future<void> operationFuture)
+      : _opFuture(std::move(operationFuture))
+    {
+      this->status.set(ProgressNotifier::Status_Idle);
+    }
+
+    void _reset() override
+    {
+      this->status.set(ProgressNotifier::Status_Idle);
+      this->progress.set(0.0);
+    }
+
+    void _notifyRunning() override
+    {
+      if (this->status.get() != ProgressNotifier::Status_Idle)
+        qiLogError("qicore.file.progressnotifierbase")
+        << "ProgressNotifier must be Idle to be allowed to switch to Running status.";
+
+      this->status.set(ProgressNotifier::Status_Running);
+    }
+
+    void _notifyFinished() override
+    {
+      if (!isRunning())
+        qiLogError("qicore.file.progressnotifierbase")
+        << "ProgressNotifier must be Running to be allowed to switch to Finished status.";
+
+      this->status.set(ProgressNotifier::Status_Finished);
+    }
+
+    void _notifyCanceled() override
+    {
+      if (!isRunning())
+        qiLogError("qicore.file.progressnotifierbase")
+        << "ProgressNotifier must be Running to be allowed to switch to Canceled status.";
+      this->status.set(ProgressNotifier::Status_Canceled);
+    }
+
+    void _notifyFailed() override
+    {
+      if (!isRunning())
+        qiLogError("qicore.file.progressnotifierbase")
+        << "ProgressNotifier must be Running to be allowed to switch to Failed status.";
+      this->status.set(ProgressNotifier::Status_Failed);
+    }
+
+    void _notifyProgressed(double newProgress) override
+    {
+      if (!isRunning())
+        qiLogError("qicore.file.progressnotifierbase")
+        << "ProgressNotifier must be Running to be allowed to notify any progress.";
+      this->progress.set(newProgress);
+    }
+
+    bool isRunning() const override
+    {
+      return this->status.get() == ProgressNotifier::Status_Running;
+    }
+
+    Future<void> waitForFinished() override
+    {
+      return _opFuture;
+    }
+
+    Future<void> _opFuture;
+  };
 
 QI_REGISTER_OBJECT(ProgressNotifier,
                    _notifyRunning,
@@ -20,8 +90,8 @@ QI_REGISTER_OBJECT(ProgressNotifier,
                    _reset);
 QI_REGISTER_IMPLEMENTATION(ProgressNotifier, ProgressNotifierImpl);
 
-ProgressNotifierPtr createProgressNotifier()
+ProgressNotifierPtr createProgressNotifier(Future<void> operationFuture)
 {
-  return boost::make_shared<ProgressNotifierImpl>();
+  return boost::make_shared<ProgressNotifierImpl>(std::move(operationFuture));
 }
 }

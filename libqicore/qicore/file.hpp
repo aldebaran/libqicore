@@ -92,7 +92,7 @@ public:
 typedef qi::Object<ProgressNotifier> ProgressNotifierPtr;
 
 /** @return Create and provide a remotely shareable ProgressNotifier object. */
-QICORE_API ProgressNotifierPtr createProgressNotifier();
+QICORE_API ProgressNotifierPtr createProgressNotifier(Future<void> operationFuture = {});
 
 /** Provide access to the content of a local or remote file.
 *   @includename{qicore/file.hpp}
@@ -187,37 +187,6 @@ typedef qi::Object<File> FilePtr;
 **/
 QICORE_API FilePtr openLocalFile(const qi::Path& localPath);
 
-/** Represent a file operation ready to be executed and expose information about it's progress state.
-*   Exposes the same signals than ProgressNotifier, associated to the operation.
-*   @includename{qicore/file.hpp}
-**/
-class FileOperation : public ProgressNotifier
-{
-public:
-  virtual ~FileOperation()
-  {
-  }
-
-  /** Start the associated operation.
-  *   @return A future associated with the operation execution.
-  **/
-  virtual Future<void> start() = 0;
-
-private:
-};
-
-/// Pointer to a file operation.
-typedef boost::shared_ptr<FileOperation> FileOperationPtr;
-
-/** Setup the following operation: a copy of local or remote file to a local filesystem location.
-*   @param file         Source file to copy.
-*   @param localPath    Local filesystem location where the specified file will be copied.
-*                       No file or directory should be located at this path otherwise
-*                       the operation will fail.
-*   @return This operation ready to be started but not executed yet.
-**/
-QICORE_API FileOperationPtr prepareCopyToLocal(FilePtr file, const Path& localPath);
-
 /** Copy an open local or remote file to a local filesystem location.
 *   @param file         Source file to copy.
 *   @param localPath    Local filesystem location where the specified file will be copied.
@@ -231,5 +200,7 @@ QICORE_API FutureSync<void> copyToLocal(FilePtr file, const Path& localPath);
 QI_TYPE_INTERFACE(File);
 QI_TYPE_INTERFACE(ProgressNotifier);
 QI_TYPE_ENUM_REGISTER(ProgressNotifier::Status);
+
+#include <qicore/fileoperation.hxx>
 
 #endif // _QI_FILE_HPP_
