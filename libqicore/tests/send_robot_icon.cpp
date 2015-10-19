@@ -22,7 +22,7 @@ void printTranferProgress(double progress)
 int main(int argc, char** argv)
 {
   qi::ApplicationSession app(argc, argv);
-  app.start();
+  app.startSession();
   if (argc != 2)
   {
     qiLogError() << "This test takes 2 arguments!";

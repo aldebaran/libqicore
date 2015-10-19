@@ -77,7 +77,7 @@ int main(int argc, char** argv)
   try
   {
     qiLogInfo() << "Connection to service directory at " << app.url().str();
-    app.start();
+    app.startSession();
 
     try
     {
