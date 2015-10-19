@@ -91,7 +91,10 @@ public:
 /// Pointer to a ProgressNotifier with shared/remote semantic.
 typedef qi::Object<ProgressNotifier> ProgressNotifierPtr;
 
-/** @return Create and provide a remotely shareable ProgressNotifier object. */
+/** Create and provide a remotely shareable ProgressNotifier object.
+    @param operationFuture   Optional future of an operation to associate the notifier with.
+    @return A progress notifier, associated to the operation of the future if provided.
+*/
 QICORE_API ProgressNotifierPtr createProgressNotifier(Future<void> operationFuture = {});
 
 /** Provide access to the content of a local or remote file.
@@ -187,14 +190,6 @@ typedef qi::Object<File> FilePtr;
 **/
 QICORE_API FilePtr openLocalFile(const qi::Path& localPath);
 
-/** Copy an open local or remote file to a local filesystem location.
-*   @param file         Source file to copy.
-*   @param localPath    Local filesystem location where the specified file will be copied.
-*                       No file or directory should be located at this path otherwise
-*                       the operation will fail.
-*   @return A synchronous future associated with the operation.
-**/
-QICORE_API FutureSync<void> copyToLocal(FilePtr file, const Path& localPath);
 }
 
 QI_TYPE_INTERFACE(File);

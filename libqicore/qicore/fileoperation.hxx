@@ -11,14 +11,23 @@
 
 namespace qi
 {
-  /** Represent a file operation ready to be executed and expose information about it's progress state.
-  *   Exposes the same signals than ProgressNotifier, associated to the operation.
-  *   @includename{qicore/file.hpp}
+  /** Base type for file operation exposing information about its progress state.
+      Owns a task that will execute the operation.
+      Exposes a ProgressNotifier, associated to the operation.
+
+      As this is a move-able type, the task ownership can be moved and it is possible
+      to have a file operation object not owning a task. In this case,
+      no member call can succeed except re-assigning a valid file operation.
+
+      @includename{qicore/file.hpp}
   **/
   class FileOperation
   {
   public:
-    ~FileOperation()
+    /** Destructor.
+        Cancel the task if it is still owned by this object and is still running.
+    **/
+    virtual ~FileOperation()
     {
       auto task = std::move(_task);
       if (task)
@@ -37,12 +46,32 @@ namespace qi
        return *this;
     }
 
+    /** Starts the operation's task.
+
+        Throws a std::runtime_error if one of these conditions is true:
+         - start() has already been called before at least once;
+         - startStandAlone() has already been called before at least once;
+         - this object does not own the operation's task anymore;
+
+        @return A future corresponding to the end of the operation.
+    **/
     qi::Future<void> start()
     {
       acquireTask();
       return _task->run();
     }
 
+    /** Starts the operation's task after losing its ownership.
+        This is useful when you want to launch the task but not keep track
+        of its lifetime.
+
+        Throws a std::runtime_error if one of these conditions is true:
+         - start() has already been called before at least once;
+         - startStandAlone() has already been called before at least once;
+         - this object does not own the operation's task anymore;
+
+        @return A future corresponding to the end of the operation.
+    **/
     qi::Future<void> startStandAlone()
     {
       acquireTask();
@@ -52,11 +81,18 @@ namespace qi
       return future;
     }
 
+    /// Call operator: calls start()
     auto operator()() -> decltype(start()) { return start(); }
 
+    /** @returns A progress notifier associated to the operation if the operation's task is owned,
+                 null otherwise.
+    **/
     ProgressNotifierPtr notifier() const { return _task ? _task->localNotifier : ProgressNotifierPtr{}; }
 
+    /// @returns True if this object owns the operation's task, false otherwise.
     bool isValid() const { return _task ? true : false; }
+
+    /// @returns True if this object owns the operation's task, false otherwise.
     explicit operator bool() const { return isValid(); }
 
   protected:
@@ -136,16 +172,22 @@ namespace qi
 
       if (isLaunched.swap(true))
       {
-        // TODO: Consider returning a future error instead.
         throw std::runtime_error{ "Called FileOperation::start() more than once!" };
       }
     }
   };
 
+  /** Copies a potentially remote file to the local file system. */
   class FileCopyToLocal
     : public FileOperation
   {
   public:
+    /** Constructor.
+        @param file        Access to a potentially remote file to copy to the local file system.
+        @param localPath   Local file system location where the specified file will be copied.
+                           No file or directory should be located at this path otherwise
+                           the operation will fail.
+    **/
     FileCopyToLocal(qi::FilePtr file, qi::Path localPath)
       : FileOperation(boost::make_shared<Task>(std::move(file), std::move(localPath)))
     {
@@ -244,6 +286,15 @@ namespace qi
     };
 
   };
+
+  /** Copy an open local or remote file to a local file system location.
+  *   @param file         Source file to copy.
+  *   @param localPath    Local file system location where the specified file will be copied.
+  *                       No file or directory should be located at this path otherwise
+  *                       the operation will fail.
+  *   @return A synchronous future associated with the operation.
+  **/
+  QICORE_API FutureSync<void> copyToLocal(FilePtr file, const Path& localPath);
 
 }
 
