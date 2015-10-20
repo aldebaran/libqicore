@@ -51,5 +51,9 @@ public:
     return _obj.async<void>("waitForFinished");
   }
 };
-QI_REGISTER_PROXY_INTERFACE(ProgressNotifierProxy, ProgressNotifier);
+
+void _qiregisterProgressNotifierProxy()
+{
+  ::qi::registerProxyInterface<ProgressNotifierProxy, ProgressNotifier>();
+}
 }

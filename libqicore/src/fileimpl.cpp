@@ -121,7 +121,7 @@ private:
   }
 };
 
-static bool _qiregisterFile()
+void _qiregisterFile()
 {
   ::qi::ObjectTypeBuilder<File> builder;
   builder.advertiseMethod("read", static_cast<Buffer (File::*)(std::streamoff, std::streamsize)>(&File::read));
@@ -134,13 +134,30 @@ static bool _qiregisterFile()
   builder.advertiseMethod("operationProgress", &File::operationProgress);
 
   builder.registerType();
-  return true;
+
+  {
+    qi::detail::ForceProxyInclusion<File>().dummyCall();
+    qi::registerType(typeid(FileImpl), qi::typeOf<File>());
+    FileImpl* ptr = static_cast<FileImpl*>(reinterpret_cast<void*>(0x10000));
+    File* pptr = ptr;
+    intptr_t offset = reinterpret_cast<intptr_t>(pptr)-reinterpret_cast<intptr_t>(ptr);
+    if (offset)
+    {
+      qiLogError("qitype.register") << "non-zero offset for implementation FileImpl of File,"
+        "call will fail at runtime";
+      throw std::runtime_error("non-zero offset between implementation and interface");
+    }
+  }
+
 }
-static bool __qi_registrationFile = _qiregisterFile();
-QI_REGISTER_IMPLEMENTATION(File, FileImpl);
 
 FilePtr openLocalFile(const qi::Path& localPath)
 {
   return boost::make_shared<FileImpl>(localPath);
+}
+
+void registerFileCreation(qi::ModuleBuilder& mb)
+{
+  mb.advertiseMethod("openLocalFile", &openLocalFile);
 }
 }

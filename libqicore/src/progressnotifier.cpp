@@ -79,19 +79,46 @@ namespace qi
     Future<void> _opFuture;
   };
 
-QI_REGISTER_OBJECT(ProgressNotifier,
-                   notifyRunning,
-                   notifyFinished,
-                   notifyCanceled,
-                   notifyFailed,
-                   notifyProgressed,
-                   waitForFinished,
-                   isRunning,
-                   reset);
-QI_REGISTER_IMPLEMENTATION(ProgressNotifier, ProgressNotifierImpl);
+
+void _qiregisterProgressNotifier()
+{
+  ::qi::ObjectTypeBuilder<ProgressNotifier> builder;
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, notifyRunning);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, notifyFinished);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, notifyCanceled);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, notifyFailed);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, notifyProgressed);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, waitForFinished);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, isRunning);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, reset);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, progress);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, status);
+
+  builder.registerType();
+
+  {
+    qi::detail::ForceProxyInclusion<ProgressNotifier>().dummyCall();
+    qi::registerType(typeid(ProgressNotifierImpl), qi::typeOf<ProgressNotifier>());
+    ProgressNotifierImpl* ptr = static_cast<ProgressNotifierImpl*>(reinterpret_cast<void*>(0x10000));
+    ProgressNotifier* pptr = ptr;
+    intptr_t offset = reinterpret_cast<intptr_t>(pptr)-reinterpret_cast<intptr_t>(ptr);
+    if (offset)
+    {
+      qiLogError("qitype.register") << "non-zero offset for implementation ProgressNotifierImpl of ProgressNotifier,"
+        "call will fail at runtime";
+      throw std::runtime_error("non-zero offset between implementation and interface");
+    }
+  }
+
+}
 
 ProgressNotifierPtr createProgressNotifier(Future<void> operationFuture)
 {
   return boost::make_shared<ProgressNotifierImpl>(std::move(operationFuture));
+}
+
+void registerProgressNotifierCreation(qi::ModuleBuilder& mb)
+{
+  mb.advertiseMethod("createProgressNotifier", &createProgressNotifier);
 }
 }

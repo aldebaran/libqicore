@@ -177,6 +177,9 @@ namespace qi
     }
   };
 
+  /////////////////////////////////////////////////////////////////////////////////
+  using FileOperationPtr = Object<FileOperation>;
+
   /** Copies a potentially remote file to the local file system. */
   class FileCopyToLocal
     : public FileOperation
@@ -295,6 +298,15 @@ namespace qi
   *   @return A synchronous future associated with the operation.
   **/
   QICORE_API FutureSync<void> copyToLocal(FilePtr file, const Path& localPath);
+
+  /** Create and provide a FileCopyToLocal operation object ready to be used.
+  *   @param file         Source file to copy.
+  *   @param localPath    Local file system location where the specified file will be copied.
+  *                       No file or directory should be located at this path otherwise
+  *                       the operation will fail.
+  *   @return A file operation object ready to perform the operation.
+  **/
+  FileOperationPtr prepareCopyToLocal(FilePtr file, const Path& localPath);
 
 }
 

@@ -52,6 +52,12 @@ public:
   {
     return _obj.call<ProgressNotifierPtr>("operationProgress");
   }
+
 };
-QI_REGISTER_PROXY_INTERFACE(FileProxy, File);
+
+void _qiregisterFileProxy()
+{
+  ::qi::registerProxyInterface<FileProxy, File>();
+}
+
 }
