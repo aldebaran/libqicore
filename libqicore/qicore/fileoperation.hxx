@@ -111,10 +111,10 @@ namespace qi
 
       qi::Future<void> run()
       {
-        localNotifier->_reset();
-        remoteNotifier->_reset();
-        localNotifier->_notifyRunning();
-        remoteNotifier->_notifyRunning();
+        localNotifier->reset();
+        remoteNotifier->reset();
+        localNotifier->notifyRunning();
+        remoteNotifier->notifyRunning();
         start();
         return promise.future();
       }
@@ -122,22 +122,22 @@ namespace qi
       void finish()
       {
         promise.setValue(0);
-        localNotifier->_notifyFinished();
-        remoteNotifier->_notifyFinished();
+        localNotifier->notifyFinished();
+        remoteNotifier->notifyFinished();
       }
 
       void fail(const std::string& errorMessage)
       {
         promise.setError(errorMessage);
-        localNotifier->_notifyFailed();
-        remoteNotifier->_notifyFailed();
+        localNotifier->notifyFailed();
+        remoteNotifier->notifyFailed();
       }
 
       void cancel()
       {
         promise.setCanceled();
-        localNotifier->_notifyCanceled();
-        remoteNotifier->_notifyCanceled();
+        localNotifier->notifyCanceled();
+        remoteNotifier->notifyCanceled();
       }
 
 
@@ -237,15 +237,15 @@ namespace qi
         assert(fileSize >= bytesWritten);
 
         const double progress = static_cast<double>(bytesWritten) / static_cast<double>(fileSize);
-        localNotifier->_notifyProgressed(progress);
-        remoteNotifier->_notifyProgressed(progress);
+        localNotifier->notifyProgressed(progress);
+        remoteNotifier->notifyProgressed(progress);
       }
 
       void fetchData()
       {
         static const size_t ARBITRARY_BYTES_TO_READ_PER_CYCLE = 512 * 1024;
         auto myself = shared_from_this();
-        sourceFile.async<Buffer>("_read", bytesWritten, ARBITRARY_BYTES_TO_READ_PER_CYCLE)
+        sourceFile.async<Buffer>("read", bytesWritten, ARBITRARY_BYTES_TO_READ_PER_CYCLE)
           .connect([this, myself](Future<Buffer> futureBuffer)
         {
           if (futureBuffer.hasError())

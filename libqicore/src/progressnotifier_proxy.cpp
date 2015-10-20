@@ -11,34 +11,34 @@ public:
   {
   }
 
-  void _reset() override
+  void reset() override
   {
-    _obj.call<void>("_reset");
+    _obj.call<void>("reset");
   }
 
-  void _notifyRunning() override
+  void notifyRunning() override
   {
-    _obj.call<void>("_notifyRunning");
+    _obj.call<void>("notifyRunning");
   }
 
-  void _notifyFinished() override
+  void notifyFinished() override
   {
-    _obj.call<void>("_notifyFinished");
+    _obj.call<void>("notifyFinished");
   }
 
-  void _notifyCanceled() override
+  void notifyCanceled() override
   {
-    _obj.call<void>("_notifyCanceled");
+    _obj.call<void>("notifyCanceled");
   }
 
-  void _notifyFailed() override
+  void notifyFailed() override
   {
-    _obj.call<void>("_notifyFailed");
+    _obj.call<void>("notifyFailed");
   }
 
-  void _notifyProgressed(double newProgress) override
+  void notifyProgressed(double newProgress) override
   {
-    _obj.call<void>("_notifyProgressed", newProgress);
+    _obj.call<void>("notifyProgressed", newProgress);
   }
 
   bool isRunning() const override

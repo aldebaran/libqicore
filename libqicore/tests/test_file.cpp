@@ -90,8 +90,8 @@ void checkIsTestFileContent(qi::File& file)
 {
   ASSERT_TRUE(file.isOpen());
   EXPECT_EQ(static_cast<std::streamsize>(TESTFILE_CONTENT.size()), file.size());
-  file._seek(0);
-  const qi::Buffer allFileData = file._read(file.size());
+  file.seek(0);
+  const qi::Buffer allFileData = file.read(file.size());
   EXPECT_EQ(TESTFILE_CONTENT.size(), allFileData.totalSize());
   checkIsTestFileContent(allFileData);
 }
@@ -106,8 +106,8 @@ void checkSameFilesContent(qi::File& leftFile, qi::File& rightFile)
 
   for (std::streamoff byteOffset = 0; byteOffset < rightFile.size(); byteOffset += BYTES_STEP)
   {
-    qi::Buffer leftBytes = leftFile._read(byteOffset, BYTES_STEP);
-    qi::Buffer rightBytes = rightFile._read(byteOffset, BYTES_STEP);
+    qi::Buffer leftBytes = leftFile.read(byteOffset, BYTES_STEP);
+    qi::Buffer rightBytes = rightFile.read(byteOffset, BYTES_STEP);
     EXPECT_GE(BYTES_STEP, leftBytes.totalSize());
     EXPECT_GE(BYTES_STEP, rightBytes.totalSize());
     EXPECT_EQ(leftBytes.totalSize(), rightBytes.totalSize());
@@ -133,17 +133,17 @@ TEST(TestFile, cannotReadClosedFile)
   qi::FilePtr file = qi::openLocalFile(SMALL_TEST_FILE_PATH);
   EXPECT_TRUE(file->isOpen());
 
-  file->_close();
+  file->close();
   EXPECT_FALSE(file->isOpen());
   EXPECT_EQ(0u, file->size());
   EXPECT_THROW(
       {
-        file->_read(42);
+        file->read(42);
       },
       std::runtime_error);
   EXPECT_THROW(
       {
-        file->_seek(42);
+        file->seek(42);
       },
       std::runtime_error);
 }
@@ -156,7 +156,7 @@ TEST(TestFile, readLocalFile)
 
   static const size_t COUNT_BYTES_TO_READ = 20;
 
-  qi::Buffer buffer = testFile->_read(COUNT_BYTES_TO_READ);
+  qi::Buffer buffer = testFile->read(COUNT_BYTES_TO_READ);
   ASSERT_EQ(COUNT_BYTES_TO_READ, buffer.totalSize());
   checkIsTestFileContent(buffer);
 }
@@ -167,8 +167,8 @@ TEST(TestFile, cannotReadPastEnd)
   EXPECT_TRUE(testFile->isOpen());
   EXPECT_EQ(std::streamsize(TESTFILE_CONTENT.size()), testFile->size());
 
-  testFile->_read(testFile->size());
-  qi::Buffer buffer = testFile->_read(1);
+  testFile->read(testFile->size());
+  qi::Buffer buffer = testFile->read(1);
   EXPECT_EQ(0u, buffer.totalSize());
 }
 
@@ -251,7 +251,7 @@ TEST_F(Test_ReadRemoteFile, someReading)
 
   static const size_t COUNT_BYTES_TO_READ = 20;
 
-  qi::Buffer buffer = testFile->_read(COUNT_BYTES_TO_READ);
+  qi::Buffer buffer = testFile->read(COUNT_BYTES_TO_READ);
   ASSERT_EQ(COUNT_BYTES_TO_READ, buffer.totalSize());
   checkIsTestFileContent(buffer);
 }
@@ -266,7 +266,7 @@ TEST_F(Test_ReadRemoteFile, readAll)
   qi::Buffer cycleBuffer;
   while (true)
   {
-    cycleBuffer = testFile->_read(COUNT_BYTES_TO_READ_PER_CYCLE);
+    cycleBuffer = testFile->read(COUNT_BYTES_TO_READ_PER_CYCLE);
     buffer.write(cycleBuffer.data(), cycleBuffer.totalSize());
     if (cycleBuffer.totalSize() < COUNT_BYTES_TO_READ_PER_CYCLE)
     {
@@ -286,7 +286,7 @@ TEST_F(Test_ReadRemoteFile, readAllOnce)
   const std::streamsize fileSize = testFile->size();
   EXPECT_EQ(std::streamsize(TESTFILE_CONTENT.size()), fileSize);
 
-  qi::Buffer buffer = testFile->_read(fileSize);
+  qi::Buffer buffer = testFile->read(fileSize);
   EXPECT_EQ(TESTFILE_CONTENT.size(), buffer.totalSize());
   checkIsTestFileContent(buffer);
 }
@@ -314,10 +314,10 @@ TEST_F(Test_ReadRemoteFile, readInTheMiddle)
 {
   qi::FilePtr testFile = clientAcquireTestFile(SMALL_TEST_FILE_PATH);
 
-  qi::Buffer bufferPartial = testFile->_read(TESTFILE_PARTIAL_BEGIN_POSITION, TESTFILE_PARTIAL_SIZE);
+  qi::Buffer bufferPartial = testFile->read(TESTFILE_PARTIAL_BEGIN_POSITION, TESTFILE_PARTIAL_SIZE);
   checkIsTestFilePartialContent(bufferPartial);
 
-  qi::Buffer bufferMiddle = testFile->_read(TESTFILE_MIDDLE_BEGIN_POSITION, TESTFILE_MIDDLE_SIZE);
+  qi::Buffer bufferMiddle = testFile->read(TESTFILE_MIDDLE_BEGIN_POSITION, TESTFILE_MIDDLE_SIZE);
   checkIsTestFileMiddleContent(bufferMiddle);
 }
 

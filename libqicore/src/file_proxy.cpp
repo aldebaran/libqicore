@@ -13,24 +13,24 @@ public:
 
   ~FileProxy() = default;
 
-  Buffer _read(std::streamsize countBytesToRead) override
+  Buffer read(std::streamsize countBytesToRead) override
   {
-    return _obj.call<Buffer>("_read", countBytesToRead);
+    return _obj.call<Buffer>("read", countBytesToRead);
   }
 
-  Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead) override
+  Buffer read(std::streamoff beginOffset, std::streamsize countBytesToRead) override
   {
-    return _obj.call<Buffer>("_read", beginOffset, countBytesToRead);
+    return _obj.call<Buffer>("read", beginOffset, countBytesToRead);
   }
 
-  bool _seek(std::streamoff offsetFromBegin) override
+  bool seek(std::streamoff offsetFromBegin) override
   {
-    return _obj.call<bool>("_seek", offsetFromBegin);
+    return _obj.call<bool>("seek", offsetFromBegin);
   }
 
-  void _close() override
+  void close() override
   {
-    return _obj.call<void>("_close");
+    return _obj.call<void>("close");
   }
 
   std::streamsize size() const override

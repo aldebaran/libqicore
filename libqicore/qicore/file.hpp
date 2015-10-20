@@ -63,29 +63,41 @@ public:
   ///////////////////////
   // The following operations are reserved for the implementation of the associated operations.
 
-  /** Reset the status of the algorithm to the idle state with no progress. */
-  virtual void _reset() = 0;
+  /** Reset the status of the algorithm to the idle state with no progress.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+  */
+  virtual void reset() = 0;
 
-  /** Notify the observers that the operation associated with this notifier is now running. */
-  virtual void _notifyRunning() = 0;
+  /** Notify the observers that the operation associated with this notifier is now running.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+      */
+  virtual void notifyRunning() = 0;
 
-  /** Notify the observers that the operation has successfully ended. */
-  virtual void _notifyFinished() = 0;
+  /** Notify the observers that the operation has successfully ended.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+      */
+  virtual void notifyFinished() = 0;
 
-  /** Notify the observers that the operation has been canceled by the user. */
-  virtual void _notifyCanceled() = 0;
+  /** Notify the observers that the operation has been canceled by the user.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+      */
+  virtual void notifyCanceled() = 0;
 
-  /** Notify the observers that the operation has failed. */
-  virtual void _notifyFailed() = 0;
+  /** Notify the observers that the operation has failed.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+      */
+  virtual void notifyFailed() = 0;
 
   /** Notify the observers that the operation progressed.
-  *   @param newProgress    New value representing the total progress of the operation.
-  *                         By default, uses a range from 0.0 (no work has been done yet)
-  *                         to 1.0 (all work is done). The operation implementation
-  *                         is free to use another range if necessary but should clarify
-  *                         the meaning of this value in its documentation.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+
+      @param newProgress    New value representing the total progress of the operation.
+                            By default, uses a range from 0.0 (no work has been done yet)
+                            to 1.0 (all work is done). The operation implementation
+                            is free to use another range if necessary but should clarify
+                            the meaning of this value in its documentation.
   **/
-  virtual void _notifyProgressed(double newProgress) = 0;
+  virtual void notifyProgressed(double newProgress) = 0;
 };
 
 /// Pointer to a ProgressNotifier with shared/remote semantic.
@@ -144,7 +156,7 @@ public:
   *           if we try reading past the end of the file for example,
   *           then the buffer will only contain the available data, nothing more.
   **/
-  virtual Buffer _read(std::streamsize countBytesToRead) = 0;
+  virtual Buffer read(std::streamsize countBytesToRead) = 0;
 
   /** Read a specified count of bytes starting from a specified byte position in the file.
   *   @warning If you try to read more than _MAX_READ_SIZE bytes, this call will throw a std::runtime_error.
@@ -160,7 +172,7 @@ public:
   *           if we try reading past the end of the file for example,
   *           then the buffer will only contain the available data, nothing more
   **/
-  virtual Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead) = 0;
+  virtual Buffer read(std::streamoff beginOffset, std::streamsize countBytesToRead) = 0;
 
   /** Move the read cursor to the specified position in the file.
   *   @param offsetFromBegin      New position of the read cursor in the file.
@@ -169,14 +181,14 @@ public:
   *   @return true if the position is in the range of data available in the file,
   *           false otherwise, in which case the cursor have not been changed.
   **/
-  virtual bool _seek(std::streamoff offsetFromBegin) = 0;
+  virtual bool seek(std::streamoff offsetFromBegin) = 0;
 
   /** Close the file.
   *   Once this function is called, calling most other operation will throw
   *   a std::runtime_error.
   *   The size(), isOpen() and isRemote() calls will return work as expected.
   **/
-  virtual void _close() = 0;
+  virtual void close() = 0;
 };
 
 /// Pointer to a file with shared/remote semantic.

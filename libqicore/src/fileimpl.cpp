@@ -39,15 +39,15 @@ public:
 
   ~FileImpl() = default;
 
-  Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead) override
+  Buffer read(std::streamoff beginOffset, std::streamsize countBytesToRead) override
   {
-    if (_seek(beginOffset))
-      return _read(countBytesToRead);
+    if (seek(beginOffset))
+      return read(countBytesToRead);
     else
       return {};
   }
 
-  Buffer _read(std::streamsize countBytesToRead) override
+  Buffer read(std::streamsize countBytesToRead) override
   {
     requireOpenFile();
     if (countBytesToRead > MAX_READ_SIZE)
@@ -71,7 +71,7 @@ public:
     return output;
   }
 
-  bool _seek(std::streamoff offsetFromBegin) override
+  bool seek(std::streamoff offsetFromBegin) override
   {
     requireOpenFile();
 
@@ -82,7 +82,7 @@ public:
     return true;
   }
 
-  void _close() override
+  void close() override
   {
     _fileStream.close();
     _size = 0;
@@ -124,10 +124,10 @@ private:
 static bool _qiregisterFile()
 {
   ::qi::ObjectTypeBuilder<File> builder;
-  builder.advertiseMethod("_read", static_cast<Buffer (File::*)(std::streamoff, std::streamsize)>(&File::_read));
-  builder.advertiseMethod("_read", static_cast<Buffer (File::*)(std::streamsize)>(&File::_read));
-  builder.advertiseMethod("_seek", &File::_seek);
-  builder.advertiseMethod("_close", &File::_close);
+  builder.advertiseMethod("read", static_cast<Buffer (File::*)(std::streamoff, std::streamsize)>(&File::read));
+  builder.advertiseMethod("read", static_cast<Buffer (File::*)(std::streamsize)>(&File::read));
+  builder.advertiseMethod("seek", &File::seek);
+  builder.advertiseMethod("close", &File::close);
   builder.advertiseMethod("size", &File::size);
   builder.advertiseMethod("isOpen", &File::isOpen);
   builder.advertiseMethod("isLocal", &File::isRemote);

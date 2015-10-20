@@ -18,13 +18,13 @@ namespace qi
       this->status.set(ProgressNotifier::Status_Idle);
     }
 
-    void _reset() override
+    void reset() override
     {
       this->status.set(ProgressNotifier::Status_Idle);
       this->progress.set(0.0);
     }
 
-    void _notifyRunning() override
+    void notifyRunning() override
     {
       if (this->status.get() != ProgressNotifier::Status_Idle)
         qiLogError("qicore.file.progressnotifierbase")
@@ -33,7 +33,7 @@ namespace qi
       this->status.set(ProgressNotifier::Status_Running);
     }
 
-    void _notifyFinished() override
+    void notifyFinished() override
     {
       if (!isRunning())
         qiLogError("qicore.file.progressnotifierbase")
@@ -42,7 +42,7 @@ namespace qi
       this->status.set(ProgressNotifier::Status_Finished);
     }
 
-    void _notifyCanceled() override
+    void notifyCanceled() override
     {
       if (!isRunning())
         qiLogError("qicore.file.progressnotifierbase")
@@ -50,7 +50,7 @@ namespace qi
       this->status.set(ProgressNotifier::Status_Canceled);
     }
 
-    void _notifyFailed() override
+    void notifyFailed() override
     {
       if (!isRunning())
         qiLogError("qicore.file.progressnotifierbase")
@@ -58,7 +58,7 @@ namespace qi
       this->status.set(ProgressNotifier::Status_Failed);
     }
 
-    void _notifyProgressed(double newProgress) override
+    void notifyProgressed(double newProgress) override
     {
       if (!isRunning())
         qiLogError("qicore.file.progressnotifierbase")
@@ -80,14 +80,14 @@ namespace qi
   };
 
 QI_REGISTER_OBJECT(ProgressNotifier,
-                   _notifyRunning,
-                   _notifyFinished,
-                   _notifyCanceled,
-                   _notifyFailed,
-                   _notifyProgressed,
+                   notifyRunning,
+                   notifyFinished,
+                   notifyCanceled,
+                   notifyFailed,
+                   notifyProgressed,
                    waitForFinished,
                    isRunning,
-                   _reset);
+                   reset);
 QI_REGISTER_IMPLEMENTATION(ProgressNotifier, ProgressNotifierImpl);
 
 ProgressNotifierPtr createProgressNotifier(Future<void> operationFuture)
