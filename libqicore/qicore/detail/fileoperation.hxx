@@ -6,18 +6,11 @@
 #include <memory>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
-#include <qi/anymodule.hpp>
-#include <qi/eventloop.hpp>
 
 namespace qi
 {
   /** Base type for file operation exposing information about its progress state.
-      Owns a task that will execute the operation.
       Exposes a ProgressNotifier, associated to the operation.
-
-      As this is a move-able type, the task ownership can be moved and it is possible
-      to have a file operation object not owning a task. In this case,
-      no member call can succeed except re-assigning a valid file operation.
 
       @includename{qicore/file.hpp}
   **/
@@ -25,7 +18,7 @@ namespace qi
   {
   public:
     /** Destructor.
-        Cancel the task if it is still owned by this object and is still running.
+        Cancel the operations's task if is still running and this object is valid.
     **/
     virtual ~FileOperation()
     {
@@ -39,44 +32,73 @@ namespace qi
     // Move only
     FileOperation(const FileOperation&) = delete;
     FileOperation& operator=(const FileOperation&) = delete;
-    FileOperation(FileOperation&& other) : _task(std::move(other._task)) {}  // TODO VS2015 C++11: = default;
+
+    /** Move construction.
+        @param other  Object that will be moved-from. Will be in invalid state after this call,
+                      until being assigned to a vallid state.
+    */
+    FileOperation(FileOperation&& other) // TODO VS2015 C++11: = default;
+      : _task(std::move(other._task))
+    {}
+
+    /** Move assignation.
+        @param other  Object that will be moved-from. Will be in invalid state after this call,
+                      until being assigned to a vallid state.
+    */
     FileOperation& operator=(FileOperation&& other) // TODO VS2015 C++11: = default;
     {
       _task = std::move(other._task);
-       return *this;
+      return *this;
     }
 
     /** Starts the operation's task.
-
-        Throws a std::runtime_error if one of these conditions is true:
-         - start() has already been called before at least once;
-         - startStandAlone() has already been called before at least once;
-         - this object does not own the operation's task anymore;
+        This function must be called only once.
+        Throws a std::runtime_error if start() has already been called before at least once
+        or if this object is in an invalid state.
 
         @return A future corresponding to the end of the operation.
     **/
     qi::Future<void> start()
     {
-      acquireTask();
+      if (!_task)
+      {
+        throw std::runtime_error{ "Tried to start an invalid FileOperation" };
+      }
+
+      if (_task->isLaunched.swap(true))
+      {
+        throw std::runtime_error{ "Called FileOperation::start() more than once!" };
+      }
+
       return _task->run();
     }
 
-    /** Starts the operation's task after losing its ownership.
-        This is useful when you want to launch the task but not keep track
-        of its lifetime.
+    /** Detach the running operation from this object.
+        Useful to dissociate the on-going operation from the lifetime of the object,
+        in order to allow its continuation after object destruction.
+        The object destructor will cancel any still running operation if not dissociated beforehand.
 
-        Throws a std::runtime_error if one of these conditions is true:
-         - start() has already been called before at least once;
-         - startStandAlone() has already been called before at least once;
-         - this object does not own the operation's task anymore;
+        Once called, this object will be in invalid state.
+        The task must have been started before calling this function,
+        otherwise a std::runtime_exception will be thrown.
 
         @return A future corresponding to the end of the operation.
     **/
-    qi::Future<void> startStandAlone()
+    qi::Future<void> detach()
     {
-      acquireTask();
-      boost::shared_ptr<Task> sharedTask{ std::move(_task) };
-      auto future = sharedTask->run();
+      boost::shared_ptr<Task> sharedTask = std::move(_task);
+
+      if (!sharedTask)
+      {
+        throw std::runtime_error("Called FileOperation::detach() but no task is owned!");
+      }
+
+      if (!sharedTask->isLaunched._value)
+      {
+        throw std::runtime_error("Called FileOperation::detach() but task was not started!");
+      }
+
+      auto future = sharedTask->promise.future();
       future.connect([sharedTask](Future<void>&){}); // keep the task alive until it ends
       return future;
     }
@@ -84,12 +106,16 @@ namespace qi
     /// Call operator: calls start()
     auto operator()() -> decltype(start()) { return start(); }
 
-    /** @returns A progress notifier associated to the operation if the operation's task is owned,
-                 null otherwise.
+    /** @returns A progress notifier associated to the operation if the operation's task is owned
+                 and this object is valid, null otherwise.
     **/
     ProgressNotifierPtr notifier() const { return _task ? _task->localNotifier : ProgressNotifierPtr{}; }
 
-    /// @returns True if this object owns the operation's task, false otherwise.
+    /** @returns True if this object is in a valid state, false otherwise.
+                 In an invalid state, all of this object's member function calls will result in exception thrown
+                 except validity checks functions and move-assignation.
+                 An invalid object can be re-assigned to a valid state.
+    **/
     bool isValid() const { return _task ? true : false; }
 
     /// @returns True if this object owns the operation's task, false otherwise.
@@ -143,6 +169,7 @@ namespace qi
 
       virtual void start() = 0;
 
+      qi::Atomic<bool> isLaunched{ false };
       const FilePtr sourceFile;
       const std::streamsize fileSize;
       Promise<void> promise;
@@ -161,23 +188,11 @@ namespace qi
 
   private:
     TaskPtr _task;
-    qi::Atomic<bool> isLaunched{ false };
-
-    void acquireTask()
-    {
-      if (!_task)
-      {
-        throw std::runtime_error{ "Tried to start an invalid FileOperation" };
-      }
-
-      if (isLaunched.swap(true))
-      {
-        throw std::runtime_error{ "Called FileOperation::start() more than once!" };
-      }
-    }
   };
 
   /////////////////////////////////////////////////////////////////////////////////
+
+  /// Pointer to a file operation with sharing semantic.
   using FileOperationPtr = Object<FileOperation>;
 
   /** Copies a potentially remote file to the local file system. */
@@ -264,15 +279,11 @@ namespace qi
             return;
           }
 
+          write(futureBuffer.value());
           if (bytesWritten < fileSize)
-          {
-            write(futureBuffer.value());
             fetchData();
-          }
           else
-          {
             stop();
-          }
         }
         );
       }

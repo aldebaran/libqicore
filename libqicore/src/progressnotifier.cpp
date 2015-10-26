@@ -6,6 +6,8 @@
 #include <qicore/file.hpp>
 #include <qi/anymodule.hpp>
 
+qiLogCategory("qicore.file.progressnotifierimpl");
+
 namespace qi
 {
   class ProgressNotifierImpl
@@ -27,7 +29,7 @@ namespace qi
     void notifyRunning() override
     {
       if (this->status.get() != ProgressNotifier::Status_Idle)
-        qiLogError("qicore.file.progressnotifierbase")
+        qiLogError()
         << "ProgressNotifier must be Idle to be allowed to switch to Running status.";
 
       this->status.set(ProgressNotifier::Status_Running);
@@ -36,7 +38,7 @@ namespace qi
     void notifyFinished() override
     {
       if (!isRunning())
-        qiLogError("qicore.file.progressnotifierbase")
+        qiLogError()
         << "ProgressNotifier must be Running to be allowed to switch to Finished status.";
 
       this->status.set(ProgressNotifier::Status_Finished);
@@ -45,7 +47,7 @@ namespace qi
     void notifyCanceled() override
     {
       if (!isRunning())
-        qiLogError("qicore.file.progressnotifierbase")
+        qiLogError()
         << "ProgressNotifier must be Running to be allowed to switch to Canceled status.";
       this->status.set(ProgressNotifier::Status_Canceled);
     }
@@ -53,7 +55,7 @@ namespace qi
     void notifyFailed() override
     {
       if (!isRunning())
-        qiLogError("qicore.file.progressnotifierbase")
+        qiLogError()
         << "ProgressNotifier must be Running to be allowed to switch to Failed status.";
       this->status.set(ProgressNotifier::Status_Failed);
     }
@@ -61,7 +63,7 @@ namespace qi
     void notifyProgressed(double newProgress) override
     {
       if (!isRunning())
-        qiLogError("qicore.file.progressnotifierbase")
+        qiLogError()
         << "ProgressNotifier must be Running to be allowed to notify any progress.";
       this->progress.set(newProgress);
     }

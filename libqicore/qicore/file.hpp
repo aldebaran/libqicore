@@ -208,6 +208,6 @@ QI_TYPE_INTERFACE(File);
 QI_TYPE_INTERFACE(ProgressNotifier);
 QI_TYPE_ENUM_REGISTER(ProgressNotifier::Status);
 
-#include <qicore/fileoperation.hxx>
+#include <qicore/detail/fileoperation.hxx>
 
 #endif // _QI_FILE_HPP_

@@ -4,14 +4,21 @@
 */
 
 #include <qicore/file.hpp>
+#include <qi/anymodule.hpp>
 
 namespace qi
 {
+  template<class FileOpType, class... Args >
+  auto launchStandalone(Args&&... args)->decltype(std::declval<FileOpType>().start())
+  {
+    FileOpType fileOp{ std::forward<Args>(args)... };
+    fileOp.start();
+    return fileOp.detach();
+  }
 
   FutureSync<void> copyToLocal(FilePtr file, const Path& localPath)
   {
-    FileCopyToLocal task{ std::move(file), localPath };
-    return task.startStandAlone();
+    return launchStandalone<FileCopyToLocal>( std::move(file), localPath );
   }
 
   FileOperationPtr prepareCopyToLocal(FilePtr file, const Path& localPath)
@@ -23,7 +30,7 @@ namespace qi
   {
     ::qi::ObjectTypeBuilder<FileOperation> builder;
     QI_OBJECT_BUILDER_ADVERTISE(builder, FileOperation, start);
-    QI_OBJECT_BUILDER_ADVERTISE(builder, FileOperation, startStandAlone);
+    QI_OBJECT_BUILDER_ADVERTISE(builder, FileOperation, detach);
     QI_OBJECT_BUILDER_ADVERTISE(builder, FileOperation, notifier);
     QI_OBJECT_BUILDER_ADVERTISE(builder, FileOperation, isValid);
 

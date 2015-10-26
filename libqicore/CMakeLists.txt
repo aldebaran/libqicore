@@ -11,7 +11,7 @@ set(PUBLIC_HEADERS
     qicore/logmessage.hpp
     qicore/logprovider.hpp
     qicore/file.hpp
-    qicore/fileoperation.hxx
+    qicore/detail/fileoperation.hxx
     )
 qi_install_header(${PUBLIC_HEADERS} KEEP_RELATIVE_PATHS)
 
