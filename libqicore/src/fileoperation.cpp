@@ -16,14 +16,14 @@ namespace qi
     return fileOp.detach();
   }
 
-  FutureSync<void> copyToLocal(FilePtr file, const Path& localPath)
+  FutureSync<void> copyToLocal(FilePtr file, Path localPath)
   {
-    return launchStandalone<FileCopyToLocal>( std::move(file), localPath );
+    return launchStandalone<FileCopyToLocal>(std::move(file), std::move(localPath));
   }
 
-  FileOperationPtr prepareCopyToLocal(FilePtr file, const Path& localPath)
+  FileOperationPtr prepareCopyToLocal(FilePtr file, Path localPath)
   {
-    return boost::make_shared<FileCopyToLocal>(std::move(file), localPath);
+    return boost::make_shared<FileCopyToLocal>(std::move(file), std::move(localPath));
   }
 
   void _qiregisterFileOperation()
@@ -40,7 +40,7 @@ namespace qi
   void registerFileOperations(qi::ModuleBuilder& mb)
   {
     mb.advertiseMethod("copyToLocal", &copyToLocal);
-    mb.advertiseMethod("prepareCopyToLocal", &prepareCopyToLocal);
+    mb.advertiseMethod("FileCopyToLocal", &prepareCopyToLocal);
   }
 
 }
