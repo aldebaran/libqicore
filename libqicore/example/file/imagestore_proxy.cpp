@@ -12,12 +12,12 @@ public:
   {
   }
 
-  void storeImage(qi::FilePtr imageFile, std::string name)
+  void storeImage(qi::FilePtr imageFile, std::string name) override
   {
     return _obj.call<void>("storeImage", imageFile, name);
   }
 
-  qi::FilePtr getImage(std::string name)
+  qi::FilePtr getImage(std::string name) override
   {
     return _obj.call<qi::FilePtr>("getImage", name);
   }
