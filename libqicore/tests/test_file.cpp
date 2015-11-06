@@ -269,10 +269,7 @@ TEST_F(Test_ReadRemoteFile, readAll)
     cycleBuffer = testFile->read(COUNT_BYTES_TO_READ_PER_CYCLE);
     buffer.write(cycleBuffer.data(), cycleBuffer.totalSize());
     if (cycleBuffer.totalSize() < COUNT_BYTES_TO_READ_PER_CYCLE)
-    {
-      cycleBuffer.totalSize();
       break;
-    }
   }
 
   EXPECT_EQ(TESTFILE_CONTENT.size(), buffer.totalSize());
