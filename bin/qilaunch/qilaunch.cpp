@@ -11,6 +11,7 @@
 static std::vector<std::string> modules;
 static std::vector<std::string> objects;
 static std::vector<std::string> functions;
+static bool keepRunning = false;
 static bool disableBreakpad = false;
 static bool disableLogging = false;
 static std::string launcherName;
@@ -24,6 +25,7 @@ _QI_COMMAND_LINE_OPTIONS(
   ("module,m", value<std::vector<std::string> >(&modules), "Load given module (can be set multiple times) (deprecated, use --object)")
   ("object,o", value<std::vector<std::string> >(&objects), "Load given object (syntax: yourmodule.YourObject) (can be set multiple times)")
   ("function,f", value<std::vector<std::string> >(&functions), "Call given function (syntax: yourmodule.yourFunction) (can be set multiple times)")
+  ("keep-running,k", bool_switch(&keepRunning), "Keep running after the function(s) has(have) returned (implied by -o)")
   ("no-breakpad,b", bool_switch(&disableBreakpad), "Disable breakpad")
   ("no-logging,l", bool_switch(&disableLogging), "Disable remote logging")
   ("name,n", value<std::string>(&launcherName), "Name of the launcher used to prefix logs and breakpad dump files")
@@ -89,20 +91,27 @@ int main(int argc, char** argv)
       qiLogWarning() << "Logs initialization failed with the following error: " << e.what();
     }
 
-    for (auto& object : objects)
+    for (const auto& object : objects)
     {
       qiLogInfo() << "Loading object " << object;
       app.session()->loadService(object);
     }
 
-    for (auto& function: functions)
+    std::vector<qi::Future<void>> futures;
+    futures.reserve(functions.size());
+    for (const auto& function: functions)
     {
       qiLogInfo() << "Calling function " << function;
       qi::Future<void> fut = app.session()->asyncCallModule<void>(function);
-      fut.thenR<void>(boost::bind(stopOnError, _1, function));
+      futures.emplace_back(fut.then(boost::bind(stopOnError, _1, function)));
     }
 
-    app.run();
+    if (!objects.empty() || keepRunning)
+      app.run();
+    else
+      // just wait for the functions to finish
+      for (const auto& future : futures)
+        future.wait();
   }
   catch (std::exception& e)
   {
