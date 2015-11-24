@@ -53,6 +53,26 @@ public:
     return _obj.call<ProgressNotifierPtr>("operationProgress");
   }
 
+  // Deprecated members
+  Buffer _read(std::streamsize countBytesToRead) override
+  {
+    return _obj.call<Buffer>("_read", countBytesToRead);
+  }
+
+  Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead) override
+  {
+    return _obj.call<Buffer>("_read", beginOffset, countBytesToRead);
+  }
+
+  bool _seek(std::streamoff offsetFromBegin) override
+  {
+    return _obj.call<bool>("_seek", offsetFromBegin);
+  }
+
+  void _close() override
+  {
+    return _obj.call<void>("_close");
+  }
 };
 
 void _qiregisterFileProxy()

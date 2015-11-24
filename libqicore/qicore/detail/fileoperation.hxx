@@ -2,7 +2,6 @@
 #ifndef _QICORE_FILEOPERATION_HPP_
 #define _QICORE_FILEOPERATION_HPP_
 
-#include <atomic>
 #include <memory>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -129,7 +128,9 @@ namespace qi
         : sourceFile{ std::move(file) }
         , fileSize{ sourceFile->size() }
         , promise{ PromiseNoop<void> }
+        , localNotifier{ createProgressNotifier(promise.future()) }
         , remoteNotifier{ sourceFile->operationProgress() }
+        , isRemoteDeprecated(sourceFile.metaObject().findMethod("read").empty())
       {
       }
 
@@ -138,9 +139,9 @@ namespace qi
       qi::Future<void> run()
       {
         localNotifier->reset();
-        remoteNotifier->reset();
+        isRemoteDeprecated ? remoteNotifier->_reset() : remoteNotifier->reset();
         localNotifier->notifyRunning();
-        remoteNotifier->notifyRunning();
+        isRemoteDeprecated ? remoteNotifier->_notifyRunning() : remoteNotifier->notifyRunning();
         start();
         return promise.future();
       }
@@ -149,23 +150,28 @@ namespace qi
       {
         promise.setValue(0);
         localNotifier->notifyFinished();
-        remoteNotifier->notifyFinished();
+        isRemoteDeprecated ? remoteNotifier->_notifyFinished() : remoteNotifier->notifyFinished();
       }
 
       void fail(const std::string& errorMessage)
       {
         promise.setError(errorMessage);
         localNotifier->notifyFailed();
-        remoteNotifier->notifyFailed();
+        isRemoteDeprecated ? remoteNotifier->_notifyFailed() : remoteNotifier->notifyFailed();
       }
 
       void cancel()
       {
         promise.setCanceled();
         localNotifier->notifyCanceled();
-        remoteNotifier->notifyCanceled();
+        isRemoteDeprecated ? remoteNotifier->_notifyCanceled() : remoteNotifier->notifyCanceled();
       }
 
+      void notifyProgressed(double newProgress)
+      {
+        localNotifier->notifyProgressed(newProgress);
+        isRemoteDeprecated ? remoteNotifier->_notifyProgressed(newProgress) : remoteNotifier->notifyProgressed(newProgress);
+      }
 
       virtual void start() = 0;
 
@@ -173,8 +179,9 @@ namespace qi
       const FilePtr sourceFile;
       const std::streamsize fileSize;
       Promise<void> promise;
-      const ProgressNotifierPtr localNotifier = createProgressNotifier(promise.future());
+      const ProgressNotifierPtr localNotifier;
       const ProgressNotifierPtr remoteNotifier;
+      const bool isRemoteDeprecated;
     };
 
     using TaskPtr = boost::shared_ptr<Task>;
@@ -255,15 +262,17 @@ namespace qi
         assert(fileSize >= bytesWritten);
 
         const double progress = static_cast<double>(bytesWritten) / static_cast<double>(fileSize);
-        localNotifier->notifyProgressed(progress);
-        remoteNotifier->notifyProgressed(progress);
+        notifyProgressed(progress);
       }
 
       void fetchData()
       {
         static const size_t ARBITRARY_BYTES_TO_READ_PER_CYCLE = 512 * 1024;
         auto myself = shared_from_this();
-        sourceFile.async<Buffer>("read", bytesWritten, ARBITRARY_BYTES_TO_READ_PER_CYCLE)
+
+        const auto readFuncName = isRemoteDeprecated ? "_read" : "read";
+
+        sourceFile.async<Buffer>(readFuncName, bytesWritten, ARBITRARY_BYTES_TO_READ_PER_CYCLE)
           .connect([this, myself](Future<Buffer> futureBuffer)
         {
           if (futureBuffer.hasError())

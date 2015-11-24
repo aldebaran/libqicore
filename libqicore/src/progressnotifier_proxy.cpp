@@ -50,6 +50,38 @@ public:
   {
     return _obj.async<void>("waitForFinished");
   }
+
+  // Deprecated members:
+  void _reset() override
+  {
+    _obj.call<void>("_reset");
+  }
+
+  void _notifyRunning() override
+  {
+    _obj.call<void>("_notifyRunning");
+  }
+
+  void _notifyFinished() override
+  {
+    _obj.call<void>("_notifyFinished");
+  }
+
+  void _notifyCanceled() override
+  {
+    _obj.call<void>("_notifyCanceled");
+  }
+
+  void _notifyFailed() override
+  {
+    _obj.call<void>("_notifyFailed");
+  }
+
+  void _notifyProgressed(double newProgress) override
+  {
+    _obj.call<void>("_notifyProgressed", newProgress);
+  }
+
 };
 
 void _qiregisterProgressNotifierProxy()
