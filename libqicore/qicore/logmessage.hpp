@@ -12,7 +12,7 @@
 #include <qi/log.hpp>
 #include <qi/anyobject.hpp>
 
-QI_TYPE_ENUM_REGISTER(qi::LogLevel)
+QI_TYPE_ENUM(qi::LogLevel)
 
 namespace qi
 {

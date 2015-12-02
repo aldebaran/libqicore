@@ -18,7 +18,7 @@ using qi::SignalLink;
 
 qiLogCategory("service.behavior");
 
-QI_TYPE_ENUM_REGISTER(qi::MetaCallType);
+QI_TYPE_ENUM(qi::MetaCallType);
 
 namespace qi {
 

@@ -14,7 +14,7 @@ qiLogCategory("qi.behavior");
 
 namespace po = boost::program_options;
 
-//QI_TYPE_ENUM_REGISTER(qi::MetaCallType);
+//QI_TYPE_ENUM(qi::MetaCallType);
 
 int main(int argc, char *argv[])
 {

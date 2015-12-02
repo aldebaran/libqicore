@@ -14,7 +14,7 @@
 #include <testsession/testsessionpair.hpp>
 #include <qi/anymodule.hpp>
 
-QI_TYPE_ENUM_REGISTER(qi::MetaCallType);
+QI_TYPE_ENUM(qi::MetaCallType);
 
 /* For asynchronous things where no synchronisation mechanism
  * is possible, loop the check and wait a small delay,

@@ -206,7 +206,7 @@ QICORE_API FilePtr openLocalFile(const qi::Path& localPath);
 
 QI_TYPE_INTERFACE(File);
 QI_TYPE_INTERFACE(ProgressNotifier);
-QI_TYPE_ENUM_REGISTER(ProgressNotifier::Status);
+QI_TYPE_ENUM(ProgressNotifier::Status);
 
 #include <qicore/detail/fileoperation.hxx>
 
