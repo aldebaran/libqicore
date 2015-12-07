@@ -30,7 +30,7 @@ struct TemporaryDir
   ~TemporaryDir()
   {
     boost::system::error_code err;
-    const boost::filesystem::path path = boost::filesystem::system_complete(PATH.str());
+    const auto path = boost::filesystem::system_complete(PATH);
     boost::filesystem::remove_all(path, err);
     if (err)
     {
@@ -39,7 +39,7 @@ struct TemporaryDir
   }
 } const TEMPORARY_DIR;
 
-const qi::Path SMALL_TEST_FILE_PATH(TEMPORARY_DIR.PATH / "\xED\x95\x9C/testfile.data");
+const qi::Path SMALL_TEST_FILE_PATH{TEMPORARY_DIR.PATH / "\xED\x95\x9C/testfile.data"};
 qi::Path BIG_TEST_FILE_PATH;
 
 const std::string TESTFILE_CONTENT = "abcdefghijklmnopqrstuvwxyz";
@@ -51,9 +51,9 @@ const std::streamoff TESTFILE_MIDDLE_SIZE = TESTFILE_CONTENT.size() / 3;
 
 void makeSmallTestFile()
 {
-  boost::filesystem::remove(SMALL_TEST_FILE_PATH.bfsPath());
-  boost::filesystem::create_directories(SMALL_TEST_FILE_PATH.parent().bfsPath());
-  boost::filesystem::ofstream fileOutput(SMALL_TEST_FILE_PATH.bfsPath(), std::ios::out | std::ios::binary);
+  boost::filesystem::remove(SMALL_TEST_FILE_PATH);
+  boost::filesystem::create_directories(SMALL_TEST_FILE_PATH.parent());
+  boost::filesystem::ofstream fileOutput(SMALL_TEST_FILE_PATH, std::ios::out | std::ios::binary);
   assert(fileOutput.is_open());
   fileOutput << TESTFILE_CONTENT;
   fileOutput.flush();
@@ -90,8 +90,8 @@ void checkIsTestFileContent(qi::File& file)
 {
   ASSERT_TRUE(file.isOpen());
   EXPECT_EQ(static_cast<std::streamsize>(TESTFILE_CONTENT.size()), file.size());
-  file._seek(0);
-  const qi::Buffer allFileData = file._read(file.size());
+  file.seek(0);
+  const qi::Buffer allFileData = file.read(file.size());
   EXPECT_EQ(TESTFILE_CONTENT.size(), allFileData.totalSize());
   checkIsTestFileContent(allFileData);
 }
@@ -106,8 +106,8 @@ void checkSameFilesContent(qi::File& leftFile, qi::File& rightFile)
 
   for (std::streamoff byteOffset = 0; byteOffset < rightFile.size(); byteOffset += BYTES_STEP)
   {
-    qi::Buffer leftBytes = leftFile._read(byteOffset, BYTES_STEP);
-    qi::Buffer rightBytes = rightFile._read(byteOffset, BYTES_STEP);
+    qi::Buffer leftBytes = leftFile.read(byteOffset, BYTES_STEP);
+    qi::Buffer rightBytes = rightFile.read(byteOffset, BYTES_STEP);
     EXPECT_GE(BYTES_STEP, leftBytes.totalSize());
     EXPECT_GE(BYTES_STEP, rightBytes.totalSize());
     EXPECT_EQ(leftBytes.totalSize(), rightBytes.totalSize());
@@ -133,17 +133,17 @@ TEST(TestFile, cannotReadClosedFile)
   qi::FilePtr file = qi::openLocalFile(SMALL_TEST_FILE_PATH);
   EXPECT_TRUE(file->isOpen());
 
-  file->_close();
+  file->close();
   EXPECT_FALSE(file->isOpen());
   EXPECT_EQ(0u, file->size());
   EXPECT_THROW(
       {
-        file->_read(42);
+        file->read(42);
       },
       std::runtime_error);
   EXPECT_THROW(
       {
-        file->_seek(42);
+        file->seek(42);
       },
       std::runtime_error);
 }
@@ -156,7 +156,7 @@ TEST(TestFile, readLocalFile)
 
   static const size_t COUNT_BYTES_TO_READ = 20;
 
-  qi::Buffer buffer = testFile->_read(COUNT_BYTES_TO_READ);
+  qi::Buffer buffer = testFile->read(COUNT_BYTES_TO_READ);
   ASSERT_EQ(COUNT_BYTES_TO_READ, buffer.totalSize());
   checkIsTestFileContent(buffer);
 }
@@ -167,8 +167,8 @@ TEST(TestFile, cannotReadPastEnd)
   EXPECT_TRUE(testFile->isOpen());
   EXPECT_EQ(std::streamsize(TESTFILE_CONTENT.size()), testFile->size());
 
-  testFile->_read(testFile->size());
-  qi::Buffer buffer = testFile->_read(1);
+  testFile->read(testFile->size());
+  qi::Buffer buffer = testFile->read(1);
   EXPECT_EQ(0u, buffer.totalSize());
 }
 
@@ -179,7 +179,7 @@ TEST(TestFile, localCopy)
   EXPECT_EQ(std::streamsize(TESTFILE_CONTENT.size()), testFile->size());
 
   static const qi::Path LOCAL_COPY_PATH("if_this_is_not_removed_test_file_failed.txt");
-  boost::filesystem::remove(LOCAL_COPY_PATH.str());
+  boost::filesystem::remove(LOCAL_COPY_PATH);
   {
     copyToLocal(testFile, LOCAL_COPY_PATH);
 
@@ -187,12 +187,12 @@ TEST(TestFile, localCopy)
     EXPECT_TRUE(copiedFile->isOpen());
     checkSameFilesContent(*testFile, *copiedFile);
   }
-  boost::filesystem::remove(LOCAL_COPY_PATH.str());
+  boost::filesystem::remove(LOCAL_COPY_PATH);
 }
 
 namespace
 {
-qi::FilePtr getTestFile(const std::string& filePath)
+qi::FilePtr getTestFile(const qi::Path& filePath)
 {
   qi::FilePtr testFile = qi::openLocalFile(filePath);
   EXPECT_TRUE(testFile->isOpen());
@@ -222,7 +222,7 @@ public:
   qi::FilePtr clientAcquireTestFile(const qi::Path& path)
   {
     qi::AnyObject service = sessionPair.client()->service("service");
-    qi::FilePtr testFile = service.call<qi::FilePtr>("getTestFile", path.str());
+    qi::FilePtr testFile = service.call<qi::FilePtr>("getTestFile", path);
     EXPECT_TRUE(testFile->isRemote());
     return testFile;
   }
@@ -251,7 +251,7 @@ TEST_F(Test_ReadRemoteFile, someReading)
 
   static const size_t COUNT_BYTES_TO_READ = 20;
 
-  qi::Buffer buffer = testFile->_read(COUNT_BYTES_TO_READ);
+  qi::Buffer buffer = testFile->read(COUNT_BYTES_TO_READ);
   ASSERT_EQ(COUNT_BYTES_TO_READ, buffer.totalSize());
   checkIsTestFileContent(buffer);
 }
@@ -266,7 +266,7 @@ TEST_F(Test_ReadRemoteFile, readAll)
   qi::Buffer cycleBuffer;
   while (true)
   {
-    cycleBuffer = testFile->_read(COUNT_BYTES_TO_READ_PER_CYCLE);
+    cycleBuffer = testFile->read(COUNT_BYTES_TO_READ_PER_CYCLE);
     buffer.write(cycleBuffer.data(), cycleBuffer.totalSize());
     if (cycleBuffer.totalSize() < COUNT_BYTES_TO_READ_PER_CYCLE)
     {
@@ -286,7 +286,7 @@ TEST_F(Test_ReadRemoteFile, readAllOnce)
   const std::streamsize fileSize = testFile->size();
   EXPECT_EQ(std::streamsize(TESTFILE_CONTENT.size()), fileSize);
 
-  qi::Buffer buffer = testFile->_read(fileSize);
+  qi::Buffer buffer = testFile->read(fileSize);
   EXPECT_EQ(TESTFILE_CONTENT.size(), buffer.totalSize());
   checkIsTestFileContent(buffer);
 }
@@ -294,7 +294,7 @@ TEST_F(Test_ReadRemoteFile, readAllOnce)
 TEST_F(Test_ReadRemoteFile, filetransfert)
 {
   static const qi::Path LOCAL_PATH_TO_RECEIVE_FILE_IN = TEMPORARY_DIR.PATH / "file.data";
-  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN.str());
+  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN);
 
   {
     qi::FilePtr testFile = clientAcquireTestFile(SMALL_TEST_FILE_PATH);
@@ -307,31 +307,31 @@ TEST_F(Test_ReadRemoteFile, filetransfert)
     checkIsTestFileContent(*localFileCopy);
   }
 
-  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN.str());
+  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN);
 }
 
 TEST_F(Test_ReadRemoteFile, readInTheMiddle)
 {
   qi::FilePtr testFile = clientAcquireTestFile(SMALL_TEST_FILE_PATH);
 
-  qi::Buffer bufferPartial = testFile->_read(TESTFILE_PARTIAL_BEGIN_POSITION, TESTFILE_PARTIAL_SIZE);
+  qi::Buffer bufferPartial = testFile->read(TESTFILE_PARTIAL_BEGIN_POSITION, TESTFILE_PARTIAL_SIZE);
   checkIsTestFilePartialContent(bufferPartial);
 
-  qi::Buffer bufferMiddle = testFile->_read(TESTFILE_MIDDLE_BEGIN_POSITION, TESTFILE_MIDDLE_SIZE);
+  qi::Buffer bufferMiddle = testFile->read(TESTFILE_MIDDLE_BEGIN_POSITION, TESTFILE_MIDDLE_SIZE);
   checkIsTestFileMiddleContent(bufferMiddle);
 }
 
 TEST_F(Test_ReadRemoteFile, bigFiletransfert)
 {
   static const qi::Path LOCAL_PATH_TO_RECEIVE_FILE_IN = TEMPORARY_DIR.PATH / "bigfile.data";
-  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN.str());
+  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN);
 
   {
     qi::FilePtr testFile = clientAcquireTestFile(BIG_TEST_FILE_PATH);
 
-    qi::FileOperationPtr fileOp = prepareCopyToLocal(testFile, LOCAL_PATH_TO_RECEIVE_FILE_IN);
-    fileOp->progress.connect(&printTranferProgress);
-    fileOp->start().wait();
+    qi::FileCopyToLocal fileCopy{testFile, LOCAL_PATH_TO_RECEIVE_FILE_IN};
+    fileCopy.notifier()->progress.connect(&printTranferProgress);
+    fileCopy.start().wait();
 
     EXPECT_TRUE(printProgressHaveBeenCalled.load());
   }
@@ -341,42 +341,34 @@ TEST_F(Test_ReadRemoteFile, bigFiletransfert)
     checkSameFilesContent(*originalFile, *localFileCopy);
   }
 
-  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN.str());
-}
-
-
-namespace
-{
-  void cancelFileOperation(qi::FileOperationPtr fileOp,
-                           qi::ProgressNotifier::Status status,
-                           qi::ProgressNotifier::Status cancelStatus)
-   {
-    if (status == cancelStatus)
-    {
-      EXPECT_TRUE(fileOp->waitForFinished().isCancelable());
-      fileOp->waitForFinished().cancel();
-    }
-  }
+  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN);
 }
 
 TEST_F(Test_ReadRemoteFile, cancelFileTransfer)
 {
   static const qi::Path LOCAL_PATH_TO_RECEIVE_FILE_IN = TEMPORARY_DIR.PATH / "bigfile.data";
-  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN.str());
+  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN);
 
   {
     qi::FilePtr testFile = clientAcquireTestFile(BIG_TEST_FILE_PATH);
 
-    qi::FileOperationPtr fileOp = prepareCopyToLocal(testFile, LOCAL_PATH_TO_RECEIVE_FILE_IN);
-    fileOp->status.connect(boost::bind(cancelFileOperation, fileOp, _1, qi::ProgressNotifier::Status_Running));
-    qi::Future<void> copyOpFt = fileOp->start();
+    qi::FileCopyToLocal fileOp{ testFile, LOCAL_PATH_TO_RECEIVE_FILE_IN };
+    auto fileOpNotifier = fileOp.notifier();
+    fileOpNotifier->status.connect([&](qi::ProgressNotifier::Status status){
+      if (status == qi::ProgressNotifier::Status_Running)
+      {
+        EXPECT_TRUE(fileOpNotifier->waitForFinished().isCancelable());
+        fileOpNotifier->waitForFinished().cancel();
+      }
+    });
+    qi::Future<void> copyOpFt = fileOp.start();
     EXPECT_TRUE(copyOpFt.isCancelable());
     copyOpFt.wait();
     EXPECT_TRUE(copyOpFt.isCanceled());
   }
 
-  EXPECT_FALSE(boost::filesystem::exists(LOCAL_PATH_TO_RECEIVE_FILE_IN.str()));
-  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN.str());
+  EXPECT_FALSE(boost::filesystem::exists(LOCAL_PATH_TO_RECEIVE_FILE_IN));
+  boost::filesystem::remove(LOCAL_PATH_TO_RECEIVE_FILE_IN);
 }
 
 int main(int argc, char** argv)
@@ -386,6 +378,6 @@ int main(int argc, char** argv)
   qi::Application app(argc, argv);
   BIG_TEST_FILE_PATH = qi::path::findLib("qi");
   makeSmallTestFile();
-  int result = RUN_ALL_TESTS();
+  const int result = RUN_ALL_TESTS();
   return result;
 }

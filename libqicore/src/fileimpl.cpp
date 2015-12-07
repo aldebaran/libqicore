@@ -20,12 +20,14 @@ public:
   {
     if (!localFilePath.exists())
     {
-      throw std::runtime_error("File not found.");
+      std::stringstream message;
+      message << "File not found on qi::File open: " << localFilePath.str();
+      throw std::runtime_error(message.str());
     }
 
     _progressNotifier = createProgressNotifier();
 
-    _fileStream.open(localFilePath.bfsPath(), std::ios::in | std::ios::binary);
+    _fileStream.open(localFilePath, std::ios::in | std::ios::binary);
     if (_fileStream.is_open())
     {
       _fileStream.seekg(0, _fileStream.end);
@@ -35,19 +37,17 @@ public:
     }
   }
 
-  ~FileImpl()
-  {
-  }
+  ~FileImpl() = default;
 
-  Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead)
+  Buffer read(std::streamoff beginOffset, std::streamsize countBytesToRead) override
   {
-    if (_seek(beginOffset))
-      return _read(countBytesToRead);
+    if (seek(beginOffset))
+      return read(countBytesToRead);
     else
-      return Buffer();
+      return {};
   }
 
-  Buffer _read(std::streamsize countBytesToRead)
+  Buffer read(std::streamsize countBytesToRead) override
   {
     requireOpenFile();
     if (countBytesToRead > MAX_READ_SIZE)
@@ -62,16 +62,16 @@ public:
     const std::streamsize byteCountToRead = std::min(static_cast<std::streamsize>(MAX_READ_SIZE), distanceToTargetEnd);
     assert(byteCountToRead <= MAX_READ_SIZE);
 
-    _readBuffer.resize(byteCountToRead, '\0');
+    _readBuffer.resize(static_cast<size_t>(byteCountToRead), '\0');
     _fileStream.read(_readBuffer.data(), byteCountToRead);
     const std::streamsize bytesRead = _fileStream.gcount();
     assert(bytesRead <= byteCountToRead);
-    output.write(_readBuffer.data(), bytesRead);
+    output.write(_readBuffer.data(), static_cast<size_t>(bytesRead));
 
     return output;
   }
 
-  bool _seek(std::streamoff offsetFromBegin)
+  bool seek(std::streamoff offsetFromBegin) override
   {
     requireOpenFile();
 
@@ -82,28 +82,28 @@ public:
     return true;
   }
 
-  void _close()
+  void close() override
   {
     _fileStream.close();
     _size = 0;
   }
 
-  std::streamsize size() const
+  std::streamsize size() const override
   {
     return _size;
   }
 
-  bool isOpen() const
+  bool isOpen() const override
   {
     return _fileStream.is_open();
   }
 
-  bool isRemote() const
+  bool isRemote() const override
   {
     return false;
   }
 
-  ProgressNotifierPtr operationProgress() const
+  ProgressNotifierPtr operationProgress() const override
   {
     return _progressNotifier;
   }
@@ -121,26 +121,43 @@ private:
   }
 };
 
-static bool _qiregisterFile()
+void _qiregisterFile()
 {
   ::qi::ObjectTypeBuilder<File> builder;
-  builder.advertiseMethod("_read", static_cast<Buffer (File::*)(std::streamoff, std::streamsize)>(&File::_read));
-  builder.advertiseMethod("_read", static_cast<Buffer (File::*)(std::streamsize)>(&File::_read));
-  builder.advertiseMethod("_seek", &File::_seek);
-  builder.advertiseMethod("_close", &File::_close);
+  builder.advertiseMethod("read", static_cast<Buffer (File::*)(std::streamoff, std::streamsize)>(&File::read));
+  builder.advertiseMethod("read", static_cast<Buffer (File::*)(std::streamsize)>(&File::read));
+  builder.advertiseMethod("seek", &File::seek);
+  builder.advertiseMethod("close", &File::close);
   builder.advertiseMethod("size", &File::size);
   builder.advertiseMethod("isOpen", &File::isOpen);
   builder.advertiseMethod("isLocal", &File::isRemote);
   builder.advertiseMethod("operationProgress", &File::operationProgress);
 
   builder.registerType();
-  return true;
+
+  {
+    qi::detail::ForceProxyInclusion<File>().dummyCall();
+    qi::registerType(typeid(FileImpl), qi::typeOf<File>());
+    FileImpl* ptr = static_cast<FileImpl*>(reinterpret_cast<void*>(0x10000));
+    File* pptr = ptr;
+    intptr_t offset = reinterpret_cast<intptr_t>(pptr)-reinterpret_cast<intptr_t>(ptr);
+    if (offset)
+    {
+      qiLogError("qitype.register") << "non-zero offset for implementation FileImpl of File,"
+        "call will fail at runtime";
+      throw std::runtime_error("non-zero offset between implementation and interface");
+    }
+  }
+
 }
-static bool __qi_registrationFile = _qiregisterFile();
-QI_REGISTER_IMPLEMENTATION(File, FileImpl);
 
 FilePtr openLocalFile(const qi::Path& localPath)
 {
   return boost::make_shared<FileImpl>(localPath);
+}
+
+void registerFileCreation(qi::ModuleBuilder& mb)
+{
+  mb.advertiseMethod("openLocalFile", &openLocalFile);
 }
 }

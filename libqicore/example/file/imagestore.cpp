@@ -13,25 +13,23 @@ namespace alice
 class ImageStoreImpl : public ImageStore
 {
 public:
-  ImageStoreImpl()
-  {
-  }
+  ImageStoreImpl() = default;
 
-  ~ImageStoreImpl()
+  ~ImageStoreImpl() override
   {
-    for (FileRegistry::iterator it = _fileRegistry.begin(); it != _fileRegistry.end(); ++it)
+    for (const auto& slot : _fileRegistry)
     {
-      boost::filesystem::remove(it->second);
+      boost::filesystem::remove(slot.second);
     }
   }
 
-  void storeImage(qi::FilePtr imageFile, std::string name)
+  void storeImage(qi::FilePtr imageFile, std::string name) override
   {
     // Note that ideally this would be implemented in an asynchronous way,
     // but for simplicity we will do it synchronously.
 
     // First, make a local copy in a temporary files directory:
-    const std::string tempFilePath = generateTemporaryFilePath();
+    const auto tempFilePath = generateTemporaryFilePath();
 
     // This call will block until the end because it returns a FutureSync.
     qi::copyToLocal(imageFile, tempFilePath);
@@ -44,19 +42,19 @@ public:
     storeFileInDatabase(name, tempFilePath);
   }
 
-  qi::FilePtr getImage(std::string name)
+  qi::FilePtr getImage(std::string name) override
   {
-    const std::string fileLocation = findFileLocation(name);
+    const auto fileLocation = findFileLocation(name);
 
     // Now we can open it and provide it to the user for reading.
     return qi::openLocalFile(fileLocation);
   }
 
 private:
-  typedef std::map<std::string, std::string> FileRegistry;
-  std::map<std::string, std::string> _fileRegistry;
+  typedef std::map<std::string, qi::Path> FileRegistry;
+  FileRegistry _fileRegistry;
 
-  std::string generateTemporaryFilePath()
+  qi::Path generateTemporaryFilePath()
   {
     static int idx = 0;
     static const std::string PATH_PREFIX = "./temp_image_file_";
@@ -68,13 +66,13 @@ private:
     return newPath.str();
   }
 
-  void storeFileInDatabase(const std::string& name, const std::string& path)
+  void storeFileInDatabase(const std::string& name, const qi::Path& path)
   {
     //...fake it
     _fileRegistry[name] = path;
   }
 
-  std::string findFileLocation(const std::string& name)
+  qi::Path findFileLocation(const std::string& name)
   {
     return _fileRegistry[name];
   }

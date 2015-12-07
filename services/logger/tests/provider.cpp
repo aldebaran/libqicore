@@ -11,7 +11,7 @@
 int main(int argc, char** argv)
 {
   qi::ApplicationSession app(argc, argv);
-  app.start();
+  app.startSession();
 
   // import module
   qi::AnyModule mod = qi::import("qicore");

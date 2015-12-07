@@ -16,7 +16,7 @@ void printTranferProgress(double progress)
   qiLogInfo() << ">>>> File Transfer Progress = " << (progress * 100.0) << "%";
 }
 
-void workOnImageFile(const std::string& imageFilePath)
+void workOnImageFile(const qi::Path& imageFilePath)
 {
   qiLogInfo() << "Working on image file at " << imageFilePath << " ...";
   // we fake working on it...
@@ -24,7 +24,7 @@ void workOnImageFile(const std::string& imageFilePath)
   qiLogInfo() << "Working on image file at " << imageFilePath << " - DONE";
 }
 
-void storeImage(alice::ImageStorePtr imageStore, const std::string& name, const std::string& imageFilePath)
+void storeImage(alice::ImageStorePtr imageStore, const std::string& name, const qi::Path& imageFilePath)
 {
   qiLogInfo() << "Storing image file at " << imageFilePath << " into the ImageStore...";
 
@@ -37,7 +37,7 @@ void storeImage(alice::ImageStorePtr imageStore, const std::string& name, const 
   qiLogInfo() << "Storing image file at " << imageFilePath << " into the ImageStore - DONE";
 }
 
-void processImage(alice::ImageStorePtr imageStore, const std::string& imageFile, const std::string& imageFilePath)
+void processImage(alice::ImageStorePtr imageStore, const std::string& imageFile, const qi::Path& imageFilePath)
 {
   // We acquire read-only access to the file and retrieve it locally.
   qi::FilePtr file = imageStore->getImage(imageFile);
@@ -58,13 +58,13 @@ void processImageWithProgress(alice::ImageStorePtr imageStore,
   qi::FilePtr file = imageStore->getImage(imageFile);
 
   // We prepare the operation without launching it yet:
-  qi::FileOperationPtr fileOp = qi::prepareCopyToLocal(file, imageFilePath);
+  qi::FileCopyToLocal fileOp{file, imageFilePath};
 
   // We want to see the progress so we plug a logging function.
-  fileOp->progress.connect(&printTranferProgress);
+  fileOp.notifier()->progress.connect(&printTranferProgress);
 
   // Launch the copy and wait for it to end before continuing.
-  fileOp->start().wait(); // Don't wait for futures in real code, you should .connect() instead.
+  fileOp.start().wait(); // Don't wait for futures in real code, you should .connect() instead.
 
   // We don't need the remote access anymore.
   file.reset();
@@ -73,14 +73,14 @@ void processImageWithProgress(alice::ImageStorePtr imageStore,
   workOnImageFile(imageFilePath);
 }
 
-void doSomeWork(qi::SessionPtr clientSession, const std::string& imagePath)
+void doSomeWork(qi::SessionPtr clientSession, const qi::Path& imagePath, const std::string& imageName)
 {
   qi::AnyObject aliceServices = clientSession->service("AliceServices");
   alice::ImageStorePtr imageStore = aliceServices.call<alice::ImageStorePtr>("imageStore");
   assert(imageStore);
-  storeImage(imageStore, "bobimage", imagePath);
-  processImage(imageStore, "bobimage", "./tempfile");
-  processImageWithProgress(imageStore, "bobimage", "./tempfile");
+  storeImage(imageStore, imageName, imagePath);
+  processImage(imageStore, imageName, "./tempfile");
+  processImageWithProgress(imageStore, imageName, "./tempfile");
 }
 }
 
@@ -97,13 +97,14 @@ int main(int argc, char** argv)
   ::TestMode::forceTestMode(TestMode::Mode_SD);
   qi::Application app(argc, argv);
 
-  if (argc != 2)
+  if (argc != 3)
     return EXIT_FAILURE;
 
   const qi::Path imageFilePath(argv[1]);
+  const qi::Path imageID(argv[2]);
   TestSessionPair sessionPair;
   setupAliceServer(sessionPair.server());
-  bob::doSomeWork(sessionPair.client(), imageFilePath);
+  bob::doSomeWork(sessionPair.client(), imageFilePath, imageID);
 
   return EXIT_SUCCESS;
 }

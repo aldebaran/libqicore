@@ -7,53 +7,57 @@ class FileProxy : public File, public qi::Proxy
 {
 public:
   FileProxy(qi::AnyObject obj)
-    : qi::Proxy(obj)
+    : qi::Proxy(std::move(obj))
   {
   }
 
-  ~FileProxy()
+  ~FileProxy() = default;
+
+  Buffer read(std::streamsize countBytesToRead) override
   {
+    return _obj.call<Buffer>("read", countBytesToRead);
   }
 
-  Buffer _read(std::streamsize countBytesToRead)
+  Buffer read(std::streamoff beginOffset, std::streamsize countBytesToRead) override
   {
-    return _obj.call<Buffer>("_read", countBytesToRead);
+    return _obj.call<Buffer>("read", beginOffset, countBytesToRead);
   }
 
-  Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead)
+  bool seek(std::streamoff offsetFromBegin) override
   {
-    return _obj.call<Buffer>("_read", beginOffset, countBytesToRead);
+    return _obj.call<bool>("seek", offsetFromBegin);
   }
 
-  bool _seek(std::streamoff offsetFromBegin)
+  void close() override
   {
-    return _obj.call<bool>("_seek", offsetFromBegin);
+    return _obj.call<void>("close");
   }
 
-  void _close()
-  {
-    return _obj.call<void>("_close");
-  }
-
-  std::streamsize size() const
+  std::streamsize size() const override
   {
     return _obj.call<std::streamsize>("size");
   }
 
-  bool isOpen() const
+  bool isOpen() const override
   {
     return _obj.call<bool>("isOpen");
   }
 
-  bool isRemote() const
+  bool isRemote() const override
   {
     return true;
   }
 
-  ProgressNotifierPtr operationProgress() const
+  ProgressNotifierPtr operationProgress() const override
   {
     return _obj.call<ProgressNotifierPtr>("operationProgress");
   }
+
 };
-QI_REGISTER_PROXY_INTERFACE(FileProxy, File);
+
+void _qiregisterFileProxy()
+{
+  ::qi::registerProxyInterface<FileProxy, File>();
+}
+
 }

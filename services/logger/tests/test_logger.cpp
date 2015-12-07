@@ -128,9 +128,9 @@ TEST(Logger, TestWithoutService)
   qi::LogProviderPtr ptr = qi::import("qicore").call<qi::LogProviderPtr>("makeLogProvider");
 
   messagesCount = 0;
-  qiLogError("foo") << "barBL";
-  qiLogWarning("foo") << "barBL";
-  qiLogInfo("foo") << "barBL";
+  qiLogError("LogManagerTest.foo") << "barBL";
+  qiLogWarning("LogManagerTest.foo") << "barBL";
+  qiLogInfo("LogManagerTest.foo") << "barBL";
 
   std::string loggerName = startService(*p.server());
 
@@ -148,9 +148,9 @@ TEST(Logger, TestWithoutService)
 
   ASSERT_TRUE(waitLogMessage(3, true));
 
-  qiLogError("foo") << "bar";
+  qiLogError("LogManagerTest.foo") << "bar";
   ASSERT_TRUE(waitLogMessage(4, true));
-  qiLogWarning("foo") << "bar";
+  qiLogWarning("LogManagerTest.foo") << "bar";
   ASSERT_TRUE(waitLogMessage(5, true));
 
   logger->removeProvider(id);

@@ -26,14 +26,10 @@ namespace qi
 class QICORE_API ProgressNotifier
 {
 protected:
-  ProgressNotifier()
-  {
-  }
+  ProgressNotifier() = default;
 
 public:
-  virtual ~ProgressNotifier()
-  {
-  }
+  virtual ~ProgressNotifier() = default;
 
   /** Describe the status of an associated operation. */
   enum Status
@@ -42,7 +38,7 @@ public:
     Status_Running,   ///< The operation is currently running.
     Status_Finished,  ///< The operation finished successfully.
     Status_Failed,    ///< The operation has failed.
-    Status_Cancelled, ///< The operation has been canceled by the user.
+    Status_Canceled,  ///< The operation has been canceled by the user.
   };
 
   /** Current status of the operation associated to this notifier.
@@ -67,36 +63,51 @@ public:
   ///////////////////////
   // The following operations are reserved for the implementation of the associated operations.
 
-  /** Reset the status of the algorithm to the idle state with no progress. */
-  virtual void _reset() = 0;
+  /** Reset the status of the algorithm to the idle state with no progress.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+  */
+  virtual void reset() = 0;
 
-  /** Notify the observers that the operation associated with this notifier is now running. */
-  virtual void _notifyRunning() = 0;
+  /** Notify the observers that the operation associated with this notifier is now running.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+      */
+  virtual void notifyRunning() = 0;
 
-  /** Notify the observers that the operation has successfully ended. */
-  virtual void _notifyFinished() = 0;
+  /** Notify the observers that the operation has successfully ended.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+      */
+  virtual void notifyFinished() = 0;
 
-  /** Notify the observers that the operation has been canceled by the user. */
-  virtual void _notifyCancelled() = 0;
+  /** Notify the observers that the operation has been canceled by the user.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+      */
+  virtual void notifyCanceled() = 0;
 
-  /** Notify the observers that the operation has failed. */
-  virtual void _notifyFailed() = 0;
+  /** Notify the observers that the operation has failed.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+      */
+  virtual void notifyFailed() = 0;
 
   /** Notify the observers that the operation progressed.
-  *   @param newProgress    New value representing the total progress of the operation.
-  *                         By default, uses a range from 0.0 (no work has been done yet)
-  *                         to 1.0 (all work is done). The operation implementation
-  *                         is free to use another range if necessary but should clarify
-  *                         the meaning of this value in its documentation.
+      @remark This function is reserved to be used by the implementation of the associated operations.
+
+      @param newProgress    New value representing the total progress of the operation.
+                            By default, uses a range from 0.0 (no work has been done yet)
+                            to 1.0 (all work is done). The operation implementation
+                            is free to use another range if necessary but should clarify
+                            the meaning of this value in its documentation.
   **/
-  virtual void _notifyProgressed(double newProgress) = 0;
+  virtual void notifyProgressed(double newProgress) = 0;
 };
 
 /// Pointer to a ProgressNotifier with shared/remote semantic.
 typedef qi::Object<ProgressNotifier> ProgressNotifierPtr;
 
-/** @return Create and provide a remotely shareable ProgressNotifier object. */
-QICORE_API ProgressNotifierPtr createProgressNotifier();
+/** Create and provide a remotely shareable ProgressNotifier object.
+    @param operationFuture   Optional future of an operation to associate the notifier with.
+    @return A progress notifier, associated to the operation of the future if provided.
+*/
+QICORE_API ProgressNotifierPtr createProgressNotifier(Future<void> operationFuture = {});
 
 /** Provide access to the content of a local or remote file.
 *   @includename{qicore/file.hpp}
@@ -106,14 +117,11 @@ QICORE_API ProgressNotifierPtr createProgressNotifier();
 class QICORE_API File
 {
 protected:
-  File()
-  {
-  }
+  File() = default;
 
 public:
-  virtual ~File()
-  {
-  }
+  virtual ~File() = default;
+
 
   /** @return Total count of bytes contained in the file or 0 if the file is closed. */
   virtual std::streamsize size() const = 0;
@@ -148,7 +156,7 @@ public:
   *           if we try reading past the end of the file for example,
   *           then the buffer will only contain the available data, nothing more.
   **/
-  virtual Buffer _read(std::streamsize countBytesToRead) = 0;
+  virtual Buffer read(std::streamsize countBytesToRead) = 0;
 
   /** Read a specified count of bytes starting from a specified byte position in the file.
   *   @warning If you try to read more than _MAX_READ_SIZE bytes, this call will throw a std::runtime_error.
@@ -164,7 +172,7 @@ public:
   *           if we try reading past the end of the file for example,
   *           then the buffer will only contain the available data, nothing more
   **/
-  virtual Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead) = 0;
+  virtual Buffer read(std::streamoff beginOffset, std::streamsize countBytesToRead) = 0;
 
   /** Move the read cursor to the specified position in the file.
   *   @param offsetFromBegin      New position of the read cursor in the file.
@@ -173,14 +181,14 @@ public:
   *   @return true if the position is in the range of data available in the file,
   *           false otherwise, in which case the cursor have not been changed.
   **/
-  virtual bool _seek(std::streamoff offsetFromBegin) = 0;
+  virtual bool seek(std::streamoff offsetFromBegin) = 0;
 
   /** Close the file.
   *   Once this function is called, calling most other operation will throw
   *   a std::runtime_error.
   *   The size(), isOpen() and isRemote() calls will return work as expected.
   **/
-  virtual void _close() = 0;
+  virtual void close() = 0;
 };
 
 /// Pointer to a file with shared/remote semantic.
@@ -194,49 +202,12 @@ typedef qi::Object<File> FilePtr;
 **/
 QICORE_API FilePtr openLocalFile(const qi::Path& localPath);
 
-/** Represent a file operation ready to be executed and expose information about it's progress state.
-*   Exposes the same signals than ProgressNotifier, associated to the operation.
-*   @includename{qicore/file.hpp}
-**/
-class FileOperation : public ProgressNotifier
-{
-public:
-  virtual ~FileOperation()
-  {
-  }
-
-  /** Start the associated operation.
-  *   @return A future associated with the operation execution.
-  **/
-  virtual Future<void> start() = 0;
-
-private:
-};
-
-/// Pointer to a file operation.
-typedef boost::shared_ptr<FileOperation> FileOperationPtr;
-
-/** Setup the following operation: a copy of local or remote file to a local filesystem location.
-*   @param file         Source file to copy.
-*   @param localPath    Local filesystem location where the specified file will be copied.
-*                       No file or directory should be located at this path otherwise
-*                       the operation will fail.
-*   @return This operation ready to be started but not executed yet.
-**/
-QICORE_API FileOperationPtr prepareCopyToLocal(FilePtr file, const Path& localPath);
-
-/** Copy an open local or remote file to a local filesystem location.
-*   @param file         Source file to copy.
-*   @param localPath    Local filesystem location where the specified file will be copied.
-*                       No file or directory should be located at this path otherwise
-*                       the operation will fail.
-*   @return A synchronous future associated with the operation.
-**/
-QICORE_API FutureSync<void> copyToLocal(FilePtr file, const Path& localPath);
 }
 
 QI_TYPE_INTERFACE(File);
 QI_TYPE_INTERFACE(ProgressNotifier);
-QI_TYPE_ENUM_REGISTER(ProgressNotifier::Status);
+QI_TYPE_ENUM(ProgressNotifier::Status);
+
+#include <qicore/detail/fileoperation.hxx>
 
 #endif // _QI_FILE_HPP_

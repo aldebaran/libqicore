@@ -77,7 +77,7 @@ int main(int argc, char** argv)
   try
   {
     qiLogInfo() << "Connection to service directory at " << app.url().str();
-    app.start();
+    app.startSession();
 
     try
     {
@@ -89,17 +89,17 @@ int main(int argc, char** argv)
       qiLogWarning() << "Logs initialization failed with the following error: " << e.what();
     }
 
-    for (unsigned i = 0; i < objects.size(); ++i)
+    for (auto& object : objects)
     {
-      qiLogInfo() << "Loading object " << objects[i];
-      app.session()->loadService(objects[i]);
+      qiLogInfo() << "Loading object " << object;
+      app.session()->loadService(object);
     }
 
-    for (unsigned i = 0; i < functions.size(); ++i)
+    for (auto& function: functions)
     {
-      qiLogInfo() << "Calling function " << functions[i];
-      qi::Future<void> fut = app.session()->callModule<void>(functions[i]);
-      fut.thenR<void>(boost::bind(stopOnError, _1, functions[i]));
+      qiLogInfo() << "Calling function " << function;
+      qi::Future<void> fut = app.session()->asyncCallModule<void>(function);
+      fut.thenR<void>(boost::bind(stopOnError, _1, function));
     }
 
     app.run();

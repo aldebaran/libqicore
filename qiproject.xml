@@ -1,4 +1,6 @@
 <project version="3">
+  <maintainer email="hcuche@aldebaran.com">Herve Cuche</maintainer>
+  <maintainer email="jlamotte@aldebaran.com">Joel Lamotte</maintainer>
   <project src="libqicore-compat"/>
   <qibuild name="libqicore">
     <depends names="gtest libqi" buildtime="true" runtime="true" />

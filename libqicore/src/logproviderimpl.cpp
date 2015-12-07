@@ -176,7 +176,6 @@ void LogProviderImpl::log(qi::LogLevel level,
     msg->category = category;
   else
     msg->category = _categoryPrefix + "." + category;
-  msg->category = category;
   msg->location = qi::os::getMachineId() + ":" + boost::lexical_cast<std::string>(qi::os::getpid());
   msg->message = message;
   msg->id = -1;

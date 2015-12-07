@@ -7,49 +7,53 @@ class ProgressNotifierProxy : public ProgressNotifier, public qi::Proxy
 {
 public:
   ProgressNotifierProxy(qi::AnyObject obj)
-    : qi::Proxy(obj)
+    : qi::Proxy(std::move(obj))
   {
   }
 
-  void _reset()
+  void reset() override
   {
-    _obj.call<void>("_reset");
+    _obj.call<void>("reset");
   }
 
-  void _notifyRunning()
+  void notifyRunning() override
   {
-    _obj.call<void>("_notifyRunning");
+    _obj.call<void>("notifyRunning");
   }
 
-  void _notifyFinished()
+  void notifyFinished() override
   {
-    _obj.call<void>("_notifyFinished");
+    _obj.call<void>("notifyFinished");
   }
 
-  void _notifyCancelled()
+  void notifyCanceled() override
   {
-    _obj.call<void>("_notifyCancelled");
+    _obj.call<void>("notifyCanceled");
   }
 
-  void _notifyFailed()
+  void notifyFailed() override
   {
-    _obj.call<void>("_notifyFailed");
+    _obj.call<void>("notifyFailed");
   }
 
-  void _notifyProgressed(double newProgress)
+  void notifyProgressed(double newProgress) override
   {
-    _obj.call<void>("_notifyProgressed", newProgress);
+    _obj.call<void>("notifyProgressed", newProgress);
   }
 
-  bool isRunning() const
+  bool isRunning() const override
   {
     return _obj.call<bool>("isRunning");
   }
 
-  Future<void> waitForFinished()
+  Future<void> waitForFinished() override
   {
     return _obj.async<void>("waitForFinished");
   }
 };
-QI_REGISTER_PROXY_INTERFACE(ProgressNotifierProxy, ProgressNotifier);
+
+void _qiregisterProgressNotifierProxy()
+{
+  ::qi::registerProxyInterface<ProgressNotifierProxy, ProgressNotifier>();
+}
 }

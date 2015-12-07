@@ -11,9 +11,7 @@ namespace alice
 class ALICE_SERVICE_API ImageStore
 {
 public:
-  virtual ~ImageStore()
-  {
-  }
+  virtual ~ImageStore() = default;
 
   // Store a copy of the image file and associate it with the provided name.
   virtual void storeImage(qi::FilePtr imageFile, std::string name) = 0;
@@ -22,9 +20,7 @@ public:
   virtual qi::FilePtr getImage(std::string name) = 0;
 
 protected:
-  ImageStore()
-  {
-  }
+  ImageStore() = default;
 };
 
 typedef qi::Object<ImageStore> ImageStorePtr;
