@@ -102,7 +102,7 @@ int main(int argc, char** argv)
     for (const auto& function: functions)
     {
       qiLogInfo() << "Calling function " << function;
-      qi::Future<void> fut = app.session()->asyncCallModule<void>(function);
+      qi::Future<void> fut = app.session()->callModule<void>(function);
       futures.emplace_back(fut.then(boost::bind(stopOnError, _1, function)));
     }
 
