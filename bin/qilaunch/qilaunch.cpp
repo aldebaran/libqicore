@@ -68,10 +68,10 @@ int main(int argc, char** argv)
   }
 
 #ifdef WITH_BREAKPAD
-  boost::scoped_ptr<BreakpadExceptionHandler> eh;
   if (!disableBreakpad)
   {
-    eh.reset(new BreakpadExceptionHandler(BREAKPAD_DUMP_DIR));
+    // allocate so that it lives even after main termination
+    auto eh = new BreakpadExceptionHandler(BREAKPAD_DUMP_DIR);
     eh->setBuildTag(launcherName);
   }
 #endif
