@@ -98,7 +98,7 @@ namespace qi
       }
 
       auto future = sharedTask->promise.future();
-      future.connect([sharedTask](Future<void>&){}); // keep the task alive until it ends
+      future.connect([sharedTask](const Future<void>&){}); // keep the task alive until it ends
       return future;
     }
 
