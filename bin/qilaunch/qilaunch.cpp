@@ -4,6 +4,9 @@
 
 #include <qicore/logprovider.hpp>
 
+#include <QtCore/QCoreApplication>
+#include <boost/thread.hpp>
+
 #ifdef WITH_BREAKPAD
 #include <breakpad/breakpad.h>
 #endif
@@ -14,6 +17,7 @@ static std::vector<std::string> functions;
 static bool keepRunning = false;
 static bool disableBreakpad = false;
 static bool disableLogging = false;
+static bool qtEventloop = false;
 static std::string launcherName;
 
 static int exitStatus = 0;
@@ -28,6 +32,7 @@ _QI_COMMAND_LINE_OPTIONS(
   ("keep-running,k", bool_switch(&keepRunning), "Keep running after the function(s) has(have) returned (implied by -o)")
   ("no-breakpad,b", bool_switch(&disableBreakpad), "Disable breakpad")
   ("no-logging,l", bool_switch(&disableLogging), "Disable remote logging")
+  ("qt-eventloop,q", bool_switch(&qtEventloop), "Enable a Qt Eventloop")
   ("name,n", value<std::string>(&launcherName), "Name of the launcher used to prefix logs and breakpad dump files")
 )
 
@@ -46,9 +51,39 @@ void stopOnError(qi::Future<void> fut, const std::string& name)
   qi::Application::stop();
 }
 
+// Copied from naoqicore
+static void handleQTCoreApplication(int argc, char* argv[])
+{
+  // Create Main loop QT
+  QCoreApplication app(argc, argv);
+
+  bool exited = false;
+  while (!exited)
+  {
+    try
+    {
+      // Start Main loop QT
+      app.exec();
+      exited = true;
+    }
+    catch (std::exception& e)
+    {
+      qiLogError() << "Uncaught QT main loop exception detected: " << e.what();
+    }
+    catch (...)
+    {
+      qiLogError() << "Uncaught QT main loop unknown exception detected.";
+    }
+  }
+}
+
 int main(int argc, char** argv)
 {
   qi::ApplicationSession app(argc, argv);
+
+  std::shared_ptr<boost::thread> thread;
+  if (qtEventloop)
+    thread = std::make_shared<boost::thread>(handleQTCoreApplication, argc, argv);
 
   if (launcherName.empty())
   {
@@ -122,6 +157,13 @@ int main(int argc, char** argv)
   {
     qiLogFatal() << "Unknown exception";
     return 1;
+  }
+
+  if (qtEventloop)
+  {
+    QCoreApplication::exit();
+    thread->interrupt();
+    thread->join();
   }
 
   return exitStatus;
