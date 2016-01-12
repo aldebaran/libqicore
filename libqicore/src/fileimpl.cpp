@@ -108,6 +108,27 @@ public:
     return _progressNotifier;
   }
 
+  // Deprecated members:
+  Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead) override
+  {
+    return read(beginOffset, countBytesToRead);
+  }
+
+  Buffer _read(std::streamsize countBytesToRead) override
+  {
+    return read(countBytesToRead);
+  }
+
+  bool _seek(std::streamoff offsetFromBegin) override
+  {
+    return seek(offsetFromBegin);
+  }
+
+  void _close() override
+  {
+    return close();
+  }
+
 private:
   boost::filesystem::ifstream _fileStream;
   std::vector<char> _readBuffer;
@@ -124,14 +145,21 @@ private:
 void _qiregisterFile()
 {
   ::qi::ObjectTypeBuilder<File> builder;
-  builder.advertiseMethod("read", static_cast<Buffer (File::*)(std::streamoff, std::streamsize)>(&File::read));
-  builder.advertiseMethod("read", static_cast<Buffer (File::*)(std::streamsize)>(&File::read));
-  builder.advertiseMethod("seek", &File::seek);
-  builder.advertiseMethod("close", &File::close);
-  builder.advertiseMethod("size", &File::size);
-  builder.advertiseMethod("isOpen", &File::isOpen);
-  builder.advertiseMethod("isLocal", &File::isRemote);
-  builder.advertiseMethod("operationProgress", &File::operationProgress);
+
+  QI_OBJECT_BUILDER_ADVERTISE_OVERLOAD(builder, File, read, Buffer,(std::streamoff, std::streamsize));
+  QI_OBJECT_BUILDER_ADVERTISE_OVERLOAD(builder, File, read, Buffer, (std::streamsize));
+  QI_OBJECT_BUILDER_ADVERTISE(builder, File, seek);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, File, close);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, File, size);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, File, isOpen);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, File, isRemote);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, File, operationProgress);
+
+  // Deprecated members:
+  QI_OBJECT_BUILDER_ADVERTISE_OVERLOAD(builder, File, _read, Buffer, (std::streamoff, std::streamsize));
+  QI_OBJECT_BUILDER_ADVERTISE_OVERLOAD(builder, File, _read, Buffer, (std::streamsize));
+  QI_OBJECT_BUILDER_ADVERTISE(builder, File, _seek);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, File, _close);
 
   builder.registerType();
 

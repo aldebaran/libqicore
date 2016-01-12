@@ -98,6 +98,13 @@ public:
                             the meaning of this value in its documentation.
   **/
   virtual void notifyProgressed(double newProgress) = 0;
+
+  QI_API_DEPRECATED virtual void _reset() = 0;
+  QI_API_DEPRECATED virtual void _notifyRunning() = 0;
+  QI_API_DEPRECATED virtual void _notifyFinished() = 0;
+  QI_API_DEPRECATED virtual void _notifyCanceled() = 0;
+  QI_API_DEPRECATED virtual void _notifyFailed() = 0;
+  QI_API_DEPRECATED virtual void _notifyProgressed(double newProgress) = 0;
 };
 
 /// Pointer to a ProgressNotifier with shared/remote semantic.
@@ -189,6 +196,11 @@ public:
   *   The size(), isOpen() and isRemote() calls will return work as expected.
   **/
   virtual void close() = 0;
+
+  QI_API_DEPRECATED virtual Buffer _read(std::streamsize countBytesToRead) = 0;
+  QI_API_DEPRECATED virtual Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead) = 0;
+  QI_API_DEPRECATED virtual bool _seek(std::streamoff offsetFromBegin) = 0;
+  QI_API_DEPRECATED virtual void _close() = 0;
 };
 
 /// Pointer to a file with shared/remote semantic.

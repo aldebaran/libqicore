@@ -79,6 +79,37 @@ namespace qi
     }
 
     Future<void> _opFuture;
+
+    // Deprecated members:
+    void _reset() override
+    {
+      return reset();
+    }
+
+    void _notifyRunning() override
+    {
+      return notifyRunning();
+    }
+
+    void _notifyFinished() override
+    {
+      return notifyFinished();
+    }
+
+    void _notifyCanceled() override
+    {
+      return notifyCanceled();
+    }
+
+    void _notifyFailed() override
+    {
+      return notifyFailed();
+    }
+
+    void _notifyProgressed(double newProgress) override
+    {
+      return notifyProgressed(newProgress);
+    }
   };
 
 
@@ -95,6 +126,14 @@ void _qiregisterProgressNotifier()
   QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, reset);
   QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, progress);
   QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, status);
+
+  // Deprecated members:
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _reset);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _notifyRunning);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _notifyFinished);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _notifyCanceled);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _notifyFailed);
+  QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _notifyProgressed);
 
   builder.registerType();
 
