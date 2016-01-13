@@ -354,12 +354,10 @@ TEST_F(Test_ReadRemoteFile, cancelFileTransfer)
     fileOpNotifier->status.connect([&](qi::ProgressNotifier::Status status){
       if (status == qi::ProgressNotifier::Status_Running)
       {
-        EXPECT_TRUE(fileOpNotifier->waitForFinished().isCancelable());
         fileOpNotifier->waitForFinished().cancel();
       }
     });
     qi::Future<void> copyOpFt = fileOp.start();
-    EXPECT_TRUE(copyOpFt.isCancelable());
     copyOpFt.wait();
     EXPECT_TRUE(copyOpFt.isCanceled());
   }
