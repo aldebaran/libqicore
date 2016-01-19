@@ -91,7 +91,7 @@ LogProviderImpl::LogProviderImpl()
 {
   DEBUG("LP subscribed this " << this);
   _subscriber =
-      qi::log::addLogHandler("remoteLogger", boost::bind(&LogProviderImpl::log, this, _1, _2, _3, _4, _5, _6, _7));
+      qi::log::addHandler("remoteLogger", boost::bind(&LogProviderImpl::log, this, _1, _2, _3, _4, _5, _6, _7, _8));
 
   DEBUG("LP subscribed " << _subscriber);
   silenceQiCategories(_subscriber);
@@ -107,7 +107,7 @@ LogProviderImpl::LogProviderImpl(LogManagerPtr logger)
 {
   DEBUG("LP subscribed this " << this);
   _subscriber =
-      qi::log::addLogHandler("remoteLogger", boost::bind(&LogProviderImpl::log, this, _1, _2, _3, _4, _5, _6, _7));
+      qi::log::addHandler("remoteLogger", boost::bind(&LogProviderImpl::log, this, _1, _2, _3, _4, _5, _6, _7, _8));
 
   DEBUG("LP subscribed " << _subscriber);
   silenceQiCategories(_subscriber);
@@ -155,7 +155,8 @@ void LogProviderImpl::sendLogs()
 }
 
 void LogProviderImpl::log(qi::LogLevel level,
-                          qi::os::timeval tv,
+                          const Clock::time_point date,
+                          const SystemClock::time_point systemDate,
                           const char* category,
                           const char* message,
                           const char* file,
@@ -174,7 +175,8 @@ void LogProviderImpl::log(qi::LogLevel level,
   source += boost::lexical_cast<std::string>(line);
   msg->source = source;
   msg->level = level;
-  msg->timestamp = tv;
+  msg->date = date;
+  msg->systemDate = systemDate;
   if (_categoryPrefix.empty())
     msg->category = category;
   else
