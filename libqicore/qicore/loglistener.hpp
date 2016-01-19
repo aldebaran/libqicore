@@ -40,15 +40,18 @@ public:
   virtual void clearFilters() = 0;
 
 public:
-  qi::Property<qi::LogLevel> logLevel;
+  template< class... T >
+  using PropertyType = qi::UnsafeProperty<T...>;
+  PropertyType<qi::LogLevel> logLevel;
   qi::Signal<qi::LogMessage> onLogMessage;
   qi::Signal<std::vector<qi::LogMessage> > onLogMessages;
   qi::Signal<std::vector<qi::LogMessage> > onLogMessagesWithBacklog;
 
 protected:
-  LogListener(qi::Property<qi::LogLevel>::Getter get,
-              qi::Property<qi::LogLevel>::Setter set,
-              boost::function<void(bool)> func = boost::function<void(bool)>())
+
+  LogListener(PropertyType<qi::LogLevel>::Getter get,
+              PropertyType<qi::LogLevel>::Setter set,
+              boost::function<void(bool)> func = {})
     : logLevel(get, set)
     , onLogMessagesWithBacklog(func)
   {
