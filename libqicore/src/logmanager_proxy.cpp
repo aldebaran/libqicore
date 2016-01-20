@@ -18,7 +18,7 @@ namespace qi
 class LogManagerProxy : public qi::Proxy, public LogManager
 {
 public:
-  LogManagerProxy(qi::AnyObject obj)
+  explicit LogManagerProxy(qi::AnyObject obj)
     : qi::Proxy(obj)
   {
   }

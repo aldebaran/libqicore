@@ -35,7 +35,7 @@ class LogProviderImpl : public LogProvider
 {
 public:
   LogProviderImpl();
-  LogProviderImpl(LogManagerPtr logger);
+  explicit LogProviderImpl(LogManagerPtr logger);
   virtual ~LogProviderImpl();
 
   virtual void setCategoryPrefix(const std::string& categoryPrefix);

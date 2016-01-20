@@ -7,14 +7,16 @@ qiLogCategory("testmodule");
 
 struct MyService
 {
-  MyService(qi::SessionPtr s)
+  explicit MyService(qi::SessionPtr s)
+    : i(42)
   {
     s->services(); // segfault?
   }
-  int f()
+  int f() const
   {
-    return 42;
+    return i;
   }
+  int i;
 };
 QI_REGISTER_OBJECT(MyService, f)
 
