@@ -1,12 +1,14 @@
+/**
+*  Copyright (C) 2012-2016 Aldebaran Robotics
+*  See COPYING for the license
+*/
+
 #include <boost/program_options.hpp>
-
-#include <qi/applicationsession.hpp>
-
-#include <qicore/logprovider.hpp>
-
-#include <QtCore/QCoreApplication>
 #include <boost/thread.hpp>
-
+#include <QtCore/QCoreApplication>
+#include <qi/applicationsession.hpp>
+#include <qi/jsoncodec.hpp>
+#include <qicore/logprovider.hpp>
 #ifdef WITH_BREAKPAD
 #include <breakpad/breakpad.h>
 #endif
@@ -136,8 +138,36 @@ int main(int argc, char** argv)
     futures.reserve(functions.size());
     for (const auto& function: functions)
     {
-      qiLogInfo() << "Calling function " << function;
-      qi::Future<void> fut = app.session()->callModule<void>(function);
+      std::string argsStr;
+      auto openArgs = function.find('(');
+      auto closeArgs = function.rfind(')');
+      if(openArgs != function.npos && closeArgs != function.npos)
+      {
+        argsStr = function.substr(openArgs + 1, closeArgs - openArgs - 1);
+        qiLogDebug() << "Extracting arguments from regex match: " << argsStr;
+      }
+
+      std::vector<qi::AnyValue> args;
+      try
+      {
+        args = qi::decodeJSON(std::string("[") + argsStr + "]").as<std::vector<qi::AnyValue>>();
+      }
+      catch(const std::exception& e)
+      {
+        qiLogFatal() << "Failed to parse arguments provided to the function call from JSON: "
+                     << "[" << argsStr << "]" << ": " << e.what();
+      }
+
+      auto extractedFunctionName = function.substr(0, openArgs);
+      qiLogInfo() << "Calling function " << extractedFunctionName << "(" << argsStr << ")";
+      qi::AnyReferenceVector metaCallArgs;
+      for(auto& arg: args)
+      {
+        qiLogInfo() << qi::encodeJSON(arg);
+        metaCallArgs.push_back(qi::AnyReference::from(arg));
+      }
+      qi::Future<void> fut = app.session()->callModule<void>(extractedFunctionName, metaCallArgs);
+
       futures.emplace_back(fut.then(boost::bind(stopOnError, _1, function)));
     }
 
