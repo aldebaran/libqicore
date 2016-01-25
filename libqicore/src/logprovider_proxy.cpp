@@ -13,7 +13,7 @@ class LogProviderProxy : public qi::Proxy, public LogProvider
 {
 public:
   explicit LogProviderProxy(qi::AnyObject obj)
-    : qi::Proxy(obj)
+    : qi::Proxy(std::move(obj))
   {
   }
 

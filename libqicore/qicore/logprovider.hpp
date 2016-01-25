@@ -24,7 +24,7 @@
 namespace qi
 {
 class LogManager;
-typedef qi::Object<LogManager> LogManagerPtr;
+using LogManagerPtr = qi::Object<LogManager>;
 
 /** Registers to a local or remote Logger service
 * Sends local logger message to it
@@ -33,10 +33,11 @@ typedef qi::Object<LogManager> LogManagerPtr;
 */
 class QICORE_API LogProvider
 {
+protected:
+  LogProvider() = default;
+
 public:
-  virtual ~LogProvider()
-  {
-  }
+  virtual ~LogProvider() = default;
 
   virtual void setCategoryPrefix(const std::string& categoryPrefix) = 0;
   virtual void setLevel(qi::LogLevel level) = 0;
@@ -45,7 +46,7 @@ public:
   virtual void setLogger(LogManagerPtr logger) = 0;
 };
 
-typedef qi::Object<LogProvider> LogProviderPtr;
+using LogProviderPtr = qi::Object<LogProvider>;
 
 QICORE_API LogProviderPtr makeLogProvider(LogManagerPtr logger);
 QICORE_API LogProviderPtr makeLogProvider();

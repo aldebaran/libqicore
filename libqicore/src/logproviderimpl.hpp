@@ -36,23 +36,23 @@ class LogProviderImpl : public LogProvider
 public:
   LogProviderImpl();
   explicit LogProviderImpl(LogManagerPtr logger);
-  virtual ~LogProviderImpl();
+  ~LogProviderImpl() override;
 
-  virtual void setCategoryPrefix(const std::string& categoryPrefix);
-  virtual void setLevel(qi::LogLevel level);
-  virtual void addFilter(const std::string& filter, qi::LogLevel level);
-  virtual void setFilters(const std::vector<std::pair<std::string, qi::LogLevel> >& filters);
-  virtual void setLogger(LogManagerPtr logger);
+  void setCategoryPrefix(const std::string& categoryPrefix) override;
+  void setLevel(qi::LogLevel level) override;
+  void addFilter(const std::string& filter, qi::LogLevel level) override;
+  void setFilters(const std::vector<std::pair<std::string, qi::LogLevel> >& filters) override;
+  void setLogger(LogManagerPtr logger) override;
 
 private:
   void sendLogs();
-  virtual void log(qi::LogLevel level,
-                   qi::os::timeval tv,
-                   const char* category,
-                   const char* message,
-                   const char* file,
-                   const char* function,
-                   int line);
+  void log(qi::LogLevel level,
+           qi::os::timeval tv,
+           const char* category,
+           const char* message,
+           const char* file,
+           const char* function,
+           int line);
 
 private:
   std::set<std::string> _setCategories;

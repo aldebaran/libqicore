@@ -25,13 +25,21 @@ namespace qi
 {
 class QICORE_API LogListener
 {
+protected:
+  template< class... T >
+  using PropertyType = qi::UnsafeProperty<T...>;
+
+  LogListener() = default;
+  LogListener(PropertyType<qi::LogLevel>::Getter get,
+              PropertyType<qi::LogLevel>::Setter set,
+              boost::function<void(bool)> func = {})
+    : logLevel(get, set)
+    , onLogMessagesWithBacklog(func)
+  {
+  }
+
 public:
-  LogListener()
-  {
-  }
-  virtual ~LogListener()
-  {
-  }
+  virtual ~LogListener() = default;
 
   virtual void setLevel(qi::LogLevel level) = 0;
   virtual void addFilter(const std::string& filter, qi::LogLevel level) = 0;
@@ -40,25 +48,13 @@ public:
   virtual void clearFilters() = 0;
 
 public:
-  template< class... T >
-  using PropertyType = qi::UnsafeProperty<T...>;
   PropertyType<qi::LogLevel> logLevel;
   qi::Signal<qi::LogMessage> onLogMessage;
   qi::Signal<std::vector<qi::LogMessage> > onLogMessages;
   qi::Signal<std::vector<qi::LogMessage> > onLogMessagesWithBacklog;
-
-protected:
-
-  LogListener(PropertyType<qi::LogLevel>::Getter get,
-              PropertyType<qi::LogLevel>::Setter set,
-              boost::function<void(bool)> func = {})
-    : logLevel(get, set)
-    , onLogMessagesWithBacklog(func)
-  {
-  }
 };
 
-typedef qi::Object<LogListener> LogListenerPtr;
+using LogListenerPtr = qi::Object<LogListener>;
 } // !qi
 
 namespace qi

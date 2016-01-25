@@ -100,7 +100,7 @@ LogProviderImpl::LogProviderImpl()
 }
 
 LogProviderImpl::LogProviderImpl(LogManagerPtr logger)
-  : _logger(logger)
+  : _logger(std::move(logger))
 {
   DEBUG("LP subscribed this " << this);
   _subscriber =

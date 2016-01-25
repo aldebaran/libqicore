@@ -35,13 +35,13 @@ class LogManagerImpl : public LogManager
 {
 public:
   LogManagerImpl();
-  virtual ~LogManagerImpl();
+  ~LogManagerImpl() override;
 
-  virtual void log(const std::vector<LogMessage>& msgs);
-  virtual LogListenerPtr createListener();
-  virtual LogListenerPtr getListener();
-  virtual int addProvider(LogProviderPtr provider);
-  virtual void removeProvider(int idProvider);
+  void log(const std::vector<LogMessage>& msgs) override;
+  LogListenerPtr createListener() override;
+  LogListenerPtr getListener() override;
+  int addProvider(LogProviderPtr provider) override;
+  void removeProvider(int idProvider) override;
 
   void providerCallback(qi::Future<void> fut, int idProvider);
   void gcProviders();

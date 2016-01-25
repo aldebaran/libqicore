@@ -108,7 +108,7 @@ public:
 };
 
 /// Pointer to a ProgressNotifier with shared/remote semantic.
-typedef qi::Object<ProgressNotifier> ProgressNotifierPtr;
+using ProgressNotifierPtr = qi::Object<ProgressNotifier>;
 
 /** Create and provide a remotely shareable ProgressNotifier object.
     @param operationFuture   Optional future of an operation to associate the notifier with.
@@ -204,7 +204,7 @@ public:
 };
 
 /// Pointer to a file with shared/remote semantic.
-typedef qi::Object<File> FilePtr;
+using FilePtr = qi::Object<File>;
 
 /** Open a local file located at the specified path and provide it for reading as a sharable file access.
 *   @warning Throws a std::runtime_exception if the provided path is not an existing file path.

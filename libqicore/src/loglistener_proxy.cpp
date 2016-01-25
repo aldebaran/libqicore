@@ -22,7 +22,7 @@ class LogListenerProxy : public qi::Proxy, public LogListener
 {
 public:
   explicit LogListenerProxy(qi::AnyObject obj)
-    : qi::Proxy(obj)
+    : qi::Proxy(std::move(obj))
     , qi::LogListener()
   {
     qi::makeProxySignal(onLogMessage, obj, "onLogMessage");

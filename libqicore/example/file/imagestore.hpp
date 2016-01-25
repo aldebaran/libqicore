@@ -23,7 +23,7 @@ protected:
   ImageStore() = default;
 };
 
-typedef qi::Object<ImageStore> ImageStorePtr;
+using ImageStorePtr = qi::Object<ImageStore>;
 
 ALICE_SERVICE_API ImageStorePtr getImageStore();
 }

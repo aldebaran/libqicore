@@ -19,7 +19,7 @@ class LogManagerProxy : public qi::Proxy, public LogManager
 {
 public:
   explicit LogManagerProxy(qi::AnyObject obj)
-    : qi::Proxy(obj)
+    : qi::Proxy(std::move(obj))
   {
   }
 
