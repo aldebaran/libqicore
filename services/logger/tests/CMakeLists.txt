@@ -17,7 +17,9 @@ endfunction()
 
 
 qi_create_bin(dumper dump.cpp DEPENDS QI QICORE)
-qi_create_session_test(test_logger SRC test_logger.cpp DEPENDS QI QICORE GTEST TESTSESSION TIMEOUT 30)
-qi_create_bin(manager manager.cpp   DEPENDS QI QICORE TESTSESSION)
-qi_create_bin(provider provider.cpp DEPENDS QI QICORE TESTSESSION)
-qi_create_bin(listener listener.cpp DEPENDS QI QICORE TESTSESSION)
+if(QI_WITH_TESTS)
+  qi_create_session_test(test_logger SRC test_logger.cpp DEPENDS QI QICORE GTEST TESTSESSION TIMEOUT 30)
+  qi_create_bin(manager manager.cpp   DEPENDS QI QICORE TESTSESSION)
+  qi_create_bin(provider provider.cpp DEPENDS QI QICORE TESTSESSION)
+  qi_create_bin(listener listener.cpp DEPENDS QI QICORE TESTSESSION)
+endif()

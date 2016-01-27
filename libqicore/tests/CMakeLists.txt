@@ -14,6 +14,8 @@ function(qi_create_session_test name)
   endif()
 endfunction()
 
-qi_create_gtest(test_file SRC test_file.cpp DEPENDS QICORE GTEST TESTSESSION)
+if(QI_WITH_TESTS)
+  qi_create_gtest(test_file SRC test_file.cpp DEPENDS QICORE GTEST TESTSESSION)
+endif()
 
 qi_create_bin(send_robot_icon SRC send_robot_icon.cpp DEPENDS QICORE)
