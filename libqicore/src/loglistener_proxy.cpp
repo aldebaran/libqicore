@@ -21,8 +21,8 @@ namespace qi
 class LogListenerProxy : public qi::Proxy, public LogListener
 {
 public:
-  LogListenerProxy(qi::AnyObject obj)
-    : qi::Proxy(obj)
+  explicit LogListenerProxy(qi::AnyObject obj)
+    : qi::Proxy(std::move(obj))
     , qi::LogListener()
   {
     qi::makeProxySignal(onLogMessage, obj, "onLogMessage");

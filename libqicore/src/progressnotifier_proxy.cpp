@@ -6,7 +6,7 @@ namespace qi
 class ProgressNotifierProxy : public ProgressNotifier, public qi::Proxy
 {
 public:
-  ProgressNotifierProxy(qi::AnyObject obj)
+  explicit ProgressNotifierProxy(qi::AnyObject obj)
     : qi::Proxy(std::move(obj))
   {
   }

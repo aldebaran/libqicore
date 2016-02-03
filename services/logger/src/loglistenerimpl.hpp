@@ -27,15 +27,15 @@ public:
   LogListenerImpl(LogManagerImpl& l);
   LogListenerImpl(LogManagerImpl& l, boost::function<void(LogListener*)> func);
 
-  virtual ~LogListenerImpl();
+  ~LogListenerImpl() override;
 
-  virtual void setLevel(qi::LogLevel level);
-  virtual void addFilter(const std::string& filter, qi::LogLevel level);
+  void setLevel(qi::LogLevel level) override;
+  void addFilter(const std::string& filter, qi::LogLevel level) override;
 
   // Remove all filters set by addFilter
-  virtual void clearFilters();
+  void clearFilters() override;
 
-  typedef std::map<std::string, qi::LogLevel> FilterMap;
+  using FilterMap = std::map<std::string, qi::LogLevel>;
   FilterMap _filters;
   boost::mutex _filtersMutex;
 

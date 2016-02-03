@@ -153,7 +153,7 @@ void LogManagerImpl::recomputeVerbosities(qi::LogLevel from, qi::LogLevel to)
       bool remove = true;
       if (boost::shared_ptr<LogListenerImpl> l = _listeners[listenerIt].lock())
       {
-        newMax = std::max(newMax, l->logLevel.get());
+        newMax = std::max(newMax, l->logLevel.get().value());
         remove = false;
       }
 
@@ -239,7 +239,7 @@ void LogManagerImpl::recomputeCategories()
   // Soon you will know why this function is at the end of the source file...
   // Merge requests in one big map, keeping most verbose, ignoring globbing
   // Then, make a second pass that removes rules that overrides others and reduce verbosity
-  typedef LogListenerImpl::FilterMap FilterMap;
+  using FilterMap = LogListenerImpl::FilterMap;
   FilterMap map;
   {
     boost::mutex::scoped_lock dataLock(_dataMutex);

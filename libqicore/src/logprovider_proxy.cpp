@@ -12,8 +12,8 @@ namespace qi
 class LogProviderProxy : public qi::Proxy, public LogProvider
 {
 public:
-  LogProviderProxy(qi::AnyObject obj)
-    : qi::Proxy(obj)
+  explicit LogProviderProxy(qi::AnyObject obj)
+    : qi::Proxy(std::move(obj))
   {
   }
 

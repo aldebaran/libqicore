@@ -7,7 +7,7 @@ namespace alice
 class ImageStoreProxy : public ImageStore, public qi::Proxy
 {
 public:
-  ImageStoreProxy(qi::AnyObject obj)
+  explicit ImageStoreProxy(qi::AnyObject obj)
     : qi::Proxy(obj)
   {
   }

@@ -4,7 +4,7 @@ project(QiLaunch)
 
 qi_create_bin(qilaunch
   qilaunch.cpp
-  DEPENDS QI QICORE BOOST_PROGRAM_OPTIONS
+  DEPENDS QI QICORE BOOST_PROGRAM_OPTIONS QT5_CORE
   )
 
 qi_create_module(qilaunchtestmodule SRC qilaunchtestmodule.cpp DEPENDS QI NO_INSTALL)

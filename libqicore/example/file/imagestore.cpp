@@ -51,7 +51,7 @@ public:
   }
 
 private:
-  typedef std::map<std::string, qi::Path> FileRegistry;
+  using FileRegistry = std::map<std::string, qi::Path>;
   FileRegistry _fileRegistry;
 
   qi::Path generateTemporaryFilePath()

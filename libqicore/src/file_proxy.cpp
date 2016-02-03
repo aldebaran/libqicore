@@ -6,7 +6,7 @@ namespace qi
 class FileProxy : public File, public qi::Proxy
 {
 public:
-  FileProxy(qi::AnyObject obj)
+  explicit FileProxy(qi::AnyObject obj)
     : qi::Proxy(std::move(obj))
   {
   }

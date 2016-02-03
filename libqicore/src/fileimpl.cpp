@@ -16,7 +16,7 @@ namespace qi
 class FileImpl : public File
 {
 public:
-  FileImpl(const Path& localFilePath)
+  explicit FileImpl(const Path& localFilePath)
   {
     if (!localFilePath.exists())
     {

@@ -18,16 +18,16 @@
 namespace qi
 {
 class LogListener;
-typedef qi::Object<LogListener> LogListenerPtr;
+using LogListenerPtr = qi::Object<LogListener>;
 class LogProvider;
-typedef qi::Object<LogProvider> LogProviderPtr;
+using LogProviderPtr = qi::Object<LogProvider>;
 class QICORE_API LogManager
 {
-public:
-  virtual ~LogManager()
-  {
-  }
+protected:
+  LogManager() = default;
 
+public:
+  virtual ~LogManager() = default;
   virtual void log(const std::vector<LogMessage>& msgs) = 0;
 
   virtual LogListenerPtr createListener() = 0;
@@ -39,7 +39,7 @@ public:
   virtual void removeProvider(int idProvider) = 0;
 };
 
-typedef qi::Object<LogManager> LogManagerPtr;
+using LogManagerPtr = qi::Object<LogManager>;
 } // !qi
 
 namespace qi
