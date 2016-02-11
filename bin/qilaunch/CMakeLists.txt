@@ -1,6 +1,9 @@
 # Copyright (C) 2015 Aldebaran Robotics
-
+cmake_minimum_required(VERSION 2.8)
 project(QiLaunch)
+
+find_package(qibuild)
+find_package(qimodule)
 
 qi_create_bin(qilaunch
   qilaunch.cpp
