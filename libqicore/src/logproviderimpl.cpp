@@ -160,7 +160,7 @@ void LogProviderImpl::log(qi::LogLevel level,
                           int line)
 {
   DEBUG("LP log callback: " << message << " " << file << " " << function);
-  if (!*_ready)
+  if (!_ready.load())
     return;
 
   LogMessage* msg = new LogMessage();

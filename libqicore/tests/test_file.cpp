@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem.hpp>
+#include <atomic>
 
 #include <qicore/file.hpp>
 #include <qi/path.hpp>
@@ -199,7 +200,7 @@ qi::FilePtr getTestFile(const qi::Path& filePath)
   return testFile;
 }
 
-boost::atomic<bool> printProgressHaveBeenCalled(false);
+std::atomic<bool> printProgressHaveBeenCalled(false);
 void printTranferProgress(double progress)
 {
   printProgressHaveBeenCalled = true;
