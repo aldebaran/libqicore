@@ -11,6 +11,9 @@
 
 #include <qi/anymodule.hpp>
 
+// FIXME: Remove once deprecated method are removed
+#include <qi/detail/warn_push_ignore_deprecated.hpp>
+
 namespace qi
 {
 class FileImpl : public File
@@ -189,3 +192,6 @@ void registerFileCreation(qi::ModuleBuilder& mb)
   mb.advertiseMethod("openLocalFile", &openLocalFile);
 }
 }
+
+// FIXME: Remove once deprecated method are removed
+#include <qi/detail/warn_pop_ignore_deprecated.hpp>

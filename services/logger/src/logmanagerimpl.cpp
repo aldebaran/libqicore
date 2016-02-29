@@ -17,6 +17,9 @@
 #include "src/logmanagerimpl.hpp"
 #include "src/loglistenerimpl.hpp"
 
+// FIXME: Remove once deprecated method are removed
+#include <qi/detail/warn_push_ignore_deprecated.hpp>
+
 QI_TYPE_INTERFACE(LogManager);
 
 qiLogCategory("log.manager");
@@ -362,3 +365,6 @@ void registerLogManager(ModuleBuilder* mb)
 QI_REGISTER_MODULE("logmanager", registerLogManager);
 
 } // !qi
+
+// FIXME: Remove once deprecated method are removed
+#include <qi/detail/warn_pop_ignore_deprecated.hpp>
