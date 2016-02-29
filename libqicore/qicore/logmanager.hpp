@@ -34,7 +34,7 @@ public:
   /**
    * \deprecated since 2.3 use createListener() instead
    */
-  virtual QI_API_DEPRECATED LogListenerPtr getListener() = 0;
+  virtual QI_API_DEPRECATED_MSG(Use 'createListener' instead) LogListenerPtr getListener() = 0;
   virtual int addProvider(LogProviderPtr provider) = 0;
   virtual void removeProvider(int idProvider) = 0;
 };
