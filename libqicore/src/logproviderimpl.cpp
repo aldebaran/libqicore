@@ -71,7 +71,7 @@ qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session, const s
   initialized = true;
 
   qi::Application::atStop(boost::bind(removeProviderAtStop, session, id));
-  return id.thenR<qi::LogProviderPtr>(boost::lambda::constant(instance));
+  return id.then(boost::lambda::constant(instance));
 }
 
 
