@@ -176,10 +176,10 @@ int main(int argc, char** argv)
           qiLogDebug() << "Extracting arguments from regex match: " << argsStr;
         }
 
-        std::vector<qi::AnyValue> args;
+        auto args = std::make_shared<std::vector<qi::AnyValue>>();
         try
         {
-          args = qi::decodeJSON(std::string("[") + argsStr + "]").as<std::vector<qi::AnyValue>>();
+          *args = qi::decodeJSON(std::string("[") + argsStr + "]").as<std::vector<qi::AnyValue>>();
         }
         catch(const std::exception& e)
         {
@@ -190,14 +190,10 @@ int main(int argc, char** argv)
         auto extractedFunctionName = function.substr(0, openArgs);
         qiLogInfo() << "Calling function " << extractedFunctionName << "(" << argsStr << ")";
         qi::AnyReferenceVector metaCallArgs;
-        for(auto& arg: args)
-        {
-          qiLogInfo() << qi::encodeJSON(arg);
+        for(auto& arg: *args)
           metaCallArgs.push_back(qi::AnyReference::from(arg));
-        }
         qi::Future<void> fut = app.session()->callModule<void>(extractedFunctionName, metaCallArgs);
-
-        futures.emplace_back(fut.then(boost::bind(stopOnError, _1, function)));
+        futures.emplace_back(fut.then([args, function](qi::Future<void> f){ stopOnError(f, function); }));
       }
     }
 
