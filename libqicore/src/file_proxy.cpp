@@ -1,5 +1,6 @@
 #include <qicore/file.hpp>
 #include <qi/anymodule.hpp>
+#include <qi/detail/warn_push_ignore_deprecated.hpp>
 
 namespace qi
 {
@@ -79,5 +80,6 @@ void _qiregisterFileProxy()
 {
   ::qi::registerProxyInterface<FileProxy, File>();
 }
-
 }
+
+#include <qi/detail/warn_pop_ignore_deprecated.hpp>

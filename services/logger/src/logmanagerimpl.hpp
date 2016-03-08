@@ -28,6 +28,8 @@
 #include <qi/future.hpp>
 #include <qi/log.hpp>
 
+#include <qi/detail/warn_push_ignore_deprecated.hpp>
+
 namespace qi
 {
 class LogListenerImpl;
@@ -65,4 +67,5 @@ public:
 };
 } // !qi
 
+#include <qi/detail/warn_pop_ignore_deprecated.hpp>
 #endif // !LOGMANAGERIMPL_HPP_

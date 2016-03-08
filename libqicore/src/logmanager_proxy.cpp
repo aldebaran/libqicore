@@ -7,6 +7,7 @@
 #include <qicore/logmessage.hpp>
 #include <qicore/logmanager.hpp>
 #include <qicore/loglistener.hpp>
+#include <qi/detail/warn_push_ignore_deprecated.hpp>
 
 bool qi::detail::ForceProxyInclusion<qi::LogManager>::dummyCall()
 {
@@ -51,3 +52,5 @@ public:
 
 QI_REGISTER_PROXY_INTERFACE(LogManagerProxy, LogManager);
 } // !qi
+
+#include <qi/detail/warn_push_ignore_deprecated.hpp>
