@@ -23,13 +23,16 @@ QI_TYPE_INTERFACE(LogProvider);
 
 qiLogCategory("log.provider");
 
-static bool logDebug = getenv("LOG_DEBUG");
+namespace
+{
+const bool debug = (!qi::os::getenv("LOG_DEBUG").empty());
 #define DEBUG(a)                   \
   do                               \
   {                                \
-    if (logDebug)                  \
+    if (debug)                     \
       std::cerr << a << std::endl; \
   } while (0)
+}
 
 namespace qi
 {

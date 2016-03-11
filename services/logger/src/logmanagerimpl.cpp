@@ -24,7 +24,9 @@ QI_TYPE_INTERFACE(LogManager);
 
 qiLogCategory("log.manager");
 
-static bool debug = getenv("LOG_DEBUG");
+namespace
+{
+const bool debug = (!qi::os::getenv("LOG_DEBUG").empty());
 #define DEBUG(a)                   \
   do                               \
   {                                \
@@ -32,7 +34,8 @@ static bool debug = getenv("LOG_DEBUG");
       std::cerr << a << std::endl; \
   } while (0)
 
-static qi::Atomic<unsigned int> msgId;
+qi::Atomic<unsigned int> msgId;
+}
 
 /* We have multiple inputs: logproviders that push messages and that we
  * must configure to avoid them wasting bandwidth. They all have the same conf

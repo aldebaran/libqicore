@@ -13,13 +13,16 @@
 
 QI_TYPE_INTERFACE(LogListener);
 
-static bool debug = getenv("LOG_DEBUG");
+namespace
+{
+const bool debug = (!qi::os::getenv("LOG_DEBUG").empty());
 #define DEBUG(a)                   \
   do                               \
   {                                \
     if (debug)                     \
       std::cerr << a << std::endl; \
   } while (0)
+}
 
 /* We have multiple inputs: logproviders that push messages and that we
  * must configure to avoid them wasting bandwidth. They all have the same conf
