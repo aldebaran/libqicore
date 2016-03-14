@@ -5,6 +5,7 @@
 #include <memory>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <qi/detail/warn_push_ignore_deprecated.hpp>
 
 namespace qi
 {
@@ -320,4 +321,5 @@ namespace qi
   QICORE_API FutureSync<void> copyToLocal(FilePtr file, Path localPath);
 }
 
+#include <qi/detail/warn_pop_ignore_deprecated.hpp>
 #endif

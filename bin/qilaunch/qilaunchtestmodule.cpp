@@ -1,9 +1,18 @@
 #include <qi/application.hpp>
 #include <qi/log.hpp>
 #include <qi/anymodule.hpp>
+#include <qi/jsoncodec.hpp>
 #include <qi/session.hpp>
 
 qiLogCategory("testmodule");
+
+struct MyData
+{
+  std::string peripateticien;
+  int dodecahedre;
+};
+
+QI_TYPE_STRUCT(MyData, peripateticien, dodecahedre)
 
 struct MyService
 {
@@ -34,9 +43,32 @@ void func()
   qi::Application::stop();
 }
 
+void funcWithSession(qi::SessionPtr)
+{
+  qiLogInfo() << "Func called with session";
+  qi::Application::stop();
+}
+
+void funcWithArgs(double ceciNestPasUnNombre, std::string tangaCestMieux, MyData ohMy)
+{
+  qiLogInfo() << "Func called with session and: " << ceciNestPasUnNombre
+              << ", " << tangaCestMieux << ", " << qi::encodeJSON(ohMy);
+  qi::Application::stop();
+}
+
+void funcWithSessionAndArgs(qi::SessionPtr, double ceciNestPasUnNombre, std::string tangaCestMieux, MyData ohMy)
+{
+  qiLogInfo() << "Func called with session and: " << ceciNestPasUnNombre
+              << ", " << tangaCestMieux << ", " << qi::encodeJSON(ohMy);
+  qi::Application::stop();
+}
+
 void initmodule(qi::ModuleBuilder* mb) {
   mb->advertiseFactory<MyService, qi::SessionPtr>("MyService");
   mb->advertiseMethod("func", &func);
+  mb->advertiseMethod("funcWithSession", &funcWithSession);
+  mb->advertiseMethod("funcWithArgs", &funcWithArgs);
+  mb->advertiseMethod("funcWithSessionAndArgs", &funcWithSessionAndArgs);
   mb->advertiseMethod("testMyService", &testMyService);
 }
 QI_REGISTER_MODULE("qilaunchtestmodule", &initmodule);

@@ -100,8 +100,8 @@ int main(int argc, char** argv)
   if (argc != 3)
     return EXIT_FAILURE;
 
-  const qi::Path imageFilePath(argv[1]);
-  const qi::Path imageID(argv[2]);
+  const auto imageFilePath = qi::Path::fromNative(argv[1]);
+  const auto imageID = qi::Path::fromNative(argv[2]).str();
   TestSessionPair sessionPair;
   setupAliceServer(sessionPair.server());
   bob::doSomeWork(sessionPair.client(), imageFilePath, imageID);

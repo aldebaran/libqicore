@@ -8,6 +8,9 @@
 
 qiLogCategory("qicore.file.progressnotifierimpl");
 
+// FIXME: Remove once deprecated method are removed
+#include <qi/detail/warn_push_ignore_deprecated.hpp>
+
 namespace qi
 {
   class ProgressNotifierImpl
@@ -163,3 +166,6 @@ void registerProgressNotifierCreation(qi::ModuleBuilder& mb)
   mb.advertiseMethod("createProgressNotifier", &createProgressNotifier);
 }
 }
+
+// FIXME: Remove once deprecated method are removed
+#include <qi/detail/warn_pop_ignore_deprecated.hpp>

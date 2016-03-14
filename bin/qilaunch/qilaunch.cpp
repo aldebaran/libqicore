@@ -1,12 +1,16 @@
+/**
+*  Copyright (C) 2012-2016 Aldebaran Robotics
+*  See COPYING for the license
+*/
+
+#include <csignal>
+#include <mutex>
 #include <boost/program_options.hpp>
-
-#include <qi/applicationsession.hpp>
-
-#include <qicore/logprovider.hpp>
-
-#include <QtCore/QCoreApplication>
 #include <boost/thread.hpp>
-
+#include <QtCore/QCoreApplication>
+#include <qi/applicationsession.hpp>
+#include <qi/jsoncodec.hpp>
+#include <qicore/logprovider.hpp>
 #ifdef WITH_BREAKPAD
 #include <breakpad/breakpad.h>
 #endif
@@ -14,15 +18,40 @@
 static std::vector<std::string> modules;
 static std::vector<std::string> objects;
 static std::vector<std::string> functions;
+
+std::vector<qi::Future<void>> futures;
+std::mutex futuresMutex;
+
 static bool keepRunning = false;
 static bool disableBreakpad = false;
 static bool disableLogging = false;
 static bool qtEventloop = false;
-static std::string launcherName;
 
+static std::string launcherName;
 static int exitStatus = 0;
 
 qiLogCategory("qilaunch");
+
+void stage2(int)
+{
+  qiLogInfo() << "Signal received again, forcing exit...";
+#ifndef _MSC_VER
+  // exit and skip atexit() and static deinit
+  // this is C99, not supported by visual...
+  _Exit(1);
+#else
+  exit(1);
+#endif
+}
+
+void stage1(int s)
+{
+  qiLogInfo() << "Signal received, exiting...";
+  std::lock_guard<std::mutex> futuresLock(futuresMutex);
+  for (auto& future: futures)
+    future.cancel();
+  qi::Application::atSignal(&stage2, s);
+}
 
 _QI_COMMAND_LINE_OPTIONS(
   "Launcher options",
@@ -80,7 +109,8 @@ static void handleQTCoreApplication(int argc, char* argv[])
 int main(int argc, char** argv)
 {
   qi::ApplicationSession app(argc, argv);
-
+  qi::Application::atSignal(&stage1, SIGINT);
+  qi::Application::atSignal(&stage1, SIGTERM);
   std::shared_ptr<boost::thread> thread;
   if (qtEventloop)
     thread = std::make_shared<boost::thread>(handleQTCoreApplication, argc, argv);
@@ -132,13 +162,39 @@ int main(int argc, char** argv)
       app.session()->loadService(object);
     }
 
-    std::vector<qi::Future<void>> futures;
-    futures.reserve(functions.size());
-    for (const auto& function: functions)
     {
-      qiLogInfo() << "Calling function " << function;
-      qi::Future<void> fut = app.session()->callModule<void>(function);
-      futures.emplace_back(fut.then(boost::bind(stopOnError, _1, function)));
+      std::lock_guard<std::mutex> futuresLock(futuresMutex);
+      futures.reserve(functions.size());
+      for (const auto& function: functions)
+      {
+        std::string argsStr;
+        auto openArgs = function.find('(');
+        auto closeArgs = function.rfind(')');
+        if(openArgs != function.npos && closeArgs != function.npos)
+        {
+          argsStr = function.substr(openArgs + 1, closeArgs - openArgs - 1);
+          qiLogDebug() << "Extracting arguments from regex match: " << argsStr;
+        }
+
+        auto args = std::make_shared<std::vector<qi::AnyValue>>();
+        try
+        {
+          *args = qi::decodeJSON(std::string("[") + argsStr + "]").as<std::vector<qi::AnyValue>>();
+        }
+        catch(const std::exception& e)
+        {
+          qiLogFatal() << "Failed to parse arguments provided to the function call from JSON: "
+                       << "[" << argsStr << "]" << ": " << e.what();
+        }
+
+        auto extractedFunctionName = function.substr(0, openArgs);
+        qiLogInfo() << "Calling function " << extractedFunctionName << "(" << argsStr << ")";
+        qi::AnyReferenceVector metaCallArgs;
+        for(auto& arg: *args)
+          metaCallArgs.push_back(qi::AnyReference::from(arg));
+        qi::Future<void> fut = app.session()->callModule<void>(extractedFunctionName, metaCallArgs);
+        futures.emplace_back(fut.then([args, function](qi::Future<void> f){ stopOnError(f, function); }));
+      }
     }
 
     if (!objects.empty() || keepRunning)

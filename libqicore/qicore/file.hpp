@@ -99,12 +99,15 @@ public:
   **/
   virtual void notifyProgressed(double newProgress) = 0;
 
-  QI_API_DEPRECATED virtual void _reset() = 0;
-  QI_API_DEPRECATED virtual void _notifyRunning() = 0;
-  QI_API_DEPRECATED virtual void _notifyFinished() = 0;
-  QI_API_DEPRECATED virtual void _notifyCanceled() = 0;
-  QI_API_DEPRECATED virtual void _notifyFailed() = 0;
-  QI_API_DEPRECATED virtual void _notifyProgressed(double newProgress) = 0;
+  /**
+   * @deprecated since 2.5
+   **/
+  QI_API_DEPRECATED_MSG(Use 'reset' instead) virtual void _reset() = 0;
+  QI_API_DEPRECATED_MSG(Use 'notifyRunning' instead) virtual void _notifyRunning() = 0;
+  QI_API_DEPRECATED_MSG(Use 'notifyFinished' instead) virtual void _notifyFinished() = 0;
+  QI_API_DEPRECATED_MSG(Use 'notifyCanceled' instead) virtual void _notifyCanceled() = 0;
+  QI_API_DEPRECATED_MSG(Use 'notifyFailed' instead) virtual void _notifyFailed() = 0;
+  QI_API_DEPRECATED_MSG(Use 'notifyProgressed' instead) virtual void _notifyProgressed(double newProgress) = 0;
 };
 
 /// Pointer to a ProgressNotifier with shared/remote semantic.
@@ -197,10 +200,13 @@ public:
   **/
   virtual void close() = 0;
 
-  QI_API_DEPRECATED virtual Buffer _read(std::streamsize countBytesToRead) = 0;
-  QI_API_DEPRECATED virtual Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead) = 0;
-  QI_API_DEPRECATED virtual bool _seek(std::streamoff offsetFromBegin) = 0;
-  QI_API_DEPRECATED virtual void _close() = 0;
+  /**
+   * @deprecated since 2.5
+   **/
+  QI_API_DEPRECATED_MSG(Use 'read' instead) virtual Buffer _read(std::streamsize countBytesToRead) = 0;
+  QI_API_DEPRECATED_MSG(Use 'read' instead) virtual Buffer _read(std::streamoff beginOffset, std::streamsize countBytesToRead) = 0;
+  QI_API_DEPRECATED_MSG(Use 'seek' instead) virtual bool _seek(std::streamoff offsetFromBegin) = 0;
+  QI_API_DEPRECATED_MSG(Use 'close' instead) virtual void _close() = 0;
 };
 
 /// Pointer to a file with shared/remote semantic.

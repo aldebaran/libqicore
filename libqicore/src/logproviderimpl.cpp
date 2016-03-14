@@ -23,13 +23,16 @@ QI_TYPE_INTERFACE(LogProvider);
 
 qiLogCategory("log.provider");
 
-static bool logDebug = getenv("LOG_DEBUG");
+namespace
+{
+const bool debug = (!qi::os::getenv("LOG_DEBUG").empty());
 #define DEBUG(a)                   \
   do                               \
   {                                \
-    if (logDebug)                  \
+    if (debug)                     \
       std::cerr << a << std::endl; \
   } while (0)
+}
 
 namespace qi
 {
@@ -71,7 +74,7 @@ qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session, const s
   initialized = true;
 
   qi::Application::atStop(boost::bind(removeProviderAtStop, session, id));
-  return id.thenR<qi::LogProviderPtr>(boost::lambda::constant(instance));
+  return id.then(boost::lambda::constant(instance));
 }
 
 
@@ -160,7 +163,7 @@ void LogProviderImpl::log(qi::LogLevel level,
                           int line)
 {
   DEBUG("LP log callback: " << message << " " << file << " " << function);
-  if (!*_ready)
+  if (!_ready.load())
     return;
 
   LogMessage* msg = new LogMessage();

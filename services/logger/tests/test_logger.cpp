@@ -84,12 +84,12 @@ void onLogMessages(std::vector<qi::LogMessage> msgs)
 
 bool waitLogMessage(int count, bool exact = true)
 {
-  for (int i = 0; count > *messagesCount && i < 50; ++i)
+  for (int i = 0; count > messagesCount.load() && i < 50; ++i)
     qi::os::msleep(10);
 
-  bool ok = exact ? (count == *messagesCount) : (count <= *messagesCount);
+  bool ok = exact ? (count == messagesCount.load()) : (count <= messagesCount.load());
   if (!ok)
-    std::cerr << "ERROR: Failed wait for " << count << " : " << *messagesCount << std::endl;
+    std::cerr << "ERROR: Failed wait for " << count << " : " << messagesCount.load() << std::endl;
 
   return ok;
 }
@@ -214,10 +214,10 @@ TEST(Logger, RemoveProviderTest)
 
   qiLogError("foo") << "bar";
   qi::os::msleep(300); // if message isn't arrive yet it's probably it will never arrive
-  ASSERT_EQ(*messagesCount, 2);
+  ASSERT_EQ(messagesCount.load(), 2);
   qiLogWarning("foo") << "bar";
   qi::os::msleep(300);
-  ASSERT_EQ(*messagesCount, 2);
+  ASSERT_EQ(messagesCount.load(), 2);
 
   listener.reset();
 }
@@ -244,10 +244,10 @@ TEST(Logger, KillProviderTest)
   messagesCount = 0;
   qiLogError("foo") << "bar";
   qi::os::msleep(300); // if message isn't arrive yet it's probably it will never arrive
-  ASSERT_EQ(*messagesCount, 0);
+  ASSERT_EQ(messagesCount.load(), 0);
   qiLogWarning("foo") << "bar";
   qi::os::msleep(300);
-  ASSERT_EQ(*messagesCount, 0);
+  ASSERT_EQ(messagesCount.load(), 0);
 
   qi::LogManagerPtr logger = (*p.client()).service(loggerName);
   logger->removeProvider(id);
