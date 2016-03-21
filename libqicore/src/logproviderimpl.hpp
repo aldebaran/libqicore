@@ -47,7 +47,8 @@ public:
 private:
   void sendLogs();
   void log(qi::LogLevel level,
-           qi::os::timeval tv,
+           const qi::Clock::time_point date,
+           const qi::SystemClock::time_point systemDate,
            const char* category,
            const char* message,
            const char* file,

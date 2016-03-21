@@ -254,6 +254,54 @@ TEST(Logger, KillProviderTest)
   listener.reset();
 }
 
+struct OldLogMessage
+{
+  std::string source;                     // File:function:line
+  qi::LogLevel level;                     // Level of verbosity of the message
+  qi::os::timeval timestamp;              // deprecated: timestamp when the message have been posted
+  std::string category;                   // Category of the message
+  std::string location;                   // machineID:PID
+  std::string message;                    // The message itself
+  unsigned int id;                        // Unique message ID
+};
+QI_TYPE_STRUCT(OldLogMessage, source, level, timestamp, category, location, message, id);
+
+TEST(Logger, FillMessageFields)
+{
+  OldLogMessage oMsg;
+  oMsg.source = "toto.cpp";
+  oMsg.level = qi::LogLevel_Fatal;
+  oMsg.category = "dafuq";
+  oMsg.location = "testFunc:11";
+  oMsg.message = "YOLOOOOO";
+  oMsg.id = 10;
+  oMsg.timestamp = qi::os::timeval(1, 99);
+
+  qi::LogMessage msg;
+  EXPECT_NO_THROW(msg = qi::AnyValue::from(oMsg).to<qi::LogMessage>());
+  EXPECT_EQ(qi::SystemClock::time_point(qi::Seconds(1) + qi::MicroSeconds(99)), msg.systemDate);
+  EXPECT_EQ(qi::Clock::time_point(), msg.date);
+}
+
+TEST(Logger, DropMessageFields)
+{
+  qi::LogMessage msg;
+  msg.source = "toto.cpp";
+  msg.level = qi::LogLevel_Fatal;
+  msg.category = "dafuq";
+  msg.location = "testFunc:11";
+  msg.message = "YOLOOOOO";
+  msg.id = 10;
+  msg.date = qi::Clock::time_point(qi::Seconds(2) + qi::MicroSeconds(99));
+  msg.systemDate = qi::SystemClock::time_point(qi::Seconds(1) + qi::MicroSeconds(99));
+
+  OldLogMessage oMsg;
+  EXPECT_NO_THROW(oMsg = qi::AnyValue::from(msg).to<OldLogMessage>());
+  qi::os::timeval tm = oMsg.timestamp;
+  EXPECT_EQ(1, tm.tv_sec);
+  EXPECT_EQ(99, tm.tv_usec);
+}
+
 int main(int argc, char** argv)
 {
   qi::Application app(argc, argv);
