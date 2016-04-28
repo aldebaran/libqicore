@@ -11,9 +11,7 @@
 #include <qi/applicationsession.hpp>
 #include <qi/jsoncodec.hpp>
 #include <qicore/logprovider.hpp>
-#ifdef WITH_BREAKPAD
 #include <breakpad/breakpad.h>
-#endif
 
 static std::vector<std::string> modules;
 static std::vector<std::string> objects;
@@ -132,14 +130,17 @@ int main(int argc, char** argv)
     return 1;
   }
 
-#ifdef WITH_BREAKPAD
   if (!disableBreakpad)
   {
+#if defined(I_AM_A_ROBOT)
     // allocate so that it lives even after main termination
-    auto eh = new BreakpadExceptionHandler(BREAKPAD_DUMP_DIR);
-    eh->setBuildTag(launcherName);
-  }
+    auto eh = new BreakpadExceptionHandler("/var/lib/minidump");
+#else
+    const std::string dumpPaths = qi::path::userWritableDataPath("aldebaran/breakpad", "");
+    auto eh = new BreakpadExceptionHandler(dumpPaths);
 #endif
+    eh->setBuildTag(launcherName + BUILD_TAG);
+  }
 
   try
   {
