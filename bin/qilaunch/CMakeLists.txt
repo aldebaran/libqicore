@@ -5,9 +5,20 @@ project(QiLaunch)
 find_package(qibuild)
 find_package(qimodule)
 
+if(DEFINED ENV{BUILD_TAG})
+  set(_build_tag $ENV{BUILD_TAG})
+else()
+  set(_build_tag "dev-build")
+endif()
+
+set_source_files_properties(qilaunch.cpp
+    PROPERTIES
+      COMPILE_DEFINITIONS BUILD_TAG=\"-${_build_tag}\"
+)
+
 qi_create_bin(qilaunch
   qilaunch.cpp
-  DEPENDS QI QICORE BOOST_PROGRAM_OPTIONS QT5_CORE
+  DEPENDS QI QICORE BOOST_PROGRAM_OPTIONS QT5_CORE BREAKPAD
   )
 
 qi_create_module(qilaunchtestmodule SRC qilaunchtestmodule.cpp DEPENDS QI NO_INSTALL)
