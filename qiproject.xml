@@ -2,7 +2,7 @@
   <maintainer email="hcuche@aldebaran.com">Herve Cuche</maintainer>
   <maintainer email="jlamotte@aldebaran.com">Joel Lamotte</maintainer>
   <qibuild name="libqicore">
-    <depends names="gtest libqi breakpad" buildtime="true" runtime="true" />
+    <depends names="gtest libqi" buildtime="true" runtime="true" />
   </qibuild>
   <project src="dox" />
 </project>
