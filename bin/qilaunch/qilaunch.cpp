@@ -6,7 +6,6 @@
 #include <csignal>
 #include <mutex>
 #include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <QtCore/QCoreApplication>
 #include <qi/applicationsession.hpp>
@@ -16,7 +15,6 @@
 
 static std::vector<std::string> modules;
 static std::vector<std::string> objects;
-static std::vector<std::string> legacy;
 static std::vector<std::string> functions;
 
 std::vector<qi::Future<void>> futures;
@@ -57,7 +55,6 @@ _QI_COMMAND_LINE_OPTIONS(
   "Launcher options",
   ("module,m", value<std::vector<std::string> >(&modules), "Load given module (can be set multiple times) (deprecated, use --object)")
   ("object,o", value<std::vector<std::string> >(&objects), "Load given object (syntax: yourmodule.YourObject) (can be set multiple times)")
-  ("legacy,g", value<std::vector<std::string> > (&legacy), "Load given legacy module (can be set multiple times)")
   ("function,f", value<std::vector<std::string> >(&functions), "Call given function (syntax: yourmodule.yourFunction) (can be set multiple times)")
   ("keep-running,k", bool_switch(&keepRunning), "Keep running after the function(s) has(have) returned (implied by -o)")
   ("no-breakpad,b", bool_switch(&disableBreakpad), "Disable breakpad")
@@ -107,63 +104,6 @@ static void handleQTCoreApplication(int argc, char* argv[])
   }
 }
 
-void runLegacy(const std::string& module, qi::SessionPtr session)
-{
-  qiLogInfo() << "Loading module " << module << " on " << launcherName << "...";
-
-  std::string fname;
-  boost::filesystem::path moduleFullPath(module);
-  if (moduleFullPath.is_absolute() &&
-      boost::filesystem::exists(moduleFullPath))
-  {
-    fname = moduleFullPath.make_preferred().string();
-  }
-  else
-  {
-    boost::filesystem::path pluginsPath("naoqi");
-    pluginsPath /= module;
-    fname = qi::path::findLib(pluginsPath.make_preferred().string());
-  }
-
-  if (fname.empty())
-  {
-    std::stringstream ss;
-    ss << "Could not find library `" << module << "' in:" << std::endl;
-    std::vector<std::string> libPaths = qi::path::libPaths();
-    for (auto it = libPaths.begin(); it != libPaths.end(); ++it)
-      ss << "\t- " << *it << "/naoqi" << std::endl;
-    qiLogError() << ss.str();
-    return;
-  }
-
-  qiLogInfo() << "Loading " << fname << "...";
-  void *handle = qi::os::dlopen(fname.c_str());
-  if (!handle)
-  {
-    qiLogError() << "Could not load library: `" << fname << "':"
-                 << qi::os::dlerror();
-    return;
-  }
-
-  typedef int fn_t(const std::string, qi::SessionPtr);
-  fn_t *registerService = (fn_t *) qi::os::dlsym(handle, "_registerService");
-  if (!registerService)
-  {
-    qiLogError() << "Could not find symbol `_registerService' in " << module
-                 << ": " << qi::os::dlerror();
-    return;
-  }
-
-  try
-  {
-    registerService(launcherName, session);
-  }
-  catch (const std::exception& e)
-  {
-    qiLogError() << "Failed to create module: " << e.what();
-  }
-}
-
 int main(int argc, char** argv)
 {
   qi::ApplicationSession app(argc, argv);
@@ -184,9 +124,9 @@ int main(int argc, char** argv)
 
   objects.insert(objects.end(), modules.begin(), modules.end());
 
-  if (objects.empty() && functions.empty() && legacy.empty())
+  if (objects.empty() && functions.empty())
   {
-    qiLogFatal() << "No object to load and no function to call, add one with --object, --legacy or --function";
+    qiLogFatal() << "No object to load and no function to call, add one with --object or --function";
     return 1;
   }
 
@@ -215,12 +155,6 @@ int main(int argc, char** argv)
     catch (std::exception &e)
     {
       qiLogWarning() << "Logs initialization failed with the following error: " << e.what();
-    }
-
-    if (!legacy.empty())
-    {
-      for (const auto& module : legacy)
-        runLegacy(module, app.session());
     }
 
     for (const auto& object : objects)
@@ -264,7 +198,7 @@ int main(int argc, char** argv)
       }
     }
 
-    if (!objects.empty() || !legacy.empty() || keepRunning)
+    if (!objects.empty() || keepRunning)
       app.run();
     else
       // just wait for the functions to finish
