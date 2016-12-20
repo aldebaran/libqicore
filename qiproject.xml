@@ -5,5 +5,4 @@
     <depends names="gtest libqi breakpad" buildtime="true" runtime="true" />
   </qibuild>
   <project src="dox" />
-  <project src="bin/qilaunch" />
 </project>
