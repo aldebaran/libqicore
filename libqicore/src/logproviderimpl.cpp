@@ -6,6 +6,14 @@
 ** Copyright (C) 2013 Aldebaran Robotics
 */
 
+// VS2015 fix atomic alignment and require an acknowledgement from developer
+#include <boost/predef.h>
+#if BOOST_COMP_MSVC
+# if (BOOST_COMP_MSVC >= BOOST_VERSION_NUMBER(14, 0, 0))
+#  define _ENABLE_ATOMIC_ALIGNMENT_FIX
+# endif
+#endif
+
 #include <boost/lexical_cast.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <boost/lambda/algorithm.hpp>

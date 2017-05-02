@@ -32,7 +32,7 @@ protected:
   LogListener() = default;
   LogListener(PropertyType<qi::LogLevel>::Getter get,
               PropertyType<qi::LogLevel>::Setter set,
-              boost::function<void(bool)> func = {})
+              boost::function<Future<void>(bool)> func = {})
     : logLevel(get, set)
     , onLogMessagesWithBacklog(func)
   {

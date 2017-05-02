@@ -246,6 +246,10 @@ namespace qi
 
       bool makeLocalFile()
       {
+        if (localPath.isEmpty()) {
+          return true;
+        }
+
         localFile.open(localPath.bfsPath(), std::ios::out | std::ios::binary);
         if (!localFile.is_open())
         {
@@ -257,8 +261,10 @@ namespace qi
 
       void write(Buffer buffer)
       {
-        assert(localFile.is_open());
-        localFile.write(static_cast<const char*>(buffer.data()), buffer.totalSize());
+        if (localFile.is_open())
+          localFile.write(static_cast<const char*>(buffer.data()), buffer.totalSize());
+        else
+          std::cout.write(static_cast<const char*>(buffer.data()), buffer.totalSize());
         bytesWritten += buffer.totalSize();
         assert(fileSize >= bytesWritten);
 
@@ -300,7 +306,8 @@ namespace qi
 
       void clearLocalFile()
       {
-        localFile.close();
+        if (localFile.is_open())
+          localFile.close();
         boost::filesystem::remove(localPath);
       }
 
