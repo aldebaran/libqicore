@@ -77,7 +77,7 @@ qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session, const s
     instance->setCategoryPrefix(categoryPrefix);
 
   qi::Future<int> id = lm.async<int>("addProvider", instance);
-  DEBUG("LP registerToLogger " << instance);
+  DEBUG("LP registerToLogger " << instance.ptrUid());
 
   initialized = true;
 
