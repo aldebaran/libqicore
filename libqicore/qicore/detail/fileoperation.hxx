@@ -2,6 +2,7 @@
 #ifndef _QICORE_FILEOPERATION_HPP_
 #define _QICORE_FILEOPERATION_HPP_
 
+#include <iostream>
 #include <memory>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
