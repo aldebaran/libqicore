@@ -10,20 +10,8 @@ import shutil
 import datetime
 import setuptools
 
-
-def find_file(filename):
-    """ Search a file by name in previous folder and return its path """
-    search_folder = os.path.join(PATH_HERE, "..")
-    for directory, _folders, content in os.walk(search_folder):
-        if "build" not in directory:
-            continue
-        if filename not in content:
-            continue
-        return os.path.join(directory, filename)
-    return None
-
-
-PATH_HERE = os.path.abspath(os.path.dirname(__file__))
+SETUP_PROJECT = "qicore"
+SETUP_DESCRIPTION = "QiCore Python Module"
 SETUP_FILES = {
     "manylinux1-x86_64": {
         "libqicore.so": "linux/lib/libqicore.so",
@@ -38,15 +26,28 @@ SETUP_FILES = {
         "qicore.mod": "win/share/qi/module/qicore.mod",
     },
 }
-SETUP_VERSION = datetime.datetime.now().strftime("%y.%m.%d")
-SETUP_CONFIG = """\
-[metadata]
-license_file = LICENSE.txt
+PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 
-[bdist_wheel]
-python-tag = cp27
-plat-name = %s
-plat-tag = %s
+
+def find_file(filename):
+    """ Search a file by name in previous folder and return its path """
+    search_folder = os.environ.get("QIPYTHON_BUILD_FOLDER")
+    if not search_folder or not os.path.isdir(search_folder):
+        search_folder = os.path.join(PATH_HERE, "..")
+    for directory, _folders, content in os.walk(search_folder):
+        if "build" not in directory:
+            continue
+        if filename not in content:
+            continue
+        return os.path.join(directory, filename)
+    return None
+
+
+DEFAULT_VERSION = datetime.datetime.now().strftime("%y.%m.%d")
+SETUP_VERSION = os.environ.get("QIPYTHON_BUILD_VERSION", DEFAULT_VERSION)
+SETUP_CONFIG = """\
+[metadata]\nlicense_file = LICENSE.txt\n
+[bdist_wheel]\npython-tag = cp27\nplat-name = %s\nplat-tag = %s
 """
 SETUP_PLATFORM = "manylinux1-x86_64"
 SETUP_SYSTEM = "Operating System :: POSIX :: Linux"
@@ -73,7 +74,7 @@ PLATFORM_FILES = SETUP_FILES.get(SETUP_PLATFORM)
 for filename in PLATFORM_FILES:
     source_path = find_file(filename)
     if source_path:
-        dest_path = os.path.join(PATH_HERE, "qicore", PLATFORM_FILES.get(filename))
+        dest_path = os.path.join(PATH_HERE, SETUP_PROJECT, PLATFORM_FILES.get(filename))
         if not os.path.isdir(os.path.dirname(dest_path)):
             os.makedirs(os.path.dirname(dest_path))
         shutil.copy(source_path, dest_path)
@@ -82,20 +83,20 @@ for filename in PLATFORM_FILES:
         print(" ! File %s is missing !" % filename)
 # Create the Wheel Package
 setuptools.setup(
-    name="qicore",
+    name=SETUP_PROJECT,
     version=SETUP_VERSION,
-    description="QiCore Python Module",
+    description=SETUP_DESCRIPTION,
     long_description=LONG_DESCRIPTION,
     keywords="naoqi softbank nao pepper romeo robot",
     url="http://doc.aldebaran.com",
     author="SoftBank Robotics",
-    author_email="jmillet@softbankrobotics.com",
+    author_email="release@softbankrobotics.com",
     platforms=SETUP_PLATFORM,
     python_requires=">=2.6, <3",
-    packages=["qicore"],
-    package_dir={"qicore": "qicore"},
+    packages=[SETUP_PROJECT],
+    package_dir={SETUP_PROJECT: SETUP_PROJECT},
     package_data={
-        "qicore": [PLATFORM_FILES.get(filename) for filename in PLATFORM_FILES]
+        SETUP_PROJECT: [PLATFORM_FILES.get(filename) for filename in PLATFORM_FILES]
     },
     include_package_data=True,
     install_requires=["qi"],
@@ -110,8 +111,8 @@ setuptools.setup(
 )
 # Remove the Setup File
 os.remove(os.path.join(PATH_HERE, "setup.cfg"))
-# Clean QiCore Folder
-for name in os.listdir(os.path.join(PATH_HERE, "qicore")):
-    path = os.path.join(PATH_HERE, "qicore", name)
+# Clean Project Folder
+for name in os.listdir(os.path.join(PATH_HERE, SETUP_PROJECT)):
+    path = os.path.join(PATH_HERE, SETUP_PROJECT, name)
     if os.path.isdir(path):
         shutil.rmtree(path, ignore_errors=True)
