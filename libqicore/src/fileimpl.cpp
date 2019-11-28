@@ -9,10 +9,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <qi/macro.hpp>
 #include <qi/anymodule.hpp>
-
-// FIXME: Remove once deprecated method are removed
-#include <qi/detail/warn_push_ignore_deprecated.hpp>
 
 namespace qi
 {
@@ -159,10 +157,13 @@ void _qiregisterFile()
   QI_OBJECT_BUILDER_ADVERTISE(builder, File, operationProgress);
 
   // Deprecated members:
+QI_WARNING_PUSH()
+QI_WARNING_DISABLE(4996, deprecated-declarations)
   QI_OBJECT_BUILDER_ADVERTISE_OVERLOAD(builder, File, _read, Buffer, (std::streamoff, std::streamsize));
   QI_OBJECT_BUILDER_ADVERTISE_OVERLOAD(builder, File, _read, Buffer, (std::streamsize));
   QI_OBJECT_BUILDER_ADVERTISE(builder, File, _seek);
   QI_OBJECT_BUILDER_ADVERTISE(builder, File, _close);
+QI_WARNING_POP()
 
   builder.registerType();
 
@@ -192,6 +193,3 @@ void registerFileCreation(qi::ModuleBuilder& mb)
   mb.advertiseMethod("openLocalFile", &openLocalFile);
 }
 }
-
-// FIXME: Remove once deprecated method are removed
-#include <qi/detail/warn_pop_ignore_deprecated.hpp>

@@ -62,7 +62,7 @@ LogProviderPtr makeLogProvider(LogManagerPtr logger)
 static void removeProviderAtStop(SessionPtr session, int id)
 {
   DEBUG("LP removeProviderAtStop " << id);
-  LogManagerPtr lm = session->service("LogManager");
+  LogManagerPtr lm = session->service("LogManager").value();
   lm->removeProvider(id);
 }
 
@@ -79,11 +79,11 @@ qi::FutureSync<qi::LogProviderPtr> initializeLogging(SessionPtr session, const s
     instance->setCategoryPrefix(categoryPrefix);
 
   qi::Future<int> id = lm.async<int>("addProvider", instance);
-  DEBUG("LP registerToLogger " << instance.ptrUid());
+  DEBUG("LP registerToLogger " << instance.uid());
 
   initialized = true;
 
-  qi::Application::atStop(boost::bind(removeProviderAtStop, session, id));
+  qi::Application::atStop(boost::bind(removeProviderAtStop, session, id.value()));
   return id.then(boost::lambda::constant(instance));
 }
 
