@@ -4,12 +4,10 @@
 */
 
 #include <qicore/file.hpp>
+#include <qi/macro.hpp>
 #include <qi/anymodule.hpp>
 
 qiLogCategory("qicore.file.progressnotifierimpl");
-
-// FIXME: Remove once deprecated method are removed
-#include <qi/detail/warn_push_ignore_deprecated.hpp>
 
 namespace qi
 {
@@ -31,7 +29,7 @@ namespace qi
 
     void notifyRunning() override
     {
-      if (this->status.get() != ProgressNotifier::Status_Idle)
+      if (this->status.get().value() != ProgressNotifier::Status_Idle)
         qiLogError()
         << "ProgressNotifier must be Idle to be allowed to switch to Running status.";
 
@@ -73,7 +71,7 @@ namespace qi
 
     bool isRunning() const override
     {
-      return this->status.get() == ProgressNotifier::Status_Running;
+      return this->status.get().value() == ProgressNotifier::Status_Running;
     }
 
     Future<void> waitForFinished() override
@@ -131,12 +129,15 @@ void _qiregisterProgressNotifier()
   QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, status);
 
   // Deprecated members:
+QI_WARNING_PUSH()
+QI_WARNING_DISABLE(4996, deprecated-declarations)
   QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _reset);
   QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _notifyRunning);
   QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _notifyFinished);
   QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _notifyCanceled);
   QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _notifyFailed);
   QI_OBJECT_BUILDER_ADVERTISE(builder, ProgressNotifier, _notifyProgressed);
+QI_WARNING_POP()
 
   builder.registerType();
 
@@ -166,6 +167,3 @@ void registerProgressNotifierCreation(qi::ModuleBuilder& mb)
   mb.advertiseMethod("createProgressNotifier", &createProgressNotifier);
 }
 }
-
-// FIXME: Remove once deprecated method are removed
-#include <qi/detail/warn_pop_ignore_deprecated.hpp>

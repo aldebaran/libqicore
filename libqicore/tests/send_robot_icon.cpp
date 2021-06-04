@@ -42,7 +42,7 @@ int main(int argc, char** argv)
   qi::ProgressNotifierPtr progressNotifier = imageFile->operationProgress();
   progressNotifier->progress.connect(&printTranferProgress);
 
-  qi::AnyObject alsystem = session->service("ALSystem");
+  qi::AnyObject alsystem = session->service("ALSystem").value();
   if (!alsystem)
   {
     qiLogError() << "Failed access ALSystem service!";

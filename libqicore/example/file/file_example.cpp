@@ -75,7 +75,7 @@ void processImageWithProgress(alice::ImageStorePtr imageStore,
 
 void doSomeWork(qi::SessionPtr clientSession, const qi::Path& imagePath, const std::string& imageName)
 {
-  qi::AnyObject aliceServices = clientSession->service("AliceServices");
+  qi::AnyObject aliceServices = clientSession->service("AliceServices").value();
   alice::ImageStorePtr imageStore = aliceServices.call<alice::ImageStorePtr>("imageStore");
   assert(imageStore);
   storeImage(imageStore, imageName, imagePath);

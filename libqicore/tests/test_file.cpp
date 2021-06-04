@@ -105,12 +105,14 @@ void checkSameFilesContent(qi::File& leftFile, qi::File& rightFile)
   ASSERT_EQ(leftFile.size(), rightFile.size());
   static const std::streamsize BYTES_STEP = 1024 * 64;
 
-  for (std::streamoff byteOffset = 0; byteOffset < rightFile.size(); byteOffset += BYTES_STEP)
+  for (std::streamoff byteOffset = 0;
+       byteOffset < static_cast<std::streamoff>(rightFile.size());
+       byteOffset += BYTES_STEP)
   {
     qi::Buffer leftBytes = leftFile.read(byteOffset, BYTES_STEP);
     qi::Buffer rightBytes = rightFile.read(byteOffset, BYTES_STEP);
-    EXPECT_GE(BYTES_STEP, leftBytes.totalSize());
-    EXPECT_GE(BYTES_STEP, rightBytes.totalSize());
+    EXPECT_GE(BYTES_STEP, static_cast<std::streamsize>(leftBytes.totalSize()));
+    EXPECT_GE(BYTES_STEP, static_cast<std::streamsize>(rightBytes.totalSize()));
     EXPECT_EQ(leftBytes.totalSize(), rightBytes.totalSize());
 
     ASSERT_TRUE(std::equal(static_cast<char*>(leftBytes.data()),
@@ -136,7 +138,7 @@ TEST(TestFile, cannotReadClosedFile)
 
   file->close();
   EXPECT_FALSE(file->isOpen());
-  EXPECT_EQ(0u, file->size());
+  EXPECT_EQ(0, file->size());
   EXPECT_THROW(
       {
         file->read(42);
@@ -222,7 +224,7 @@ public:
 
   qi::FilePtr clientAcquireTestFile(const qi::Path& path)
   {
-    qi::AnyObject service = sessionPair.client()->service("service");
+    qi::AnyObject service = sessionPair.client()->service("service").value();
     qi::FilePtr testFile = service.call<qi::FilePtr>("getTestFile", path);
     EXPECT_TRUE(testFile->isRemote());
     return testFile;
