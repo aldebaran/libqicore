@@ -62,8 +62,11 @@ LogProviderPtr makeLogProvider(LogManagerPtr logger)
 static void removeProviderAtStop(SessionPtr session, int id)
 {
   DEBUG("LP removeProviderAtStop " << id);
-  LogManagerPtr lm = session->service("LogManager").value();
-  lm->removeProvider(id);
+  if (session->isConnected())
+  {
+    LogManagerPtr lm = session->service("LogManager").value();
+    lm->removeProvider(id);
+  }
 }
 
 static bool initialized = false;
