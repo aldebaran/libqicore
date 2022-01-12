@@ -110,7 +110,7 @@ LogProviderImpl::LogProviderImpl()
   silenceQiCategories(_subscriber);
   ++_ready;
   sendTask.setName("LogProvider");
-  sendTask.setUsPeriod(100 * 1000); // 100ms
+  sendTask.setPeriod(qi::MilliSeconds(100));
   sendTask.setCallback(&LogProviderImpl::sendLogs, this);
   sendTask.start();
 }
@@ -126,7 +126,7 @@ LogProviderImpl::LogProviderImpl(LogManagerPtr logger)
   silenceQiCategories(_subscriber);
   ++_ready;
   sendTask.setName("LogProvider");
-  sendTask.setUsPeriod(100 * 1000); // 100ms
+  sendTask.setPeriod(qi::MilliSeconds(100));
   sendTask.setCallback(&LogProviderImpl::sendLogs, this);
   sendTask.start();
 }
