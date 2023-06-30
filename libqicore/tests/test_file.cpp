@@ -41,7 +41,7 @@ struct TemporaryDir
 } const TEMPORARY_DIR;
 
 const qi::Path SMALL_TEST_FILE_PATH{TEMPORARY_DIR.PATH / "\xED\x95\x9C/testfile.data"};
-qi::Path BIG_TEST_FILE_PATH;
+const qi::Path BIG_TEST_FILE_PATH{TEMPORARY_DIR.PATH / "bigtestfile.data"};
 
 const std::string TESTFILE_CONTENT = "abcdefghijklmnopqrstuvwxyz";
 const std::streamoff TESTFILE_PARTIAL_BEGIN_POSITION = 23;
@@ -57,6 +57,17 @@ void makeSmallTestFile()
   boost::filesystem::ofstream fileOutput(SMALL_TEST_FILE_PATH, std::ios::out | std::ios::binary);
   assert(fileOutput.is_open());
   fileOutput << TESTFILE_CONTENT;
+  fileOutput.flush();
+}
+
+void makeBigTestFile()
+{
+  boost::filesystem::remove(BIG_TEST_FILE_PATH);
+  boost::filesystem::create_directories(BIG_TEST_FILE_PATH.parent());
+  boost::filesystem::ofstream fileOutput(BIG_TEST_FILE_PATH, std::ios::out | std::ios::binary);
+  assert(fileOutput.is_open());
+  for (int i = 0; i < 1024 * 1024; ++i)
+    fileOutput << TESTFILE_CONTENT;
   fileOutput.flush();
 }
 
@@ -374,8 +385,8 @@ int main(int argc, char** argv)
   ::TestMode::forceTestMode(TestMode::Mode_SD);
   ::testing::InitGoogleTest(&argc, argv);
   qi::Application app(argc, argv);
-  BIG_TEST_FILE_PATH = qi::path::findLib("qi");
   makeSmallTestFile();
+  makeBigTestFile();
   const int result = RUN_ALL_TESTS();
   return result;
 }

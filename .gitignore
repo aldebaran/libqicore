@@ -1,4 +1,5 @@
-build-*
+build/*
 python-qicore/dist
 CMakeLists.txt.user
+CMakeUserPresets.json
 *.pyc

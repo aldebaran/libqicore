@@ -1,0 +1,17 @@
+@PACKAGE_INIT@
+
+# Find dependencies
+include(CMakeFindDependencyMacro)
+
+# - Boost
+find_dependency(
+  Boost @Boost_VERSION@ REQUIRED
+  COMPONENTS @Boost_COMPONENTS@
+)
+
+# - qi
+find_dependency(qi @qi_VERSION@ REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/@PACKAGE_NAME@-targets.cmake")
+
+check_required_components(@PACKAGE_NAME@)
