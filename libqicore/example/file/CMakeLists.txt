@@ -1,21 +1,37 @@
+add_library(alice_service STATIC)
 
-qi_create_lib(alice_service SHARED
-  SRC
+target_sources(
+  alice_service
+  PUBLIC
     api.hpp
     imagestore.hpp
+  PRIVATE
     imagestore.cpp
     imagestore_proxy.cpp
-  DEPENDS QICORE
 )
-qi_stage_lib(alice_service)
 
-if(QI_WITH_TESTS)
-  qi_create_bin(file_example
-    SRC
+target_link_libraries(
+  alice_service
+  PUBLIC
+    qicore::internal::cxx_standard
+    qicore::core
+    qi::qi
+    Boost::filesystem
+)
+
+add_executable(file_example)
+
+target_sources(
+  file_example
+  PRIVATE
     file_example.cpp
-    DEPENDS alice_service QICORE TESTSESSION
-    )
-  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-  set_property(TARGET alice_service PROPERTY FOLDER "file_example")
-  set_property(TARGET file_example PROPERTY FOLDER "file_example")
-endif()
+)
+
+target_link_libraries(
+  file_example
+  PRIVATE
+    alice_service
+    qicore::core
+    qi::qi
+    qi::testsession
+)
